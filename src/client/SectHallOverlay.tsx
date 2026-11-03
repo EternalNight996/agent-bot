@@ -183,7 +183,16 @@ export function SectHallOverlay({
   const [cleanupBusy, setCleanupBusy] = useState(false)
   const [archiveArmed, setArchiveArmed] = useState<number | undefined>()
   const [cleanupNotice, setCleanupNotice] = useState('')
-  const [archivedTeamIds, setArchivedTeamIds] = useState<readonly string[]>([])
+  const [archivedTeamIds, setArchivedTeamIds] = useState<readonly string[]>(() => {
+    try {
+      const raw = window.localStorage.getItem('dsh-super-agent.archivedTeams.v1')
+      const value = raw === null ? [] : JSON.parse(raw) as unknown
+      return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+    } catch { return [] }
+  })
+  useEffect(() => {
+    try { window.localStorage.setItem('dsh-super-agent.archivedTeams.v1', JSON.stringify(archivedTeamIds)) } catch { /* private mode */ }
+  }, [archivedTeamIds])
   const [selectedMember, setSelectedMember] = useState<string | undefined>()
   const [characterId, setCharacterId] = useState<string | undefined>()
   const previousSessionRef = useRef(sessionId)
