@@ -673,7 +673,8 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
       })
       const body = await response.json().catch(() => null) as { retried?: string[]; errors?: string[]; error?: string } | null
       if (!response.ok || body === null) {
-        setRetryNote('重新失败：' + (body?.error ?? String(response.status)))
+        const detail = body?.error ?? ('HTTP ' + response.status)
+        setRetryNote('重新失败：' + detail + (response.status === 405 ? '（当前宿主未加载重试接口，重启桌面端后重试）' : ''))
       } else if ((body.retried ?? []).length === 0) {
         setRetryNote(body.errors?.[0] !== undefined ? '重新失败：' + body.errors[0] : '没有可重新派发的失败任务')
       } else {
@@ -847,7 +848,15 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
               {resuming ? t('team.resuming') : t('team.action.resume')}
             </button>
           )}
-          {retryNote !== '' && <span className={css.cleanupMessage} role="status">{retryNote}</span>}
+          {retryNote !== '' && (
+            <span
+              className={css.cleanupMessage}
+              role={retryNote.startsWith('重新失败') || retryNote.startsWith('没有可') ? 'alert' : 'status'}
+              style={retryNote.startsWith('重新失败') ? { color: '#e08080' } : undefined}
+            >
+              {retryNote}
+            </span>
+          )}
           <span className={css.teamStats}>
             <span data-stat="members">{t('team.stats.members', { count: team.members.length })}</span>
             <span data-stat="tasks">{t('team.stats.completed', { completed: completedCount, total: team.tasks.length })}</span>
