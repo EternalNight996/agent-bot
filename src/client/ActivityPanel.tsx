@@ -775,30 +775,23 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           {historic && <span className={css.historicPill}>{t(discarded ? 'team.discarded' : 'team.ended')}</span>}
           {stopped && <span className={css.historicPill}>{t('team.stopped')}</span>}
           {!historic && !stopped && teamSettled(team) && (
-            interruptedTask !== undefined
-              ? (
-                <button
-                  type="button"
-                  className={css.teamResumeButton}
-                  data-control="team-action"
-                  data-action="restart"
-                  disabled={resumingLast || resumeLimitReached}
-                  onClick={() => { void resumeLast() }}
-                  title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
-                >
-                  {resumingLast ? t('team.resuming') : '🔄 ' + t('team.action.restart')}
-                </button>
-              )
-              : onOpenCaptain !== undefined
+            team.delivery?.ok === true
+              ? <span className={css.teamDonePill} data-action="done">{'✓ ' + t('team.action.done')}</span>
+              : team.tasks.some(task => task.status === 'failed')
                 ? (
                   <button
                     type="button"
                     className={css.teamResumeButton}
                     data-control="team-action"
-                    data-action="end"
-                    onClick={onOpenCaptain}
+                    data-action="restart"
+                    disabled={resumingLast || resumeLimitReached}
+                    onClick={() => {
+                      if (interruptedTask !== undefined) { void resumeLast(); return }
+                      onOpenCaptain?.()
+                    }}
+                    title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
                   >
-                    {'🔚 ' + t('team.action.end')}
+                    {resumingLast ? t('team.resuming') : '🔄 ' + t('team.action.restart')}
                   </button>
                 )
                 : null
@@ -869,6 +862,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
               <button
                 type="button"
                 className={css.teamStopButton}
+                data-action="stop"
                 aria-label={t('team.stop')}
                 title={t('team.stop')}
                 aria-haspopup="dialog"

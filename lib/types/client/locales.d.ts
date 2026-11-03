@@ -96,6 +96,7 @@ export declare const zh: {
     'team.action.restart': string;
     'team.action.resume': string;
     'team.action.end': string;
+    'team.action.done': string;
     'team.resumeLast': string;
     'team.resumeLastHint': string;
     'team.resumeLastFailed': string;
@@ -1211,6 +1212,7 @@ export declare const en: {
     'team.action.restart': string;
     'team.action.resume': string;
     'team.action.end': string;
+    'team.action.done': string;
     'team.resumeLast': string;
     'team.resumeLastHint': string;
     'team.resumeLastFailed': string;
