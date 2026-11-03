@@ -1032,6 +1032,31 @@ export function SectHallOverlay({
                 <>
                   {sheet === 'home' && (
                     <section className={css.homeDashboard}>
+                      {(hasTeam || visibleHistory.length > 0) && (
+                        <div className={css.historyHead} data-control="hall-history">
+                          <select
+                            className={css.historySelect}
+                            data-state={selectedState}
+                            aria-label={t('office.historyTeams')}
+                            value={viewingCurrent ? CURRENT_TEAM_SENTINEL : selectedHistory?.teamId ?? ''}
+                            onChange={(event) => { setHistoryTeamId(event.currentTarget.value) }}
+                          >
+                            {hasTeam && (
+                              <option value={CURRENT_TEAM_SENTINEL}>
+                                {stateDot(teamVisualState(hall))} {hall.name} · {t('office.historyCurrent')} · {done}/{total} · {money(costByTeam.get(hall.teamId) ?? 0)}
+                              </option>
+                            )}
+                            {visibleHistory.map(team => {
+                              const completed = team.tasks.filter(task => task.status === 'completed').length
+                              return (
+                                <option key={team.teamId} value={team.teamId}>
+                                  {stateDot(teamVisualState(team))} {team.name} · {t('office.historyPast')} · {completed}/{team.tasks.length} · {money(costByTeam.get(team.teamId) ?? 0)}
+                                </option>
+                              )
+                            })}
+                          </select>
+                        </div>
+                      )}
                       <div className={css.homeStats}>
                         <span className={css.homeStat} data-tone="pass"><strong>{passedCount}/{shownTeam.tasks.length}</strong><small>{t('home.passed')}</small></span>
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
