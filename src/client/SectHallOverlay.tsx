@@ -543,7 +543,7 @@ export function SectHallOverlay({
     const runningCount = hall.tasks.filter(task => task.state === 'running' || task.state === 'claimed' || task.state === 'open').length
     const blockedCount = hall.tasks.filter(task => task.state === 'blocked' || task.state === 'failed' || task.state === 'cancelled').length
     // 已结束/有失败/被停止的队伍必须停表：沿用 teamElapsedMs 的冻结语义。
-    const elapsedText = formatDuration(teamElapsedMs(hall, Date.now()))
+    const elapsedText = formatDuration(teamElapsedMs({ ...hall, updatedAt: selectedTeamUpdatedAt }, Date.now()))
     const historyTasks = hall.tasks.filter(task => task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
     const taskStatusLabel = (status: string): string => status === 'completed'
       ? t('task.status.completed')
@@ -1069,7 +1069,7 @@ export function SectHallOverlay({
                     t={t}
                     workspace
                   fill
-                  onOpenCaptain={goHome}
+                  onOpenCaptain={() => { goHome(); setSheet(undefined) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
                   onContinuePlanning={() => { setSheet(undefined) }}
