@@ -1,0 +1,49 @@
+/* 输入区停任务按钮：窄、单行、随 composer 宽度自适应。 */
+.dock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 2px 0;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.button {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, #f2c14e 55%, var(--dsw-alias-border-l2));
+  border-radius: 999px;
+  background: color-mix(in srgb, #f2c14e 12%, transparent);
+  color: #f2c14e;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: #f2c14e;
+  background: color-mix(in srgb, #f2c14e 20%, transparent);
+}
+
+.button[data-armed='true'] {
+  border-color: #ff8a8a;
+  color: #ff8a8a;
+  background: color-mix(in srgb, #ff8a8a 14%, transparent);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.hint {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice { color: #7fd6a8; }
+.failed { color: #ff8a8a; }

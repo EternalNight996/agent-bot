@@ -1,0 +1,14 @@
+# Committed build output: pin the generated tree to LF so a build on any
+# OS writes the exact bytes tracked here (tsc emits LF; a CRLF checkout
+# made every rebuild show up as a whole-tree diff).
+lib/** text eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary

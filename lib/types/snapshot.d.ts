@@ -1,0 +1,184 @@
+/**
+ * Team activity snapshot assembly for the activity panel.
+ *
+ * Server-side assembly mirrors the Claude Code desktop teamWatcher: read the
+ * durable team files (the truth source) and enrich with live subagent
+ * activity, so the panel always reflects the on-disk state even when a model
+ * skipped a tool "ritual" (e.g. not calling update_task on completion).
+ * @module dsh-agent-teams/snapshot
+ */
+import type { Context } from '@deepseek-ai/cordis';
+import type { DeliveryEvidence } from './quality-gates.ts';
+import type { MemberStatus, TeamState } from './types.ts';
+/** Visual task state for the activity panel. */
+export type VisualTaskState = 'blocked' | 'open' | 'claimed' | 'running' | 'completed' | 'failed' | 'cancelled';
+/** One member row of the activity snapshot. */
+export interface TeamActivityMember {
+    readonly id: string;
+    readonly name: string;
+    readonly role: string;
+    /** Execution agent id (dsh default). */
+    readonly agent?: string;
+    readonly provider: string;
+    readonly model: string;
+    readonly reasoningEffort: string;
+    readonly executionPrompt: string;
+    readonly status: MemberStatus;
+    readonly activity: 'working' | 'idle' | 'unknown';
+    readonly progress: number;
+    readonly done: number;
+    readonly total: number;
+    readonly currentTask: string;
+    readonly unread: number;
+}
+/** One task row of the activity snapshot. */
+export interface TeamActivityTask {
+    readonly id: string;
+    readonly subject: string;
+    readonly description: string;
+    readonly status: string;
+    readonly state: VisualTaskState;
+    readonly assignee: string;
+    readonly model: string;
+    readonly dependencies: readonly string[];
+    readonly depth: number;
+    readonly kind?: string;
+    readonly round?: number;
+    readonly verdict?: string;
+    /** Frozen quality contract, shown on the staged-plan review page. */
+    readonly objective?: string;
+    readonly acceptance?: readonly string[];
+    readonly verify?: readonly string[];
+    readonly inScope?: readonly string[];
+    readonly skills?: readonly string[];
+    /**
+     * Set when this task's verdict or auto-generated work order no longer
+     * describes the current bytes; the panel must not render a bare pass badge.
+     */
+    readonly verdictStale?: string;
+    /** Durable last-write stamp; drives the finished-member ordering (issue #192). */
+    readonly updatedAt: number;
+}
+/** One captain-inbox preview row. */
+export interface TeamActivityMessage {
+    readonly from: string;
+    readonly content: string;
+}
+/** One live captain↔member message in the conversation card feed. */
+export interface TeamActivityChatMessage {
+    readonly id: string;
+    readonly from: string;
+    readonly to: string;
+    readonly content: string;
+    readonly ts: number;
+    readonly taskId?: string;
+}
+/** The full panel payload for one team. */
+export interface TeamActivitySnapshot {
+    readonly workspace: string;
+    readonly teamId: string;
+    readonly name: string;
+    readonly description?: string;
+    readonly captainSessionId: string;
+    /** Team creation time; the client uses it for tenure-based cultivation. */
+    readonly createdAt: number;
+    readonly phase: 'staged' | 'running';
+    readonly planReviewState?: 'awaiting_review' | 'awaiting_feedback';
+    /** AI or template fallback, for the plan-review alignment card. */
+    readonly planSource?: 'ai' | 'template';
+    readonly planError?: string;
+    readonly planProjectRoot?: string;
+    /** Compact clarification summary (mode/constraints/platforms) for the review. */
+    readonly planSummary?: {
+        mode?: string;
+        scale?: string;
+        platforms?: string[];
+        constraints?: string[];
+    };
+    readonly halted?: boolean;
+    readonly members: readonly TeamActivityMember[];
+    readonly tasks: readonly TeamActivityTask[];
+    readonly messageCount: number;
+    readonly captainInbox: readonly TeamActivityMessage[];
+    /** Recent captain↔member messages, oldest first (newest last). */
+    readonly messages: readonly TeamActivityChatMessage[];
+    /** Present when the snapshot could audit the workspace bytes. */
+    readonly loopState?: string;
+    readonly deliverable?: boolean;
+    /** Host Goal currently active for the captain, when the goal service is mounted. */
+    readonly goal?: {
+        readonly id: string;
+        readonly objective: string;
+        readonly phase: string;
+        readonly roundsStarted: number;
+        readonly maxGoalRounds: number;
+    };
+    readonly acceptedAt?: number;
+    readonly acceptedBy?: string;
+    /** Host-native Agent Team projection for the same captain, when mounted. */
+    readonly nativeTeam?: {
+        readonly id: string;
+        readonly members: number;
+        readonly tasks: number;
+        readonly completed: number;
+    };
+    /** True when the accepted artifact bytes changed after sign-off. */
+    readonly acceptanceStale?: boolean;
+    readonly delivery?: {
+        readonly ok: boolean;
+        readonly blockers: readonly string[];
+        readonly warnings: readonly string[];
+        readonly evidence: DeliveryEvidence;
+        readonly report?: string;
+    };
+}
+/** Snapshot projection switches for live and archived teams. */
+export interface TeamSnapshotOptions {
+    /** Historic review must retain members that were marked removed at shutdown. */
+    readonly includeRemoved?: boolean;
+    /** Archived teams have no meaningful live activity after their sessions stop. */
+    readonly historic?: boolean;
+    /**
+     * Absolute workspace path of the owning workspace. When present, the snapshot
+     * audits the current bytes behind every recorded verdict, so the panel and
+     * the model-facing status tool cannot report different delivery verdicts.
+     */
+    readonly workspacePath?: string;
+}
+/** Compact `provider/model` route for the activity panel, or just the model. */
+export declare function memberModelRoute(member: {
+    provider?: string;
+    model?: string;
+} | undefined): string;
+/**
+ * Assemble one team snapshot from its durable files plus live activity.
+ * @param ctx - the plugin context (injects `subagents`, used for activity).
+ * @param stateRoot - resolved absolute state root of the owning workspace.
+ * @param workspace - display name of the owning workspace.
+ * @param state - the durable team record.
+ * @returns the panel snapshot.
+ */
+export declare function assembleTeamSnapshot(ctx: Context, stateRoot: string, workspace: string, state: TeamState, options?: TeamSnapshotOptions): Promise<TeamActivitySnapshot>;
+/**
+ * Collect every team under the given workspace state roots.
+ * @param ctx - the plugin context.
+ * @param roots - `{ workspace, stateRoot }` pairs (resolved absolute roots).
+ * @returns the snapshots in stable order (workspace, then team id).
+ */
+export declare function collectTeamsActivity(ctx: Context, roots: readonly {
+    workspace: string;
+    stateRoot: string;
+    workspacePath?: string;
+}[]): Promise<TeamActivitySnapshot[]>;
+/**
+ * Collect every archived team under the given workspace state roots (the
+ * `archive/` subdirectory of each state root). Used by the historic panel
+ * path to restore full team detail after deletion.
+ * @param ctx - the plugin context.
+ * @param roots - `{ workspace, stateRoot }` pairs.
+ * @returns the archived snapshots in stable order.
+ */
+export declare function collectArchivedTeamsActivity(ctx: Context, roots: readonly {
+    workspace: string;
+    stateRoot: string;
+}[]): Promise<TeamActivitySnapshot[]>;

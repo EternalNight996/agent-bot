@@ -1,0 +1,1525 @@
+# Changelog
+
+## [0.1.137] - 2026-11-03
+
+### Changed
+- 仓库彻底瘦身：删除 `docs/`、`release-notes/` 与内置 `skills/` 副本；DSH 生命周期技能改为从共享记忆库实时获取。
+- 内置皮肤 73 → 8 款，按名字哈希稳定循环；阵容五席撞款时自动顺延未占用皮肤。
+- 专家提示词改为 Brotli+base64 存储，新增 `scripts/role-prompts.mjs` 编解码与校验工具。
+- `assets/app-icons` 收敛为桌面 PNG 梯度 + 1024 母版；README 配图转为无损 WebP。
+- 构建中间产物 `lib/client/`、`*.map` 与技能镜像不再入库，新克隆需先 `pnpm build`。
+- Git 历史重建为单一提交，`.git` 从约 40 MB 降到约 10 MB。
+
+### Removed
+- 未使用源码：`agency-prompts`、`ClarifySheet`、`library-model`、`PolishPreview`、`realm`，以及 17 个无引用导出。
+- `docs/`、`release-notes/`、`skills/` 目录与对应的同步/更新脚本。
+
+## [0.1.136] - 2026-11-03
+
+### Changed
+- GitHub 仓库更名为 `dsh-super-agents`，与 npm 包名一致；仓库地址、徽章、克隆/安装命令、issue 反馈链接与 package.json 元数据（repository/homepage/bugs/author）全部同步，旧地址由 GitHub 自动重定向。
+- README / README_ZH 展示名与对照表统一为 dsh-super-agents。
+- 反馈 issue 的兜底标题改为 `dsh-super-agents 异常反馈`。
+
+## [0.1.135] - 2026-11-03
+
+### Changed
+- npm 发布包名改为 `dsh-super-agents`（`dsh-super-agent` 已被其他作者占用）；插件 id 与 `/plugins/dsh-super-agent` 路由保持不变。
+- 浏览器产物不再写入本机绝对路径：CSS 虚拟模块 id 改为仓库相对路径，`lib/client.js` 与 sourcemap 跨机器可复现。
+- 补齐 0.1.112–0.1.134 的 CHANGELOG。
+
+### Fixed
+- 发布产物泄漏开发机绝对路径（`F:\\...`）的问题。
+- 本地构建/安装日志未忽略的问题。
+
+## [0.1.134] - 2026-11-03
+
+- 目标步骤新增「分析模式」与「计划模式」：分析只出结论与证据，计划只出可执行方案，都不写代码；适合快速但全面地摸清现状或先要计划。
+- 目标输入支持拖拽/选择图片与视频（≤25MB），上传到工作区 `.pixel-team/uploads/`，并作为需求附件进入计划与任务上下文。
+- 计划审查视觉重做：更大的标题、更清晰的区块层级、成员/任务卡片与操作区更易读。
+- 多 Agent 生态第一层：计划审查可为每个修士选择执行 Agent（默认 DSH），并通过 `memberAgentProviders` 配置接入 codex / claude-code 等；支持可选「同步掌门模型」。权限沿用 toolPolicies，回退沿用成员 fallback。
+- 复刻项目：本地目录原生选择，进入「需求」后自动解析；视觉爆炸改为开发模式区内可选开关（默认关，关闭零注入）。
+- 修复成员派生时用相对 stateDir 推导工作区、导致成本门控读错成本日志的问题。
+- 新增 `pnpm verify:founding` 等回归覆盖。
+
+## [0.1.133] - 2026-11-01
+
+- 洞府常驻右侧栏：删除独立浮层窗口，设施页在「宗门协作」标签内渲染；右栏收起成 rail 时回落成可拖动令牌，点令牌重新展开（跨对话同样有令牌入口）。
+- 对话输入区新增「停止当前任务并执行新任务」：只在有任务在跑、且有可调度排队任务时出现，3 秒内二次点击才执行，走 /task/preempt。
+- 洞府面板固定 820×640，内容气泡固定 640px 高度：不再随面板/窗口自动拉伸或收缩。
+- 耗时停表：任务停止/结束/完成或宗门 halted 后，藏经阁与成本账单的「耗时」不再增长。
+- README（中英）重写定位、亮点与快速上手：补上右栏洞府、输入区叫停与交付展示。
+
+## [0.1.132] - 2026-11-01
+
+- Dynamic delivery actions: preview, Python, exe, batch and Rust.
+
+## [0.1.131] - 2026-11-01
+
+- 耗时停表：任务停止/结束/完成、或宗门被 halt 之后，藏经阁总览与成本账单里的「耗时」不再继续增长，冻结在最后一次状态写入时间；只有仍在跑的宗门才每秒更新。
+
+## [0.1.130] - 2026-11-01
+
+- 洞府面板固定大小：取消自由缩放与尺寸档位，固定 820×640；面板只可拖动位置、可收起，窗口比它小时才按视口兜底。配合 0.1.129 的「不自动调配高度」，面板尺寸现在完全不会自己变。
+
+## [0.1.129] - 2026-11-01
+
+- 取消洞府面板「自动调配高度」：窗口变小时 CSS max-height 裁出来的渲染高度不再被写回 hallRect，面板不会再被窗口自动改小且回不来；只有用户拖右下角缩放才记录尺寸。
+- 历史上被自动裁剪成整屏高度的值会一次性回落到固定 640px，洞府面板不再自动撑满窗口（内容气泡的 640px 固定高度沿用）。
+
+## [0.1.128] - 2026-11-01
+
+- 洞府内容气泡固定高度：藏经阁 / 名册 / 宗门志 / 天机阁等不再自动取「洞府面板高度」，洞府拉高也不会被拉成一整屏；超出内容在气泡内滚动，只有窗口更矮时才按可用高度兜底。
+
+## [0.1.127] - 2026-11-01
+
+- Showcase one-click launch for scripts, exe, batch and Rust.
+
+## [0.1.126] - 2026-11-01
+
+- Elapsed time and token totals in roster and library.
+
+## [0.1.125] - 2026-11-01
+
+- Larger library avatars (48px).
+
+## [0.1.124] - 2026-11-01
+
+- Library overview: counts, total cost, larger avatars, start-team button.
+
+## [0.1.123] - 2026-11-01
+
+- New doctrine 功能直交: one cultivator, direct delivery, no separate verification/review.
+
+## [0.1.122] - 2026-11-01
+
+- Interview custom answers commit on blur.
+
+## [0.1.121] - 2026-11-01
+
+- Library inherits team stop and pixel avatars.
+
+## [0.1.120] - 2026-11-01
+
+- Continuous doctrine list.
+- Progress merged into 藏经阁; separate 功德碑 entry removed.
+
+## [0.1.119] - 2026-11-01
+
+- Delivery details include verified changed paths.
+
+## [0.1.118] - 2026-11-01
+
+- Delivery details folded under the team card banner.
+
+## [0.1.117] - 2026-11-01
+
+- Delivery banner in the team card.
+
+## [0.1.116] - 2026-11-01
+
+- Doctrine picker: ordered single-column cards with integrated descriptions.
+
+## [0.1.115] - 2026-11-01
+
+- Doctrine description integrated into each card.
+- Stale 任务中 state fixed for settled teams.
+
+## [0.1.114] - 2026-11-01
+
+- Doctrine filter: short drama only in drama tasks.
+- Doctrine cards compressed.
+
+## [0.1.113] - 2026-11-01
+
+- Default quick mode; three mode UI; opt-in strict acceptance; five doctrine types.
+
+## [0.1.112] - 2026-11-01
+
+- Conversation team card: collapsible task table with id, subject, assignee and status.
+
+## [0.1.111] - 2026-10-31
+
+### Fixed
+- Founding a new team while an old team is running now replaces it; only staged
+  teams are reused. This restores the new-plan review flow.
+
+## [0.1.110] - 2026-10-31
+
+### Changed
+- R3: completed results fold per task+attempt instead of one team-level fold;
+  the open state is keyed by teamId:taskId:attempt.
+
+## [0.1.109] - 2026-10-31
+
+### Added
+- R3 first slice: completed-task fold state is persisted per team in localStorage;
+  failure/active task cards stay expanded, completed results stay collapsed by
+  default.
+
+## [0.1.108] - 2026-10-31
+
+### Fixed
+- Solo plans cannot persist an unassigned task: new tasks are forced to the
+  captain when the team has no members, and task updates in a 0-member plan also
+  force the captain. The plan editor locks the assignee select to captain.
+
+## [0.1.107] - 2026-10-31
+
+### Added
+- Founding wizard task-type switch: 工程任务 / 短剧任务.
+- 短剧任务 uses the drama template (script → assets → shots → review), injects a
+  short-drama context constraint, and can hand visual generation to TapNow.
+
+## [0.1.106] - 2026-10-31
+
+### Added
+- Resume checks classify interrupted attempts separately from quality failures
+  (reject/findings are never auto-resumed).
+- An atomic per-team `resume.json` checkpoint rejects a concurrent second
+  dispatch; corrupt/missing checkpoints degrade to "no checkpoint".
+- The resume control is disabled at the 3-attempt limit with a human-triage hint.
+
+## [0.1.105] - 2026-10-31
+
+### Added
+- Resume-last records per-task resume attempts and stops at 3 with
+  `needs human triage`; a failed dispatch rolls the counter back rather than
+  burning an attempt. Halting still uses the separate explicit resume path.
+
+## [0.1.104] - 2026-10-31
+
+### Added
+- First live integration slice from the approved reference plan: a "恢复上次"
+  control re-dispatches the most recent failed/cancelled task through
+  `agent_teams_reassign_task` (no second resume protocol, idempotent when no
+  interrupted task remains).
+
+## [0.1.103] - 2026-10-31
+
+### Fixed
+- Founding requests are isolated by conversation: switching sessions resets the
+  spinner/error, and late responses from the old session cannot update the new
+  one.
+- The conversation team card shows the goal, the active/pending task with the
+  executing member's art, role, and error text; completed task results are folded
+  under a collapsible "已完成" section.
+- Task output is included in activity snapshots for the folded results.
+
+## [0.1.102] - 2026-10-31
+
+### Fixed
+- Snapshot assembly wraps optional goal/native-team projections in try/catch;
+  plugin routes without the goal service injection no longer return
+  "cannot get property goals without inject" (HTTP 422/400).
+- Founding refuses to send a request with no session id and shows a clear
+  message instead.
+
+## [0.1.101] - 2026-10-31
+
+### Fixed
+- The hall reads the host-persisted visible session from
+  `localStorage["dsh.sessions.current"]` when the session list omits
+  `current`. Founding now sends a real sessionId instead of hitting HTTP 400,
+  and the active team resolves to that session.
+
+## [0.1.100] - 2026-10-31
+
+### Fixed
+- If the full founding request returns an empty 400, the client retries with a
+  minimal payload; the server fills mode defaults and skips AI planning. This
+  bypasses oversized/invalid clarification bodies.
+
+## [0.1.99] - 2026-10-31
+
+### Fixed
+- Quick-start falls back to a live agent when the request carries no session id.
+- The client now includes the HTTP response body in errors, instead of only
+  "HTTP 400", so validation failures are readable.
+
+## [0.1.98] - 2026-10-31
+
+### Fixed
+- When the host publishes no explicit current session, the hall uses the first
+  known session. This gives founding a valid sessionId instead of an HTTP 400
+  and lets the plan/team association resolve.
+
+## [0.1.97] - 2026-10-31
+
+### Fixed
+- Quick-start returns the full staged-team snapshot. The client now injects that
+  snapshot directly into the hall when the team-created event fires, so review
+  opens even if `/state` or the activity poll is unavailable.
+
+## [0.1.96] - 2026-10-31
+
+### Fixed
+- The hall now keeps a directly fetched team fallback, independent of the shared
+  activity snapshot. If the snapshot store does not expose the staged team, the
+  hall still renders it and opens its plan review.
+
+## [0.1.95] - 2026-10-31
+
+### Fixed
+- If the current session has no team, the hall now refreshes the workspace state
+  even when other teams exist elsewhere. Previously the refresh only ran when
+  the global snapshot was completely empty, so a team from a detached session
+  could stay invisible.
+
+## [0.1.94] - 2026-10-31
+
+### Fixed
+- A staged plan whose captain session is detached is adopted into the live
+  session on the first plan mutation/approval in the same workspace. The plan
+  editor now sends the current session id instead of the stale captain id.
+
+## [0.1.93] - 2026-10-31
+
+### Fixed
+- Solo plans whose task assignees were persisted without an owner are normalized
+  to the captain at approval, and the activity snapshot displays them as captain
+  so the plan is runnable.
+
+## [0.1.92] - 2026-10-31
+
+### Fixed
+- Opening the hall after founding now refreshes the team snapshot before showing
+  the plan sheet, instead of opening an empty "no sect" hall. An empty snapshot
+  also triggers a direct workspace refresh.
+
+## [0.1.91] - 2026-10-31
+
+### Changed
+- The solo/one-captain choice moved to the 志向 (vow) step.
+- Quick-start reuses an existing active team instead of failing with
+  "you already lead team" or deleting/recreating it; the client opens that
+  team's review.
+
+## [0.1.90] - 2026-10-31
+
+### Changed
+- Founding now asks 志向 first, then 道统. Super-fast jumps from 志向 straight to
+  oath and uses the template plan (no AI plan generation), compressing time.
+- Oath no longer asks to replace an existing sect; it replaces directly.
+- Solo mode labels its sect as 散修.
+- If the server created the team but the response was lost, the client recovers
+  it by creation time before showing an error.
+
+## [0.1.89] - 2026-10-31
+
+### Fixed
+- Solo mode skips the sect step entirely: the wizard has four steps
+  (doctrine → vow → interview → oath) and generates a captain-only plan.
+- The generation-lost recovery no longer runs while the owning request is still
+  active; it only recovers orphaned submissions after a remount, with a 180s
+  window. This removes the false "connection lost" error during slow planning.
+
+## [0.1.88] - 2026-10-31
+
+### Changed
+- Existing-sect replacement is chosen on the sect step, not at oath. The sect
+  step shows a compact notice and "替换旧宗门" toggle; the oath button then uses
+  that decision without another confirmation.
+
+## [0.1.87] - 2026-10-31
+
+### Fixed
+- Removed the duplicate "generating founding plan" note; the oath step now shows
+  it once.
+
+## [0.1.86] - 2026-10-31
+
+### Changed
+- Simplified the oath page: removed the long hint, duplicate existing-team
+  notice, and long oath note; it now shows only the five-line summary.
+- Replaced the oversized inline replace card with a compact anchored popconfirm:
+  "已有宗门，替换并开宗？" with cancel/replace actions. The primary button is
+  labeled "替换并开宗" when a team already exists.
+
+## [0.1.85] - 2026-10-31
+
+### Fixed
+- Existing-team rejection during oath now clears the in-flight marker and shows
+  an inline replace confirmation, instead of falling through to the 90s
+  "generation lost" timeout.
+
+## [0.1.84] - 2026-10-31
+
+### Fixed
+- Oath submission is durable: while the quick-start request is in flight the
+  wizard persists `submitting/submittedAt`; after a window/session switch it
+  recovers the new staged team from the host snapshot and opens review instead of
+  staying stuck on the oath screen.
+- The oath screen shows the existing-team notice before the replace action.
+
+## [0.1.83] - 2026-10-31
+
+### Changed
+- Doctrine step: removed the long hint paragraph and per-card descriptions;
+  cards keep title + role count, reclaiming vertical space.
+- After oath/staging, the plan review opens even when the current session id is
+  momentarily missing: the creation event carries its own session id.
+- Solo quick-start plans now force every task assignee to the captain after
+  staging, so the generated plan is valid for review.
+
+## [0.1.82] - 2026-10-31
+
+### Fixed
+- Discarding a staged plan now works even when its captain session is no longer
+  attached: the team is archived directly by workspace/team id.
+- All destructive confirmations are inline bubbles in the panel (stop task,
+  clean up teams, archive teams, regenerate plan) instead of browser
+  `window.confirm` popups; review errors use an inline notice.
+
+## [0.1.81] - 2026-10-31
+
+### Fixed
+- A staged plan created in a different/earlier session is visible again via a
+  workspace fallback, with the plan editor using that plan's captain session.
+- The whole hall is wrapped in an error boundary: a bad plan/renderer error shows
+  a retry toast instead of crashing DSH.
+
+## [0.1.80] - 2026-10-30
+
+### Changed
+- Swapped the mode row order: "超级快速执行" now sits where "极速草稿" was, and
+  "极速草稿（产量优先）" moved to the end.
+- The memory "goldfish mode" hint is now a bottom-right notification toast
+  instead of an inline banner in the sheet body.
+
+## [0.1.79] - 2026-10-30
+
+### Fixed
+- Quick-start footer no longer overlays the doctrine cards. The form is the
+  scroll container; the cancel/back/next bar is a normal flex child pinned to the
+  bottom edge with no negative margins.
+
+## [0.1.78] - 2026-10-30
+
+### Fixed
+- Rolled back the 0.1.77 staged-plan/session fallback that could crash the
+  renderer; the known-good 0.1.76 workspace activity layout is restored.
+- Interview answers: single-select options can be deselected, custom answers can
+  be added and removed as chips, and switching conversations no longer
+  regenerates the interview; per-session drafts keep questions/answers/step.
+- Wizard footer is pinned to the bottom; AI polish sits above the mode row;
+  super-fast execution is available and skips the AI interview.
+
+## [0.1.77] - 2026-10-30
+
+### Changed
+- Quick-start simplification: the solo/one-captain choice moved to the first
+  (doctrine) step; solo mode hides sect/role configuration entirely.
+- Added a "超级快速" (super fast) option to the vow step: it skips the AI
+  interview and goes straight to sect/oath.
+- AI polish is hidden in normal use; developers can enable it with
+  `localStorage.setItem('dsh-pixel-team.dev', '1')`.
+- A staged plan created before a session switch/restart is now surfaced in the
+  hall as a fallback so it can reach plan review instead of appearing empty.
+
+## [0.1.76] - 2026-10-30
+
+### Added
+- Headless/24h deployment kit: a healthcheck that reports active/open/stale
+  attempts (exit 1 on stale), a Windows supervisor task installer, and deployment
+  documentation for Windows and systemd.
+
+## [0.1.75] - 2026-10-30
+
+### Added
+- Read-only native Agent Team bridge: when DSH mounts the experimental
+  `agentTeam` projection for the same captain, the plan review shows its
+  member/task counts and completion; the plugin never mutates native state.
+
+## [0.1.74] - 2026-10-30
+
+### Changed
+- Stalled-member watchdog is enabled by default (15-minute grace, 60s scan).
+  Running owners are never timed out; set `watchdog.timeoutMs: 0` to disable.
+
+## [0.1.73] - 2026-10-30
+
+### Added
+- `quality.crossModelReview` (default false): approval rejects a review whose
+  reviewer uses the same provider/model as the implementation owner, so the
+  review cannot share the implementer's blind spot.
+
+## [0.1.72] - 2026-10-30
+
+### Added
+- Delivery acceptance now records artifact digests. If the delivered bytes change
+  after sign-off, the team snapshot reports `acceptanceStale` and the panel warns
+  that acceptance must be re-verified.
+
+## [0.1.71] - 2026-10-30
+
+### Added
+- Human delivery acceptance: a passing delivery can be signed off from the team
+  panel; the state records acceptedAt/acceptedBy separately from technical
+  delivery.ok, and the snapshot/UI show "已验收".
+
+## [0.1.70] - 2026-10-30
+
+### Added
+- Stalled-member watchdog (opt-in via `watchdog.timeoutMs`): scans open attempts,
+  and when the owning member is idle/missing past the grace period, marks the
+  task failed with a reason, clears the attempt, wakes the captain and reschedules.
+  `watchdog.intervalMs` controls the scan cadence.
+
+## [0.1.69] - 2026-10-30
+
+### Added
+- Task-scoped skills: the task editor fetches the host skill catalog and
+  multi-selects skills; the task persists them, the plan review shows them, and
+  the assignment tells the assignee to load them with the host skill tool.
+
+## [0.1.68] - 2026-10-30
+
+### Added
+- Captain autonomy contract: within the approved goal/inScope/acceptance/verify,
+  decide on the conservative reversible option, record the assumption and keep
+  going; ask only for irreversible, out-of-scope, credential, or goal-changing
+  decisions. Members get the same rule in their task assignment.
+- Host Goal visibility: snapshots expose the captain's active goal (objective,
+  phase, rounds), the plan review shows it, and the captain protocol defers
+  continuation to the host Goal Round Driver instead of creating a second goal.
+
+## [0.1.67] - 2026-10-30
+
+### Changed
+- Support DSH 0.2.1-rc.5: development dependencies/overrides, peer ranges and
+  compatibility.json now include rc.5 (rc.3 remains supported).
+- Compatibility policy test follows the new recommended host.
+
+## [0.1.66] - 2026-10-30
+
+### Fixed
+- Roster archive now also retires already-archived teams for the current captain
+  (moves them under archive/.retired), so they actually leave the history
+  dropdown. Previously the cleanup route only scanned active team dirs and
+  archived nothing.
+
+## [0.1.65] - 2026-10-30
+
+### Fixed
+- After archiving old teams the roster dropdown selection is cleared; with no
+  current team and no remaining history it shows a single empty placeholder
+  instead of keeping an archived entry.
+
+## [0.1.64] - 2026-10-30
+
+### Changed
+- Archiving old teams removes them from the roster locally instead of reloading
+  the whole page; the current selection falls back safely.
+- Actual cost pricing supports per-model overrides and cache-read/cache-write
+  rates; the session model selects its rate table, cache tokens are billed
+  separately from uncached input.
+
+## [0.1.63] - 2026-10-30
+
+### Changed
+- Roster archive action simplified to "归档" and restyled in red (danger cue).
+
+## [0.1.62] - 2026-10-30
+
+### Added
+- Staged-plan review cards expose the frozen quality contract: objective,
+  acceptance criteria, verify commands and in-scope paths.
+- Roster history has an "archive old teams" action; it previews terminal teams,
+  archives them through the host cleanup route and reloads the panel.
+
+## [0.1.61] - 2026-10-30
+
+### Changed
+- AI plan generation retries once when the first response fails validation or
+  looks unrelated, with a stricter reminder and lower temperature. Aborts and
+  timeouts are final; no extra call after them.
+
+## [0.1.60] - 2026-10-29
+
+### Changed
+- Roster dropdown cost totals now refresh every 15s together with the ledger.
+- Package slimmed from 6.95 MB / 378 files to 1.42 MB / 309 files by excluding
+  marketing-only assets/app-icons and assets/readme from the runtime package
+  (they stay in the repo; the app icon used by the client is embedded).
+
+## [0.1.59] - 2026-10-29
+
+### Fixed
+- Cost ledger now falls back to the team's captain session when the app-level
+  hall overlay has no session prop, so the report is actually requested instead
+  of silently showing ¥0.00. The ledger header shows the selected team total and
+  refreshes every 15s.
+
+## [0.1.58] - 2026-10-29
+
+### Added
+- Actual token metering: tasks record the session seq at in_progress and, on a
+  terminal transition, fold host `assistant/message.usage` (input/output tokens)
+  into a `usage-actual` cost entry using configurable per-1K rates. A task with
+  actual usage supersedes its provisional spawn estimate in the ledger.
+- `cost.usage` (actual|estimate) and `cost.pricing.inputPer1k/outputPer1k`
+  config fields.
+
+## [0.1.57] - 2026-10-29
+
+### Fixed
+- Cost report merges logs from the session workspace, DSH profile and DSH home
+  (deduped). A team whose spend was logged beside the profile no longer shows an
+  empty ledger / zero cost.
+- Spawn cost entries now attach the member's pending assigned task even before it
+  is claimed, so new spend is attributable per task.
+
+## [0.1.56] - 2026-10-29
+
+### Fixed
+- 藏经阁 per-task cost now queries the report with the current team id; before it
+  aggregated task ids across every team, so a new team could show another
+  team's spend (found by the full browser E2E).
+
+## [0.1.55] - 2026-10-29
+
+### Changed
+- ARCHITECTURE.md is refreshed whenever the staged plan is edited, regenerated or
+  approved (not only at founding), so the injected baseline follows the current
+  task graph.
+- Captain-executed quality tasks append an explicit `captain-unmetered` cost
+  entry; the roster ledger shows the task as "未计量" instead of hiding it.
+
+## [0.1.54] - 2026-10-29
+
+### Changed
+- AI plan generation may declare per-task `coverageOf` (exact interview items);
+  the plan prompt asks for it, parsing carries it into the staged plan, and the
+  library uses it for per-requirement PASS/FAIL. Uncovered items still fall back
+  to deterministic distribution.
+
+## [0.1.53] - 2026-10-29
+
+### Changed
+- Human review confirmation extracted into a pure module (`confirmHumanReview`)
+  with tests for success, missing/ordinary review, incomplete dependencies and a
+  failed sibling task.
+- Staged plan regeneration source extracted into `planSourceOf` with tests
+  (staged vs running, roles, solo, requirement preserved).
+
+## [0.1.52] - 2026-10-29
+
+### Added
+- Staged plan review: "重新生成计划" discards the draft and re-stages a plan from
+  the stored goal/clarification/roles (no manual re-interview).
+- Requirement coverage mapping: requirement items are assigned to gate tasks
+  (AI coverage preserved, uncovered items distributed), so the library shows
+  per-item PASS/FAIL and per-item failure counts instead of a plan-wide total.
+- Human review mode notifies the captain in the mailbox when a review is waiting
+  for confirmation.
+- quality.autoDetect: host verification adds the generated project's own
+  package.json test/typecheck command (default true).
+
+## [0.1.51] - 2026-10-29
+
+### Fixed
+- Auto review no longer waits for unrelated quality gates: eligibility is decided
+  on the review's own dependency closure (parallel branches may still be running).
+  A failure outside that closure does not block this branch's review.
+- Auto-review eligibility moved to a pure module with six regression tests
+  (parallel branch, unrelated failure, failed dependency, acceptance policy,
+  failed host command, attempted/without-deps/incomplete cases).
+- release-guard now also rejects a dirty lib tree, so a tag cannot ship
+  uncommitted generated files.
+
+## [0.1.50] - 2026-10-29
+
+### Added
+- Solo teams auto-continue: after the first completed task the scheduler wakes the
+  captain for the next ready task (one notification per task; the first task is
+  still announced by the approval context).
+- `pnpm verify:release-guard`: every generated lib file must be tracked and every
+  relative import must resolve before tagging (prevents the 0.1.44 missing-file
+  package).
+
+## [0.1.49] - 2026-10-29
+
+### Added
+- quality.reviewMode: "auto" (host closes the review) or "human" (host audits,
+  then the review waits for a human "Confirm review" click in 藏经阁). The
+  confirmation route binds the verdict to the same artifact revision.
+
+## [0.1.48] - 2026-10-29
+
+### Changed
+- Every quality option is now an individually optional config field with a
+  default: autoVerify, autoReview, requireAcceptance, commands,
+  commandsByProject (per product root) and verifyTimeoutMs.
+
+## [0.1.47] - 2026-10-29
+
+### Added
+- Config `quality`: `autoVerify` (host re-runs verify, default true),
+  `autoReview` (host auto-completes ready review tasks after all gates,
+  acceptance and host commands pass) and `commands` (verify commands for
+  generated projects).
+
+### Fixed
+- Generated-project plans no longer inherit the plugin's own verify commands
+  (e.g. `pnpm typecheck`). They default to `git diff --check` unless
+  `quality.commands` is configured, so a green gate actually refers to the
+  product workspace instead of the plugin source.
+
+## [0.1.46] - 2026-10-29
+
+### Fixed
+- 藏经阁 task subject wraps to a full-width second line (clamped to two lines)
+  instead of stacking one character per line in narrow panels.
+
+## [0.1.45] - 2026-10-29
+
+### Fixed
+- 0.1.44 could not load: its generated lib/architecture.js and
+  lib/types/architecture.d.ts were untracked, so the GitHub tag installed a
+  package whose lib/members.js imported a missing module. Both artifacts are now
+  committed (and the broken 0.1.44 release removed).
+
+## [0.1.44] - 2026-10-29
+
+### Added
+- Core architecture: a deterministic architecture summary (goal, stack/platform,
+  interview constraints, non-goals, acceptance, DAG, product root) is generated
+  from the confirmed plan, written to `projects/<root>/ARCHITECTURE.md` at
+  founding, shown in 藏经阁, and injected into every member persona.
+
+### Changed
+- 名册 dropdown options carry a state color (🟢 done / 🔴 failed / 🟡 running /
+  🔵 waiting) and the trigger border follows the selected team's state.
+- 藏经阁 requirement checklist is a table (# / requirement / state / failures)
+  with a failure total; task rows wrap so the full subject is readable.
+
+## [0.1.43] - 2026-10-29
+
+### Fixed
+- Hall scene no longer leaves large bands: the office 640px height cap is removed
+  and the hall window is capped near the scene's own aspect, so the canvas fills
+  the panel instead of being letterboxed when the panel is enlarged.
+- The collapse control is an icon button (— with tooltip), not a text button.
+- The collapsed token no longer covers the icon with a 4/4 badge.
+
+## [0.1.42] - 2026-10-29
+
+### Changed
+- 名册 layout: the history dropdown is the header, every option shows that team's
+  spend, the selected team's details follow, and the cost detail sits at the
+  bottom (today total removed). The cost report route accepts teamId, so the
+  ledger follows the selected team.
+- 藏经阁: numbered requirement checklist from the interview (PASS/FAIL state),
+  then the numbered task skeleton with failure counts and each task's own spend;
+  the today-cost header line is gone — 藏经阁 shows only per-task cost, detail
+  lives in 名册.
+
+## [0.1.41] - 2026-10-29
+
+### Changed
+- Plan generation is no longer silently replaced by the template: a failed AI plan
+  records its reason and the review card shows it; AI plans are checked for
+  relevance to the goal/interview (maxTokens 4500).
+- The template fallback now embeds the confirmed goal, mode, platforms, interview
+  constraints, acceptance, excluded boundaries and product root into every task
+  description, so even a fallback plan carries the user's real choices.
+
+### Fixed
+- 功德碑 (cultivation) now settles directly from the hall overlay, so captain-only
+  task completions increase the captain's progress even when the activity panel
+  is closed.
+- 名册 history teams are a dropdown, maximizing usable space.
+- 藏经阁 task rows show PASS/FAIL/pending per acceptance criterion again.
+- 名册 includes a cost ledger (today, per-task totals, recent entries); spawn
+  cost entries now record the task id.
+
+## [0.1.40] - 2026-10-29
+
+### Fixed
+- Solo teams no longer report "captain is busy with <other task>" when starting a
+  task: with zero members every task is pre-assigned to the captain, so the
+  captain-busy guard is skipped for solo teams and tasks run one after another.
+
+## [0.1.39] - 2026-10-29
+
+### Fixed
+- Solo plans can actually be approved: the staged-graph runnable check no longer
+  demands a member when every task is assigned to the captain, so a zero-member
+  plan no longer fails with "add at least one member before approving the plan".
+
+## [0.1.38] - 2026-10-29
+
+### Added
+- Plan review shows a "需求对齐" card: goal, mode, platforms, interview
+  constraints, product root and plan source (AI-generated vs ⚠ template
+  fallback), so the user can judge whether the tasks match the request.
+- planSource / planProjectRoot are persisted on the staged team and exposed in
+  the activity snapshot.
+
+### Fixed
+- Solo plans (0 members) can be approved: the approve button is enabled when
+  every task is assigned to the captain, and the review copy says 掌门单干 /
+  唤醒掌门 / 0 名修士（掌门执行） instead of "0 名修士".
+
+## [0.1.37] - 2026-10-29
+
+### Changed
+- Founding now needs only ONE model round: the interview answers are folded into
+  the clarification deterministically (constraints) and fed to plan generation,
+  removing the separate answers→clarification AI call. The plan prompt lists the
+  interview constraints explicitly.
+
+## [0.1.36] - 2026-10-29
+
+### Fixed
+- Solo founding no longer fails with "no active member named captain": create_task
+  accepts the captain as an assignee (the captain, like a member, may own tasks).
+- Founding now shows a clear loading note ("正在生成开宗计划，通常 10-60 秒") while
+  the AI plan is generated, and switches to the plan review as soon as the team is
+  staged (delay 1400ms -> 300ms) instead of lingering on the pre-founding view.
+
+## [0.1.35] - 2026-10-29
+
+### Changed
+- Solo mode is a single-click item (no checkbox): one click clears the roster and
+  enters solo; a second click leaves it. Member chips are hidden while solo.
+- Solo teams really run: approving a team with zero members wakes the captain
+  with explicit solo execution steps (status → reassign to captain → work →
+  update → next task).
+- The protected platform paths are no longer hard-coded: they are derived from
+  the workspace manifest (main/files/bin/tsconfig/existing roots) and can be
+  overridden by config boundary.forbidden / boundary.productsDir.
+- The collapsed hall is an icon (app icon, else ⛩) with a glow pulse and a task
+  count badge.
+
+## [0.1.34] - 2026-10-29
+
+### Added
+- Founding project boundary: every generated project is confined to
+  projects/<slug>/; platform/plugin paths (src/, lib/, scripts/, assets/, docs/,
+  package.json, tsconfig*, cordis.patch.yml, ...) are read-only unless the user
+  explicitly asks to change the plugin.
+- Plan generation validates inScope against the project root (rejects escapes
+  and platform paths), fills a missing implementation scope with the root, and
+  confines the template fallback to the same root.
+- scripts/project-boundary.test.mjs wired into verify:web-routes.
+
+## [0.1.33] - 2026-10-29
+
+### Removed
+- Removed the accidental 贪吃蛇大作战 panel from the plugin: it was a task
+  product of a founding run, not platform code. The component, hall sheet/floor
+  entry, its test and the task docs are gone.
+
+### Changed
+- Plan generation guardrail: task products must be written under
+  projects/<short-name>/ in the workspace; the plugin's own src/, lib/,
+  scripts/, package.json and tsconfig are off-limits unless the goal explicitly
+  asks to change the plugin.
+
+## [0.1.32] - 2026-10-29
+
+### Changed
+- The panel is renamed 道统·藏经阁 (was 道通藏书阁).
+- Task progress is a single-column list instead of swimlanes: one row per task
+  (id / subject / assignee / status / acceptance); click a row to expand its
+  description, dependencies and kind. Stop-task and live SSE updates unchanged.
+
+## [0.1.31] - 2026-10-29
+
+### Added
+- 洞府「🐍 贪吃蛇大作战」面板：Canvas 320×320，键盘方向键 + 右下四向虚拟键，
+  暂停/重开（Space 或按钮），食物 +10 分，撞墙/撞自身结束，卸载清理计时器与
+  键盘监听；挂在 SectHallOverlay 的 sheet 与底部入口。
+- scripts/snake-game.test.mjs（3 条回归）接入 verify:web-routes。
+
+### Fixed
+- 同 tick 内 180° 双转向瞬死：turnAllowed 以已提交方向拒绝掉头，stepGame 兜底。
+- 输入框/可编辑区获得焦点时不再被面板键盘拦截。
+- 虚拟方向键移出棋盘，不再遮挡右下角格子。
+
+## [0.1.30] - 2026-10-29
+
+### Added
+- Solo captain mode: the 宗门 step has a "单掌门模式（不派修士）" toggle; the
+  staged plan has no roster and every task is assigned to the captain, so no
+  member resources are spent. The captain executes the tasks itself in chat.
+- Mode chips state their direction: 极速草稿（产量优先）, 工业精工（质量交付）,
+  屎山抢救（存量维护）, 严格合规（审计优先）, 交付变现（交付优先）.
+
+## [0.1.29] - 2026-10-29
+
+### Added
+- The founding DAG is now generated by the model from the real goal + interview
+  answers + mode (tasks, roles, dependencies, acceptance, verify, scope, review
+  linkage); the fixed template is only the fallback when generation is invalid
+  or unavailable.
+- 道通藏书阁: a stop-task button on running/claimed cards (POST /task/stop —
+  revokes the attempt, fails the task and blocks downstream) and a "任务与架构
+  明细" section with description, assignee, status and dependencies per task.
+
+### Changed
+- Costs are displayed in CNY (¥, rate 7.2) in the library header and the cost
+  dialog; budgets/logs stay USD internally.
+- The destructive "结束旧宗门并开新宗" confirm button is red.
+
+## [0.1.28] - 2026-10-29
+
+### Changed
+- The existing-sect confirmation is now a floating tag above the submit button
+  (with a small tail pointing at it), not an inline block that shifts layout.
+- While AI polish is running, 下一步 and the step dots are disabled and the goal
+  textarea is read-only, so the polished text cannot race the user's edits.
+
+## [0.1.27] - 2026-10-29
+
+### Changed
+- With an unfinished sect, clicking 立誓开宗 now opens a confirmation bubble
+  directly above the submit button ("结束旧宗门并立即开新宗，是否确认？") with
+  取消 / 结束并开新宗 actions, instead of firing the request and showing an error.
+
+## [0.1.26] - 2026-10-29
+
+### Fixed
+- AI polish no longer fails silently: the completion budget was raised for
+  reasoning models (text-delta could stay empty at 500 tokens), and any degraded
+  call now shows the concrete reason under the button instead of leaving the
+  textarea unchanged with no feedback.
+- Clarification options and interview generation use the same larger budget.
+
+## [0.1.25] - 2026-10-29
+
+### Changed
+- The fixed clarification form is removed from the founding wizard. The model
+  now generates its own template-like questions (with choices) from the task
+  requirement and mode; the answers are converted by the model into the
+  clarification object the founding flow consumes. Skipping questions falls back
+  to the mode's boundaries/acceptance baseline.
+- New host routes: POST /plugins/dsh-pixel-team/interview/questions and
+  POST /plugins/dsh-pixel-team/interview/answers.
+
+## [0.1.24] - 2026-10-29
+
+### Changed
+- 志向 step keeps a single annotation line: 目标. The long hint and the
+  character/shortcut meta line are gone.
+- AI polish now writes the expanded requirement straight back into the goal
+  textarea; the extra preview panel, hidden-condition checkboxes and confirm
+  button are removed. The user decides whether to continue.
+
+## [0.1.23] - 2026-10-29
+
+### Added
+- 道通藏书阁 shows the development mode as a colored badge and the whole-DAG
+  acceptance gate totals (passed/failed/total).
+- Cost budgets now follow the mode (draft/monetize $15/day, precision/legacy/
+  compliance $50/day) with the profile's cost config as an override; cost log
+  entries carry the mode.
+- Dead-loop gate: retrying the same failed task at the mode's threshold prompts
+  the user (介入人工排查 / 继续执行) and keeps the task failed when triaged.
+- Verifier strategies by mode: draft/monetize run smoke only; precision runs the
+  unit/network suite; legacy prepends the discovered old regression suite and
+  blocks on its first failure; compliance adds a dependency audit and a
+  plaintext password/token scan. The verification task description states the
+  mode strategy and the script prints 【PASS】/【FAIL】 plus its log path.
+
+## [0.1.22] - 2026-10-29
+
+### Added
+- Five development modes (draft / precision / legacy / compliance / monetize)
+  with a single source of truth (src/modes.ts): philosophy, default boundaries,
+  acceptance baseline, verifier strategy, failure limit and budget.
+- Mode selector in the founding wizard; polish and AI clarification options are
+  generated for the selected mode, and the mode is persisted on the clarification
+  and in the read-only constitution.
+- Every member persona now starts with the mode philosophy block (and the
+  constitution when present), so a cold resume keeps the same execution stance.
+
+### Changed
+- Constitution JSON and clarification carry mode; legacy records default to
+  precision.
+- AI clarification options always include the mode's mandatory boundaries and
+  acceptance baseline.
+
+## [0.1.21] - 2026-10-29
+
+### Added
+- Clarification options are now AI-generated per requirement: the host proposes
+  type/scale, UI references and styles, platforms, hardware candidates,
+  constraints, exclusions, acceptance assertions and memory hints for this exact
+  request (POST /plugins/dsh-pixel-team/clarify/options). The static menu is only
+  the degraded fallback when the model route is unavailable.
+
+### Changed
+- 开山立业 (feat) now leads the doctrine list in the founding wizard and is the
+  default selection, including its four-role roster.
+
+## [0.1.20] - 2026-10-29
+
+### Changed
+- The memory-eternal banner probes the configured recall endpoint first: when a
+  brain is reachable it shows 「已连接大脑」, and only shows the install hint when
+  the probe fails. Probe result is cached for 60s; the new host route is
+  GET /plugins/dsh-pixel-team/memory/status.
+
+## [0.1.19] - 2026-10-29
+
+### Changed
+- The running 藏经阁 sheet now renders the live 道通藏书阁 projection (swimlanes,
+  edges, acceptance, blocker bar) instead of the static member/contract panel.
+  A staged plan still opens the plan editor so approval is never lost.
+
+## [0.1.18] - 2026-10-29
+
+### Added
+- The hall header and the 道通藏书阁 header show the running plugin version.
+
+### Fixed
+- Installing from the v0.1.17 GitHub release is now the documented path; the
+  0.1.17 tag already carried the clarification/constitution/library features.
+
+## [0.1.17] - 2026-10-29
+
+### Added
+- Blocking clarification root: fixed seven-section form, agent_teams_clarify,
+  hard-gated quick-start route, persisted on team.json.
+- Read-only .pixel-team/<project>-constitution.json injected at the top of every
+  member persona; agent_teams_memory_recall proxies the memory vault.
+- Optional AI requirement polish (original / expanded / hidden conditions) before
+  clarification; degrades to the original text when the model route is unavailable.
+- 道通藏书阁 panel: SSE push from an in-process bus, swimlanes by dependency
+  depth, topology edges, acceptance results and blocker bar; no polling, no
+  second state store.
+- Soft cost gate: per-spawn estimate, per-task/day thresholds, continue/terminate
+  prompt that cancels only the current spawn, JSONL cost log.
+- Verifier acceptance contract: executable constitution criteria become verify
+  commands; prose criteria join gate tasks; verifier output is PASS/FAIL only.
+
+### Changed
+- captain tool surface 15 → 17 (clarify, memory_recall); member tools 4 → 5.
+- New config: clarify.enforce, memory.endpoint, cost.{enabled,perTaskUsd,perDayUsd}.
+
+### Docs
+- Release checklist refreshed for 0.1.17.
+
+## [0.1.16] - 2026-10-28
+
+### Fixed
+- 「巡查 / audit」was offered by the 道统 picker but missing from the server
+  templates, so the wizard silently staged the fix workflow. Added the read-only
+  audit template (auditor → reviewer) and a dialog/server parity regression test.
+- The founding success message now shows the team name instead of its id.
+
+### Docs
+- README role/template table lists the audit doctrine.
+
+## [0.1.15] - 2026-10-28
+
+### Changed
+- Quick-start staging is extracted into a tested helper (`stageQuickStartTeam`):
+  roster first, then every task through `agent_teams_create_task`, with rollback
+  of a half-staged team.
+- Cast animation derives its frame index from the real start/end window, so the
+  1200ms breakthrough cast no longer freezes on frame 0 for 250ms.
+
+### Tests
+- Mocked staging tests: creation order, dependency/review id mapping, rollback,
+  create failure, missing tools.
+- Cast-timing tests: all four frames play within both 950ms and 1200ms windows.
+
+## [0.1.14] - 2026-10-28
+
+### Fixed
+- 「立誓开宗」/ quick-start failed with `plan.tasks[0].kind is not a declared
+  property`: the create tool's plan schema only carries ordinary task fields, so
+  quality contracts are now staged through `agent_teams_create_task` after the
+  roster exists.
+- A half-staged team is rolled back when a task fails to stage, instead of
+  blocking the next attempt with "already lead team".
+
+### Tests
+- Quick-start staging regression: dependency order, quality contracts through
+  create_task, and no undeclared create-plan fields.
+
+## [0.1.13] - 2026-10-27
+
+### Added
+- Pre-rendered frame sheets for cultivators (sit / walk / ride / cast), six mount
+  families and eight skill sigils: one `drawImage` per figure per frame instead of
+  a few hundred `fillRect` calls.
+- Cast animation with sparks when a cultivator breaks through, swaps a mount or
+  equips an artifact.
+- Skill sigils now float beside an equipped cultivator.
+
+### Changed
+- Mounts animate a real four-frame gait; the rider keeps the saddle when the
+  mount hops.
+
+### Fixed
+- Quadruped mounts repeated the same two gait frames; all four frames now differ.
+- A hopping mount used to stay on the ground while its rider jumped alone.
+
+## [0.1.12] - 2026-10-27
+
+### Added
+- Activity panel cleanup button; dry-run preview, confirmation, inline result.
+
+## [0.1.11] - 2026-10-27
+
+### Changed
+- Delivery requires a passing independent review even for work-only graphs.
+- Research/docs/debate reviews become quality review tasks; fullstack keeps a
+  review gate without disjoint layers.
+
+## [0.1.10] - 2026-10-27
+
+### Added
+- Hardening quick-start emits a requirements → implementation → verification
+  → review quality DAG.
+- Build quick-start emits implementation → verification → integration →
+  review with a reviewer role.
+
+## [0.1.9] - 2026-10-27
+
+### Added
+- Activity panel delivery-report export button; downloads the verified report
+  from the authenticated snapshot.
+
+## [0.1.8] - 2026-10-27
+
+### Added
+- `agent_teams_cleanup` archives old terminal teams (dry-run by default,
+  current captain excluded).
+
+## [0.1.7] - 2026-10-27
+
+### Added
+- Persist a delivery report with evidence, changed paths, commands, review
+  verdicts and residual risks when delivery is clean.
+- Return the report path from status.
+
+## [0.1.6] - 2026-10-27
+
+### Added
+- Delivery evidence counters in status: quality/review coverage, host-verified
+  commands, attempts, duration.
+- Warning for completed quality tasks without host-verified commands.
+
+## [0.1.5] - 2026-10-27
+
+### Added
+- Profile seed tasks support quality kinds and full contracts, including
+  reviewed/source seed-id mapping.
+- Host audits declared changedPaths against the real git diff on implementation
+  and repair completion.
+
+## [0.1.4] - 2026-10-27
+
+### Changed
+- Host executes declared verify commands on quality completion and rejects a
+  real failure; self-reported passes are no longer delivery evidence.
+- Fullstack quick-start becomes a quality DAG when disjoint frontend/backend
+  roots are detected; otherwise it remains ordinary work.
+- Timed-out verification kills the whole process tree.
+
+## [0.1.3] - 2026-10-27
+
+### Fixed
+- Quick-start fix/feat/array plans now emit quality task kinds and contracts;
+  inScope/verify are derived from the workspace.
+- Work tasks require a non-empty output before completion/delivery.
+- App icon is embedded separately from the cultivation portrait set.
+
+## [0.1.2] - 2026-10-27
+
+### Fixed
+- Stop button is danger-red; stop confirmation is an anchored popover instead of a centered
+  modal that could be covered by the progress panel.
+- "结束旧宗门并开新宗" is a red action; after explicit confirmation the host ends the current
+  team even with live work, then founds the new sect.
+- Existing-sect copy points to the red action instead of an invisible right pane.
+
+## [0.1.1] - 2026-10-27
+
+### Changed
+- New app icon set (desktop/web/iOS/Android) wired into the package and the hall
+  header; refreshed `assets/zhulong.ico` / `assets/zhulong-icon.png`.
+- README rebuilt: social-preview hero, six real screenshots, comparison table,
+  live demo links, and click-to-enlarge community/sponsor QRs.
+- README images moved to absolute raw GitHub URLs; npm tarball no longer carries
+  the old demo GIF and stays under the 8 MB package gate.
+
+## [Unreleased]
+
+### Changed
+- Brand: original Zhulong icon (PNG/ICO), a 1280×640 social preview, a current
+  hall screenshot, and a star-focused README (EN/ZH) replacing the old
+  screenshots and third-party project promotion. About/sponsor/package metadata
+  now name **惠州市梦游科技有限公司**; upstream MIT attribution stays only in
+  NOTICE/LICENSE, with an IP/attribution note for the original pixel assets.
+- Published under the existing **dsh-pixel-team** identity (GitHub repo and npm
+  package); version 0.3.0-rc.4 ships the full new code. Package/loader id, host
+  routes, localStorage keys, feedback URLs, README/badges and sponsor links all
+  use the dsh-pixel-team identity.
+- Release readiness: added a package-smoke test (npm pack dry-run) that asserts
+  the tarball ships the built plugin, support QRs, SPONSOR.md and only the three
+  intended runtime scripts, while excluding src/docs/tests; published
+  docs/release-checklist.md with automated and manual gates.
+- Team efficiency / prompt score pass: the full-stack template is now a 5-person
+  team (integrator owns both the contract and final integration; no separate
+  architect), and every software role contract carries a Working budget (in-scope
+  reads only, no task restatement, evidence bullets, stop after two blocked
+  attempts). Frontend reuses existing components, verifier reuses implementation
+  evidence rather than rerunning everything, reviewer reviews the diff/evidence.
+  Tests cap the five contracts at 5,200 chars and the DAG at depth 5 / width 2.
+- Added an optional security-hardening role/template (adapting the
+  security-auditor pattern): read-only audit → minimal fix → exploit/regression
+  verification → security review. The security contract requires repro before
+  fix, minimal diff, a regression test and an explicit residual-risk list.
+- Artifact handoff: every full-stack task now carries an explicit 交付/验收 line
+  (contract file, browser evidence, migration/tests, E2E, risk matrix,
+  findings+verdict), and every role contract ends with a five-bullet Report rule
+  (changed paths, commands/evidence, contract gaps; write files, do not paste).
+- Idle XP attribution now follows a **durable subagent transcript** even when the
+  host keeps the parent captain as `current`: if a retained child owns the main
+  view, that member is the one who idles. This fixes member conversations awarding
+  XP to the captain instead.
+- Software-delivery roles now carry concise contracts appended to the member
+  persona: frontend (UI states/a11y/browser evidence, no server edits), backend
+  (contract/migration/authz/tests, no UI edits), integrator (contract drift/E2E),
+  plus bounded verifier/reviewer rules. A new full-stack quick-start template
+  runs contract → parallel frontend/backend → integrate → verify → review.
+- Added docs/role-prompt-research.md comparing MetaGPT, ChatDev, LangGPT, CrewAI,
+  Claude-subagent collections and cursor-rule collections, and what was adapted.
+- 名册 is now the central action: the wall gate sits on the 520px world's midpoint
+  (藏经阁/功德碑 left; 封神榜/天机阁/宗门志 right) and the bottom-bar 名册 is the
+  4th of seven buttons, following the "home action at the pointer/visual centre"
+  rule while keeping every other facility adjacent.
+- 天机阁 equipment changes are now visible in the hall: each artifact id has its
+  own weapon silhouette and tier colour, mounts switch model families, and
+  selecting any weapon/mount/skill makes the cultivator hop with a floating
+  item name and a 1.4s colour ring. The character sheet explains the immediate
+  preview.
+- The 宗门志 is also a sixth wall facility at the far right (stone tablet/scroll);
+  clicking it opens the same sheet and it highlights while open. The bottom-bar 志
+  entry remains.
+- Added the 宗门志 (志) bottom-bar entry with four tabs in this order: voluntary
+  sponsorship (WeChat QRs + MIT note), the author's QQ group QR, an About tab
+  (version/author/other projects/old dsh-desktop notice) and a feedback tab with
+  privacy-bounded diagnostics, prefilled GitHub issue, copy-diagnostics and
+  copy-AI-prompt actions; it opens on 赞助. Support QRs are served through an
+  allowlisted host route; SPONSOR.md and assets/support are packaged.
+- Idle XP now settles for **every cultivator in the current conversation panel's
+  sect** (captain and all members), not just the speaker. Other sects and hidden
+  panels do not gain. The character being spoken to keeps the 1x→3x streak;
+  switching panels resets the incoming sect and does not backfill away time.
+  The same panel keeps up to 8h offline catch-up.
+- Level badges in the panel and the hall now use realm-specific colour palettes.
+- Idle cultivation is half the fast curve (IDLE_XP_SCALE=0.5, taper 0.8):
+  10 XP/10s at Lv.1, ~20s/level at Lv.100 (1→100 in ~45 minutes at 3x), then
+  200≈35s, 500≈72s, 1000≈2.1min, cap≈13min. The online streak reaches 3x after
+  four minutes and offline catch-up is capped at 8 hours; the character sheet
+  shows the current idle rate.
+- The 封神榜 also exists as a fifth wall facility (golden board with names and a
+  vermilion seal); clicking it opens the ranks sheet, and opening ranks highlights
+  the wall board.
+- Added the 封神榜 board (bottom bar 榜): sect roll by cultivation, the 15-realm
+  ladder with per-realm level ranges and descriptions, the current speaker's
+  cultivation card, leveling tips (task/captain/idle formulas, first-seen
+  back-pay, mount cadence) and the three-part sect story. Realm ranges and copy
+  are derived from shared cultivation/data modules, with 1..9999 coverage tests.
+- Cultivators, desks, focus artifacts, name plates, level badges, hit areas and
+  floating effects were miniaturized (~56px figures, 72×17 desks) while keeping
+  the hanfu details; non-crowned cultivators now default to long hair.
+- Removed the 天机阁 level-test jump buttons (and the xpForLevel/setCultivationXp
+  backdoor); progression comes only from tasks and idle cultivation.
+- Fixed desk-front leg clipping, the floating incense burner, oversized props
+  after scaling, and flying label/badge/hit-area alignment.
+- Mounted cultivators keep their legs still (walking gait only plays on foot);
+  every mount family now has its own model: spirit beast, crane, qilin, jiao,
+  dragon, phoenix and dao beast, selected from the 天机阁 item.
+- Cultivator clothing was reworked toward Chinese hanfu: cross-collar 交领右衽,
+  wide sleeves with contrast cuffs, sash with ribbons and jade pendant, cloth
+  boots with pale soles, and a gold hair crown/hairpin.
+- Progression is level-scaled and avoids both runaway and stalled leveling:
+  xpNeed = round(60 × level^1.2), task xp = 60 + 15×level, idle xp per 10s =
+  1 + floor(level/10), with captain task xp scaled similarly.
+- 传音阁 is removed from the wall menu and the bottom bar (four facilities now:
+  藏经阁 / 山门 / 功德碑 / 天机阁). Captain↔member messages still appear live in the
+  conversation team card.
+- XP is shown as integers only (no decimal tail), and idle cultivation now settles
+  once every 10 seconds (+1 XP) instead of ticking continuously; each settlement
+  pops the green +1 above the open character. Offline idle is capped at 1 hour.
+- 名册的历史宗门列表 now includes a green 当前 entry for the live sect (selectable,
+  marked 当前); historical runs remain selectable for their historic roster, while
+  the live detail stays in 宗门进度 to avoid duplicating it again.
+- 法器、坐骑、技能 now equip independently in the inventory (three separate
+  selections instead of one global slot).
+- Added the 天机阁 wall facility (and a bottom-bar entry) that opens the gear
+  sheet; the wall now holds five facilities inside the same 520px world.
+- Selected mounts are always rendered for idle cultivators (even at their desk),
+  and equipped artifacts/skills add visible floating-blade / spirit-ring effects.
+- 归栏 and 配置 objects moved upward on the courtyard so they no longer sit on
+  top of the cultivators.
+- The cultivation ladder now follows the full 凡人流 hierarchy across the 9999
+  level cap: 凡人 → 炼气 → 筑基 → 结丹 → 元婴 → 化神 → 炼虚 → 合体 → 大乘 → 渡劫
+  → 真仙 → 金仙 → 太乙 → 大罗 → 道祖.
+- Inventory unlocks extend through every realm: 法宝/灵宝/仙器/真仙器/道器,
+  蛟龙/仙鹤/麒麟/真龙/凤凰/道兽, and skills 剑气/丹火/婴火/神通/领域/法相/仙术/
+  道法. Level-test presets now jump to the realm boundaries.
+- Clicking a cultivator's overhead level badge (or the hall's identity chip) opens
+  an equipment sheet with a game-style inventory grid: 法器 / 坐骑 / 技能 slots
+  show their unlock level, a 🔒 when locked and a golden ✓ when equipped.
+- Selecting an unlocked 坐骑 immediately switches the scene form; 法器/技能 are
+  passive but show as equipped in the grid.
+- The level cap is now 9999 with wider realm bands; level-test presets cover
+  Lv.1/3/5/8/10/15/20/50/100/500/9999.
+- Items unlock throughout the progression: 桃木剑/灵剑/灵宝/仙器/神器, 飞剑/灵兽/
+  仙鹤/麒麟/神龙, and skills 灵光/灵盾/剑阵/御风/法相.
+- Creating a sect while another exists no longer auto-deletes the current team:
+  the wizard asks to replace, and replacement is refused while any task is
+  pending/running, so a live run (and its trail) can no longer be wiped by a
+  surprise archive.
+- Idle/completed cultivators keep moving even in short panels: without a
+  courtyard they pace beside their desks instead of standing still.
+- Cultivation is now global and persistent: XP is stored per member name and per
+  sect captain in localStorage, so 魔修's level follows them across sects/sessions
+  while different sect captains keep separate levels.
+- XP sources: completing a task gives 60 (historical completions settle once),
+  the captain earns 40 per completed sect task, and idling gives 0.25/min — but
+  only for the character whose conversation is currently open.
+- Full progression added: 20 levels, seven realms (炼气→筑基→金丹→元婴→化神→炼虚→
+  大乘), and unlock milestones at Lv.2 灵光护体, Lv.3 本命法器, Lv.5 御剑术,
+  Lv.7 护体灵盾, Lv.8 驭兽术, Lv.10 灵宝 (shown in the level-chip tooltip).
+- Gaining XP pops a green "+N" above the head; levelling up adds a golden ring,
+  sparks and an "升级！Lv.N" banner.
+- The overhead level badge is now a light-green chip with a small XP bar toward
+  the next level, instead of the old dark pill.
+- Completed/idle cultivators keep their cultivation state (wandering, sword or
+  beast): once tasks are done, double-clicking an eligible cultivator cycles
+  auto → 御剑 → 坐骑 → 步行; low-level or busy cultivators still hop instead.
+- 山门·名册 keeps an 开宗立派 entry even after the sect has run tasks: opening it
+  stages a new sect, and the wizard's replace flow takes over when a team already
+  exists, so a finished run no longer dead-ends the hall.
+- Every pixel person now shows a small "Lv.N 境界" badge above their head; task
+  and chatter bubbles shift up so the badge never covers them.
+- The active-conversation marker is now much louder: a floating 对话中 tag beside
+  the character, a stronger teal/gold aura and a glowing name plate.
+- Double-clicking a pixel person makes them hop in place (single-click still
+  opens their conversation).
+- Idle cultivators wander the courtyard; from Lv.5 they ride a flying sword and
+  from Lv.8 a divine beast, driven by the same cultivation levels.
+- Removed the redundant 查看宗门 entries (header button and conversation-card
+  button); 开宗立派 stays as the only header action.
+- The active cultivator is now marked with a soft teal (member) / gold (captain)
+  aura and a glowing name plate instead of the previous brackets/rings, and the
+  宗门进度 member/captain cards show 对话中 for the open conversation.
+- Added a cultivation system: completed tasks and days in the sect accumulate
+  XP; each member (and the captain) shows Lv.N + 境界 on their card, with
+  XP/next-level in the tooltip.
+- The cultivator whose conversation is currently open is now marked in the scene:
+  a breathing teal (member) or gold (captain) foot ring plus corner brackets,
+  and the name plate state reads 对话中 instead of 静修. Clicking another pixel
+  person moves the marker with the conversation.
+- Status labels agree again: when every task is completed, 道统 shows 已完成 and the
+  captain in the scene stops showing 修炼中 (both used to follow phase=running).
+- The 宗门进度 sheet header now has a ＋新建任务 button: it returns to the main
+  conversation and focuses the composer, where telling the captain the task is
+  the supported way to add one.
+- The hall header shows whose conversation is open: a gold 掌门·主对话 chip or a
+  teal {name}·修士对话 chip.
+- 山门·名册 marks the live sect with a green 当前 banner and tags archived runs
+  as 历史; selecting a past run shows its historic roster/state.
+- Clicking the 掌门 in the hall scene (or the 掌门 card in 宗门进度) now returns to
+  the captain's main conversation instead of opening a member transcript.
+- The main-chat team card also lists the latest task start/completion events
+  alongside the captain↔member messages, so a task starting is visible in the
+  conversation in real time.
+- 山门·名册 no longer duplicates the live 宗门进度 member cards: it is now a
+  history sheet listing archived sect runs (with their historic roster) plus the
+  current sect's finished tasks.
+- The team card in the main conversation now streams recent captain↔member
+  mailbox messages (latest 12, refreshed by the one-second activity snapshot), so
+  the interaction between the captain and the cultivators shows up live in the
+  chat instead of only inside the hall.
+- 宗门进度 no longer draws the separate task-dependency graph: each member card
+  now carries its own progress bar and a "交给 {name} · {task}" handoff line, so
+  the panel content itself shows who works on what, how far along it is and who
+  receives the result next (the scene above already shows the live activity).
+- Closing the post-founding 道统配置 review with × now jumps straight to the
+  宗门进度 sheet (opening another facility simply leaves review mode).
+- A 修士 child session no longer shows an empty hall: the overlay resolves the
+  team that owns the session by member session id and keeps showing that team's
+  task progress; member navigation uses the captain session as the parent, so
+  clicking another cultivator from a child session still opens the right
+  transcript.
+- After 开宗立派 succeeds, the hall waits for the new team to land and then opens
+  the 道统配置 (team config) sheet automatically, so the founder can review the
+  roster and doctrine right away instead of the wizard just closing.
+- The 开宗 wizard's 修士 chips now show the embedded pixel portrait for each
+  role (preset roster, selected roles, the role picker and the oath summary);
+  custom roles fall back to an initial-letter badge.
+- The wizard's decision bar (取消 / 上一步 / 下一步) is pinned flush to the bottom
+  edge of the sheet; the sheet keeps a fixed height equal to the hall panel, so
+  switching steps never resizes it.
+- 开宗立派 now renders inline in the hall's left-hand content sheet, exactly like
+  功德碑/进度 — the header 开宗 button opens that sheet too, and there is no
+  standalone quick-start modal any more.
+- The 开宗 doorway transmission gained layered counter-rotating arcs, spiralling
+  pixel motes, a soft membrane and a bright core, so it reads as a portal with
+  depth instead of a flat spinner.
+- All hall content sheets open at the hall panel's top-left and share its fixed
+  height (viewport-bounded), so 面板配置 / 名册 / 道统 / 进度 / 收信 / 开宗 line up with
+  the panel instead of shrinking per content. Sheet text is scaled up (zoom 1.3,
+  15px title) and the 道统 template grid stretches to fill the remaining height
+  instead of leaving a dead band above the decision bar.
+- The 开宗 gate is back to the wooden 山门 silhouette; its doorway now carries a
+  rotating transmission (two counter-rotating rune rings plus a pulsing centre).
+- The 山门洞府 is now the team tab itself: the wall's four facilities (藏经阁 /
+  山门 / 功德碑 / 传音阁) open the setup, roster, progress and inbox sheets, so the
+  permanent header, board column, member chips and inbox row no longer consume
+  page height. History pages keep the old board/setup switch.
+- The wall is a real menu: facilities get hover outlines, labelled wooden tags,
+  live counts (progress on 功德碑, unread badge on 传音阁) and pointer cursors. The
+  floater only enables the 功德碑 (board) facility.
+- The wall tags now carry a trailing › and a hover cursor; hovering a cultivator
+  draws gold corner brackets around the desk, and the action tooltip opens below
+  the pointer so it cannot be clipped at the wall.
+- Tall panes paint the hall floor to the bottom edge instead of floating the
+  world in dead bands; rows anchor under the wall, an incomplete last row is
+  centred, and a faint 聚灵阵, stone lanterns, an incense burner, drifting qi
+  motes and a lotus pond (with koi, ripples and reeds) give the courtyard floor
+  structure.
+- The hall stops at a 640px-tall card and centres in the tab instead of
+  stretching into an endless canvas.
+- Facility panels are now one floating dialog: it floats over the still-visible
+  hall, is dragged by its title bar (⠿ grip, clamped to the stage), resized from
+  the bottom-right corner, and reopens centred each time. A light scrim still
+  closes it on an outside click, and Esc/× work as before. Content size no
+  longer has to fight the canvas size.
+- The floating dialog is portaled to `document.body` and fixed to the
+  **bottom-right corner of the whole DSH window** (560px wide, 16px inset,
+  z-index 12000) — it is no longer confined to the right-pane tab, stays above
+  the hall, is dragged by its title bar, resized from the corner, and remembers
+  its offset/size in localStorage (`dsh-pixel-team.sheetRect`, re-clamped to
+  the viewport on every open).
+- Sheets animate in, take focus as a dialog on open (not the ×), close on Esc /
+  the scrim / ×, and the plan/setup sheet hugs its content instead of leaving a
+  blank column.
+
+### Added
+- 开宗立派改为**四步向导**：道统（8 个模板卡）→ 立派之志（目标 + 字数 +
+  Ctrl/⌘+Enter 快捷进入下一步）→ 宗门（随机重抽 / 预设 / 自定道途）→ 立誓（道统、
+  宗门、首批修士、立派之志的名录预览 + 立誓说明）。步骤条可回看已完成步骤，
+  上一步/下一步按步校验（志向至少 2 字、自定道途至少 1 名修士），立誓后仍只生成
+  草案，批准才开工。洞府里的两处「开宗」入口与对话头部按钮共用同一个弹窗与事件。
+- The 宗门协作 tab is gone: the hall is the single surface. The floating panel now
+  drags by its header, collapses to a compact one-line container, and carries a
+  floor bar with a 传送阵 (dock to the right sidebar), a 面板配置 button (size
+  presets: 紧凑/标准/宽大/超大, live size readout, reset position) and a 名册
+  toggle. Floor buttons toggle their popover on second click.
+- The panel is freely resizable from its bottom-right corner (size persisted in
+  `dsh-pixel-team.hallRect`) and starts larger (620×500). Popovers open fully to
+  the **left of the panel** with their right edge exactly 8px from the panel's left
+  edge (clamped inside the viewport), treating the panel as reserved right-side
+  space: a wider panel pushes the dialog further left.
+- The hall now carries its own 开宗 entry before a team exists: a primary floor
+  button (left of 归栏) and a 开宗 button inside the teamless sheet hint both open
+  the conversation's 开宗立派 dialog through a shared window event
+  (`agent-teams:open-quickstart`).
+- The courtyard now paints the panel-level actions into the pixel scene itself: a
+  glowing 传送阵 (left of the array, clear of the tree) docks the hall into the
+  right sidebar, and a jade 阵盘 (right) opens panel settings and lights up while
+  that sheet is open. Both carry the same › labels as the wall tags and are
+  hit-tested ahead of desk areas. Without a team the wall gate reads 开宗 and
+  opens the founding wizard, matching the floor button.
+- The floor bar mirrors the wall menu: next to 归栏 it now also carries 名册,
+  道统, 进度, 收信 and 配置 (config last). A wall fixture and its floor button open
+  the same sheet and light each other up; while no team exists, the gate doubles
+  as the 开宗 entry. The bar wraps when the panel is narrow.
+- The hall chrome reads larger: floor buttons use 14px text with 6px × 12px
+  padding and 15–16px glyphs; the header title/meta/collapse control grew too.
+- 收起 now shrinks the whole hall into a jade-and-gold 宗门令牌 (gate glyph,
+  engraved frame, red tassel). The token scales with the panel preset/resized
+  panel: a 460×380 compact panel gives a smaller token, a 1040×760 超大 panel a
+  token almost twice the standard one. It can be dragged anywhere in the window —
+  its position is remembered separately (`dsh-pixel-team.hallToken`) — and a
+  click (not a drag) expands the hall again. Collapsing closes any open popover.
+- An expanded hall reserves **two thirds of its width** in the conversation
+  column, like the right sidebar does: `html[data-agent-teams-hall-open]` plus
+  `--agent-teams-hall-shift` pads `[data-phase='active']`, so changing the panel
+  size reflows the chat content instead of covering it. When the right sidebar is
+  open, the yield moves to the whole shell frame instead, so the gap sits at the
+  far right and the sidebar slides left with the layout.
+- The floating hall is persistent by design: it keeps existing for any team in
+  the session even when the team has no tasks or every task was cancelled (a
+  stopped team still shows its hall), and it is there before any team exists —
+  an empty hall with only the captain and a 未开宗 badge. In that teamless hall the
+  four wall fixtures and the 名册 button stay actionable: each opens its sheet
+  with a 尚未开宗 hint (inbox shows its empty copy) instead of silently doing
+  nothing. It no longer depends on the right-sidebar service: closing/reclaiming
+  the right column no longer replaces the hall with the legacy panel or drops it.
+- 归栏 now minimizes the floating hall to the token and opens the hall page in the
+  right sidebar (`sidebar.right.pane.tab`, kind `agent-teams`); clicking the token
+  brings the floating hall back and closes that sidebar page.
+- The sect hall itself is now a **window-level floating layer**: mounted from the
+  shell overlay (so it survives leaving the tab), anchored bottom-right of the
+  main content area, collapsible to a one-line bar (state remembered in
+  `dsh-pixel-team.hallCollapsed`), with the team name and completion count in
+  its header. The 宗门协作 tab now hosts the board (captain / member tree /
+  dependency map); wall facilities in the floating hall open the matching
+  content dialog at the main area's bottom-right.
+- Idle cultivators leave their desks: they stroll the courtyard on a reproducible
+  per-seed loop (62% walking, the rest pausing) and return to the desk the moment
+  a task starts; desks, incense burners and 本命法器 stay behind.
+- Idle cultivators occasionally speak a preset line in a small bubble (eight
+  short zh/en lines, one every ~11–18 s per member, never while a task bubble is
+  showing).
+- A persistent one-line hall hint (bottom-left) plus the first-visit coach line:
+  "点修士看会话 · 点墙上设施开面板".
+- `office.facility.*`, `office.action.*Hint`, `office.sceneAria`, `office.rail`,
+  `office.closePanel`, `office.guide`, `office.teamsHint` and `office.inboxCount`
+  locale keys (zh/en).
+- A one-time floating coach line (localStorage `dsh-pixel-team.hallGuide`)
+  names the four wall facilities and the cultivator desks on first visit.
+- `src/client/pixel-office/office-actions.ts`: one shared facility layout for the
+  renderer and the React hit surface, with a unit test for non-overlap and
+  centre hit-testing.
+
+## [0.3.0-rc.1] - 2026-10-25
+
+Derivative baseline: imported `@nanmicoder/dsh-agent-teams@0.1.26` (MIT) as the
+v0.3 code base, then rebuilt the browser half around the pixel office.
+
+### Added
+- Pixel-office view (`src/client/pixel-office/`): canvas scene driven by the live
+  team snapshot (members / tasks / activity / inbox), with desk layout, working /
+  idle / unknown states, task bubble, per-member progress, unread badge and the
+  captain crown.
+- Right-side AgentTeams pane is a split view: configuration & interaction on top,
+  the animated pixel office below; 🏢 collapses the office, and a draggable
+  divider resizes it (height persisted).
+- `office.*` locale keys (zh/en) for the new surface.
+
+### Changed
+- Package identity: `@nanmicoder/dsh-agent-teams` → `dsh-pixel-team` (bundle id
+  `dsh-pixel-team`); doctor bin renamed.
+- Compatibility: `compatibility.json` recommended host `0.2.1-rc.3`; peer ranges
+  extended with `|| 0.2.1-rc.3`; development baseline and pnpm overrides moved to
+  `0.2.1-rc.3`.
+- README/CHANGELOG/NOTICE: derivative attribution added; upstream badges removed.
+
+### Fixed
+- Pixel-office rows overlapped and the last row was clipped: per-frame fit plus a
+  two-pass desk/overlay draw order.
+- The office was unreachable from the Web GUI: it now lives in the team workspace
+  tab, which is the actual Web entry point.
+
+### Verified
+- Upstream team lifecycle smoke-tested on DSH 0.2.1-rc.3 (plan → approve → spawn →
+  dispatch → complete → delivery).
+- In-app screenshots via a headless browser against the running GUI (team pane,
+  split layout, office rendering, splitter drag).
+- `pnpm build`, host/client typecheck, `doctor`, `compatibility`, `readme-version`
+  and the release-metadata suite all pass on the rc.3 baseline.

@@ -1,0 +1,135 @@
+.root { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.empty { color: #9aa4b2; font-size: 13px; }
+.head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.team { font-weight: 600; }
+.scale { color: #f2c14e; }
+.cost { color: #9aa4b2; }
+.live { color: #7fd6a8; margin-left: auto; }
+.offline { color: #ffb86b; margin-left: auto; }
+.canvas { position: relative; flex: 1; overflow: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(10,14,22,0.35); min-height: 240px; }
+.edges { position: absolute; inset: 0; pointer-events: none; }
+.card { position: absolute; display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 8px; border: 1px solid #2c3442; background: #131a24; font-size: 12px; box-sizing: border-box; overflow: hidden; }
+.card[data-status='claimed'], .card[data-status='in_progress'] { border-color: #f2c14e; }
+.card[data-status='completed'] { border-color: #7fd6a8; }
+.card[data-status='failed'] { border-color: #ff6b6b; }
+.subject { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meta { display: flex; justify-content: space-between; gap: 6px; color: #9aa4b2; }
+.status { text-transform: uppercase; letter-spacing: 0.04em; }
+.acceptance { color: #9aa4b2; }
+.acceptance[data-failed='true'] { color: #ff6b6b; }
+.blocker { display: flex; gap: 8px; align-items: baseline; font-size: 12px; padding: 8px 10px; border-radius: 8px; border: 1px solid #2c3442; }
+.blocker[data-blocked='true'] { border-color: rgba(255,107,107,0.5); color: #ffb0b0; }
+.blockerTitle { color: #9aa4b2; }
+.version { color: #9aa4b2; font-size: 11px; }
+.mode { border: 1px solid; border-radius: 999px; padding: 1px 8px; font-size: 11px; }
+.gate { color: #9aa4b2; font-size: 11px; }
+.stop { position: absolute; top: 6px; right: 6px; border: 1px solid rgba(255,107,107,0.7); background: rgba(255,107,107,0.14); color: #ff9a9a; border-radius: 999px; padding: 1px 7px; font-size: 10px; cursor: pointer; }
+.stop:disabled { opacity: 0.6; cursor: default; }
+.details { margin-top: 4px; font-size: 12px; color: #9aa4b2; }
+.details summary { cursor: pointer; }
+.detailList { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.detailId { color: #6fb6ff; margin-right: 6px; }
+.detailMeta { display: block; color: #9aa4b2; font-size: 11px; margin-top: 2px; }
+.detailDesc { display: block; color: #c9d1dc; font-size: 11px; margin-top: 2px; white-space: pre-wrap; }
+.list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.row { position: relative; border: 1px solid #2c3442; border-radius: 8px; background: rgba(10,14,22,0.35); }
+.row[data-status='completed'] { border-color: rgba(127,214,168,0.55); }
+.row[data-status='failed'] { border-color: rgba(255,107,107,0.6); }
+.row[data-status='claimed'], .row[data-status='in_progress'] { border-color: rgba(242,193,78,0.6); }
+.rowHead { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 86px 8px 10px; background: transparent; border: 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.rowChevron { width: 12px; color: #9aa4b2; }
+.rowId { color: #6fb6ff; font-size: 11px; }
+.rowSubject { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.rowMeta, .rowStatus, .rowAcceptance { font-size: 11px; color: #9aa4b2; white-space: nowrap; }
+.rowAcceptance[data-failed='true'] { color: #ff6b6b; }
+.rowDetail { display: flex; flex-direction: column; gap: 4px; padding: 0 10px 10px 30px; }
+.acceptanceList { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: 11px; }
+.acceptanceList li { color: #9aa4b2; }
+.acceptanceList li[data-status='pass'] { color: #7fd6a8; }
+.acceptanceList li[data-status='fail'] { color: #ff6b6b; }
+.acceptanceMark { display: inline-block; min-width: 42px; font-weight: 700; margin-right: 6px; }
+.requirements { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid rgba(111,182,255,0.3); border-radius: 10px; background: rgba(111,182,255,0.05); margin: 4px 0 2px; }
+.reqTitle { font-size: 12px; color: #9aa4b2; }
+.reqList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.reqItem { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
+.reqIndex { color: #f2c14e; font-weight: 700; min-width: 20px; }
+.reqText { flex: 1; color: #e8eef6; }
+.reqState { color: #9aa4b2; font-size: 11px; }
+.reqItem[data-state='pass'] .reqState { color: #7fd6a8; font-weight: 700; }
+.reqItem[data-state='fail'] .reqState { color: #ff6b6b; font-weight: 700; }
+.skeletonTitle { display: block; margin: 8px 0 2px; font-size: 12px; color: #9aa4b2; }
+.rowIndex { color: #f2c14e; font-weight: 700; min-width: 16px; }
+.rowFailures { color: #ffb86b; font-size: 11px; }
+.rowCost { color: #7fd6a8; font-size: 11px; font-variant-numeric: tabular-nums; }
+.reqTable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.reqTable th { text-align: left; color: #9aa4b2; font-weight: 500; padding: 2px 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.reqTable td { padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #e8eef6; }
+.reqTable tfoot td { color: #9aa4b2; font-size: 11px; }
+.reqTable tr[data-state='pass'] .reqState { color: #7fd6a8; font-weight: 700; }
+.reqTable tr[data-state='fail'] .reqState { color: #ff6b6b; font-weight: 700; }
+.reqFailuresCell { color: #ffb86b; }
+.architecture { margin: 6px 0; font-size: 12px; }
+.architecture summary { cursor: pointer; color: #9aa4b2; }
+.archText { margin: 6px 0 0; padding: 8px; max-height: 260px; overflow: auto; white-space: pre-wrap; background: rgba(0,0,0,0.18); border-radius: 8px; font-size: 11px; line-height: 1.5; }
+.rowHead { flex-wrap: wrap; }
+.rowSubject { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.4; }
+
+/* Task subject gets a full-width second line, clamped to two lines. */
+.rowHead { flex-wrap: wrap; align-items: center; row-gap: 4px; }
+.rowSubject {
+  order: 10;
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+}
+.rowHuman { color: #f2c14e; font-size: 11px; font-weight: 700; }
+.confirmReview { align-self: center; margin-left: 8px; border: 1px solid #7fd6a8; background: rgba(127,214,168,0.12); color: #7fd6a8; border-radius: 6px; padding: 2px 8px; font-size: 11px; cursor: pointer; }
+.confirmReview:disabled { opacity: 0.55; cursor: default; }
+
+.teamStop { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #ffb0b0; }
+.teamStop button { border: 1px solid rgba(255,107,107,.65); background: rgba(255,107,107,.12); color: #ff9a9a; border-radius: 999px; padding: 1px 8px; font-size: 10px; cursor: pointer; }
+.teamStop button:disabled { opacity: .6; cursor: default; }
+.teamStopError { color: #ff9a9a; }
+.rowArt { width: 18px; height: 18px; object-fit: contain; image-rendering: pixelated; border-radius: 4px; flex: none; }
+
+/* 藏经阁像素人放大 */
+.rowHead { min-height: 58px; }
+.rowArt { width: 48px !important; height: 48px !important; border-radius: 7px; }
+
+/* 进度总览：数量、耗时、Token 与总金额一行读完。 */
+.overview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 16px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(10, 14, 22, 0.35);
+  color: #9aa4b2;
+  font-size: 11px;
+}
+.overviewStat b { margin-right: 3px; color: #e8eef6; font-size: 13px; }
+.overviewStat[data-state='completed'] b { color: #7fd6a8; }
+.overviewStat[data-state='active'] b { color: #f2c14e; }
+.overviewStat[data-state='failed'] b { color: #ff6b6b; }
+.overviewCost { margin-left: auto; color: #7fd6a8; font-variant-numeric: tabular-nums; }
+
+/* 交付展示：交付完成后开启，直接在面板里看产物。 */
+.showcase {
+  border: 1px solid rgba(111, 182, 255, 0.65);
+  background: rgba(111, 182, 255, 0.14);
+  color: #9cd2ff;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.showcase:hover { border-color: #6fb6ff; background: rgba(111, 182, 255, 0.24); color: #d6ecff; }

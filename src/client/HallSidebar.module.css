@@ -1,0 +1,189 @@
+/* 洞府侧栏（t26）：回到标签页正常文档流里的「有界区块」——顶部导航条 + 有界高度的像素场景；
+   下方继续是宿主原有内容（团队卡 / 成员列表 / 任务进度），不再全屏覆盖。 */
+.host {
+  /* t45：宿主内容已隐藏，洞府块撑满右栏剩余高度，底部不再留白。 */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+
+.panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: 100%;
+  max-height: none;
+  min-height: 240px;
+  min-width: 0;
+  background: color-mix(in srgb, var(--dsw-alias-bg-module-platform) 55%, #151a21);
+}
+
+/* 顶部导航条：入口横排，窄栏保持同一行、自身横向滚动，不挤压也不换行。 */
+.nav {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
+  overflow: visible;
+}
+
+.brand {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.navItems {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+/* 导航项：每项 ≥44 高、整项可点。 */
+.navItem {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  min-height: 52px;
+  min-width: 64px;
+  padding: 8px 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 70%, transparent);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 17px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navItem:hover {
+  border-color: var(--dsw-alias-state-business-primary);
+}
+
+.navItem[data-active='true'] {
+  border-color: var(--dsw-alias-state-business-primary);
+  background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 14%, transparent);
+}
+
+.navGlyph {
+  color: #f2c14e;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.navLabel {
+  white-space: nowrap;
+}
+
+.headButton {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.headButton:hover {
+  border-color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-label-primary);
+}
+
+/* 像素活动面板：铺满导航条以下的全部宽高（高度不再固定 240）。 */
+/* 右栏内设施页内容：栏内纵向滚动，高度封顶，不挤压下方宿主内容。 */
+/* t45：内容区吸收剩余高度（短内容也不留空白条），长内容在栏内纵向滚动。 */
+.content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.content > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.content:empty {
+  display: none;
+}
+
+/* 有界场景：宽度随栏宽铺满，高度按 clamp(160px, 36vh, 300px) 封顶，等比缩放不裁人。 */
+.scene {
+  flex: none;
+  width: 100%;
+  height: clamp(160px, 36vh, 300px);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.scene > * {
+  height: 100%;
+}
+
+/* 窄栏不缩小字号：保持 17px、52px 高，超出宽度自动换行。 */
+
+/* t36：场景与内容之间的分隔栏。 */
+.divider {
+  flex: none;
+  height: 1px;
+  background: var(--dsw-alias-border-l2);
+}
+
+/* 首页：像素场景占满内容区（不再固定 300px 条高），隐藏分隔栏与内容区。 */
+.panel[data-page='home'] {
+  height: 100%;
+  max-height: none;
+}
+
+.panel[data-page='home'] .scene {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 160px;
+}
+
+.panel[data-page='home'] .divider {
+  display: none;
+}

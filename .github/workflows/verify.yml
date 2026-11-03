@@ -1,0 +1,26 @@
+name: Verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Verify the committed artifacts directly; rebuilding on Linux can change
+      # source-map/line-ending bytes and is a local release-gate concern.
+      - run: pnpm typecheck
+      - run: pnpm verify
+      - run: pnpm verify:release-guard

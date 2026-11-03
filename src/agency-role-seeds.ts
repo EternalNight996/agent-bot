@@ -1,0 +1,123 @@
+/**
+ * Expert role metadata, detached from the ~1 MB of prompt bodies so the
+ * browser bundle can carry the catalog without shipping the prompts.
+ * The full definitions (metadata + prompt) live in agency-catalog.ts.
+ */
+export interface AgencyRoleSeed {
+  readonly id: string
+  readonly name: string
+  readonly category: string
+  readonly categoryName: string
+  readonly description: string
+  readonly emoji: string
+  readonly color: string
+  readonly skills: readonly string[]
+  readonly agent: string
+  readonly executor: string
+}
+
+/** Preferred expert for a legacy task executor. */
+export const AGENCY_PREFERRED_BY_EXECUTOR: Readonly<Record<string, string>> = {
+  planner: 'product-manager',
+  implementer: 'engineering-senior-developer',
+  verifier: 'testing-evidence-collector',
+  reviewer: 'engineering-code-reviewer',
+  analyst: 'product-feedback-synthesizer',
+  operator: 'engineering-devops-automator',
+  documenter: 'engineering-technical-writer',
+  architect: 'engineering-software-architect',
+  integrator: 'engineering-feishu-integration-developer',
+  auditor: 'testing-accessibility-auditor',
+  tester: 'testing-performance-benchmarker',
+  security: 'security-appsec-engineer',
+  frontend: 'engineering-frontend-developer',
+  backend: 'engineering-backend-architect',
+  researcher: 'design-ux-researcher',
+  writer: 'design-visual-storyteller',
+}
+
+export const AGENCY_ROLE_SEEDS: readonly AgencyRoleSeed[] = [
+  {"id":"product-manager","name":"产品经理（PM）","category":"product","categoryName":"产品","description":"全局型产品负责人，掌控产品全生命周期——从需求发现、战略规划到路线图制定、干系人对齐、GTM 落地与结果度量。在商业目标、用户需求与技术现实之间架起桥梁，确保在正确的时间交付正确的产品。","emoji":"📦","color":"blue","skills":["产品"],"agent":"dsh","executor":"planner"},
+  {"id":"product-feedback-synthesizer","name":"反馈分析师","category":"product","categoryName":"产品","description":"专注用户反馈收集、分类和洞察提炼的产品分析专家，把碎片化的用户声音变成可执行的产品改进建议。","emoji":"📊","color":"amber","skills":["产品"],"agent":"dsh","executor":"planner"},
+  {"id":"product-trend-researcher","name":"趋势研究员","category":"product","categoryName":"产品","description":"专注行业趋势分析和技术前瞻的研究专家，帮团队看清未来 6-18 个月的方向，在正确的时间做正确的事。","emoji":"🔭","color":"violet","skills":["产品"],"agent":"dsh","executor":"planner"},
+  {"id":"product-behavioral-nudge-engine","name":"行为助推引擎","category":"product","categoryName":"产品","description":"行为心理学专家，通过调整软件交互节奏和风格，最大化用户动力和成功率。","emoji":"🧩","color":"#FF8A65","skills":["产品"],"agent":"dsh","executor":"planner"},
+  {"id":"product-sprint-prioritizer","name":"Sprint 排序师","category":"product","categoryName":"产品","description":"精通需求优先级排序和 Sprint 规划的产品专家，用框架和数据替代拍脑袋，确保团队永远在做最有价值的事。","emoji":"🏁","color":"indigo","skills":["产品"],"agent":"dsh","executor":"planner"},
+  {"id":"design-inclusive-visuals-specialist","name":"包容性视觉专家","category":"design","categoryName":"设计","description":"专注于消除 AI 生成图像中的系统性偏见，确保生成的人物图像和视频在文化、肤色、体型等方面真实、有尊严、不刻板。","emoji":"🌈","color":"#4DB6AC","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-brand-guardian","name":"品牌守护者","category":"design","categoryName":"设计","description":"专精品牌形象开发、一致性维护和战略品牌定位的品牌策略师和品牌守护专家","emoji":"🛡️","color":"blue","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-whimsy-injector","name":"趣味注入师","category":"design","categoryName":"设计","description":"创意专家，专门给品牌体验注入个性、惊喜和趣味元素，用意想不到的小细节让用户记住你的产品。","emoji":"✨","color":"pink","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-visual-storyteller","name":"视觉叙事师","category":"design","categoryName":"设计","description":"视觉传达专家，擅长把复杂信息转化成有吸引力的视觉故事，通过多媒体内容和品牌叙事打动受众。","emoji":"🎬","color":"purple","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-video-prompt-engineer","name":"视频提示词工程师","category":"design","categoryName":"设计","description":"精通 AI 文生视频提示词的专家，用 5 段式结构把一句创意写成可直接投喂 Sora / 可灵 / Veo / Seedance / MiniMax 的电影感提示词，含运镜、瑕疵、声音与负面提示词，并对\"这条要花多少钱\"负责。","emoji":"🎬","color":"crimson","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-image-prompt-engineer","name":"图像提示词工程师","category":"design","categoryName":"设计","description":"精通摄影美学和 AI 图像生成的提示词专家，擅长把视觉概念转化为精准的文字描述，生成专业级摄影作品。","emoji":"🖼️","color":"amber","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-persona-walkthrough","name":"Persona 走查专家","category":"design","categoryName":"设计","description":"从设定好的 persona（用户画像）心理视角出发，对网页进行认知走查的模拟——捕捉每个滚动位置上的情绪反应与理性思考，再输出植根于 LIFT、Cialdini、Fogg 框架的结构化 CRO 报告","emoji":"🎭","color":"#10B981","skills":["设计"],"agent":"dsh","executor":"implementer"},
+  {"id":"design-ui-designer","name":"UI 设计师","category":"design","categoryName":"设计","description":"精通视觉设计系统、组件库和像素级界面创建的 UI 设计专家。创建美观、一致、无障碍的用户界面，增强用户体验并体现品牌形象","emoji":"🎨","color":"purple","skills":["设计"],"agent":"dsh","executor":"frontend"},
+  {"id":"design-ux-architect","name":"UX 架构师","category":"design","categoryName":"设计","description":"技术架构与 UX 专家，给开发者提供扎实的基础设施——CSS 体系、布局框架、清晰的实现指引。","emoji":"🏗️","color":"purple","skills":["设计"],"agent":"dsh","executor":"architect"},
+  {"id":"design-ux-researcher","name":"UX 研究员","category":"design","categoryName":"设计","description":"专精用户行为分析、可用性测试和数据驱动设计洞察的用户体验研究专家。提供可落地的研究发现，提升产品可用性和用户满意度","emoji":"🔍","color":"green","skills":["设计"],"agent":"dsh","executor":"researcher"},
+  {"id":"engineering-security-engineer","name":"安全工程师","category":"engineering","categoryName":"工程开发","description":"专业应用安全工程师，专注于威胁建模、漏洞评估、安全代码审查、安全架构设计和事件响应，服务于现代 Web、API 和云原生应用。","emoji":"🔒","color":"red","skills":["工程开发"],"agent":"dsh","executor":"security"},
+  {"id":"engineering-codebase-onboarding-engineer","name":"代码库入职引导工程师","category":"engineering","categoryName":"工程开发","description":"专业的开发者入职引导专家，帮助新工程师快速理解陌生代码库，通过阅读源码、追踪代码路径，只陈述基于代码的事实。","emoji":"🧭","color":"teal","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-code-reviewer","name":"代码审查员","category":"engineering","categoryName":"工程开发","description":"专业代码审查专家，提供建设性、可操作的反馈，聚焦正确性、可维护性、安全性和性能，而非代码风格偏好。","emoji":"👀","color":"purple","skills":["工程开发"],"agent":"dsh","executor":"reviewer"},
+  {"id":"engineering-dingtalk-integration-developer","name":"钉钉集成开发工程师","category":"engineering","categoryName":"工程开发","description":"专注钉钉开放平台全栈集成开发的工程专家，精通钉钉机器人、酷应用、审批流自动化、连接器低代码集成、钉钉小程序、宜搭平台对接及与阿里云生态的深度集成，擅长构建企业级协作与业务自动化解决方案。","emoji":"🔗","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"integrator"},
+  {"id":"engineering-multi-agent-systems-architect","name":"多智能体系统架构师","category":"engineering","categoryName":"工程开发","description":"系统架构师，专精于 multi-agent（多智能体）AI 流水线的设计、协调与治理——涵盖拓扑选型、上下文管理、智能体间信任、故障恢复、human-in-the-loop（人在环中）门控，以及面向生产级智能体系统的可观测性。","emoji":"🕸️","color":"cyan","skills":["工程开发"],"agent":"dsh","executor":"architect"},
+  {"id":"engineering-feishu-integration-developer","name":"飞书集成开发工程师","category":"engineering","categoryName":"工程开发","description":"专注飞书开放平台全栈集成开发的工程专家，精通飞书机器人、小程序、审批流、多维表格（Bitable）、消息卡片、Webhook、SSO 单点登录及工作流自动化，擅长在飞书生态内构建企业级协作与自动化解决方案。","emoji":"🐦","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"integrator"},
+  {"id":"engineering-senior-developer","name":"高级开发者","category":"engineering","categoryName":"工程开发","description":"精通 Laravel/Livewire/FluxUI 的高级全栈开发者，擅长高端 CSS 效果、Three.js 集成，专注打造有质感的 Web 体验。","emoji":"👨‍💻","color":"green","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-incident-response-commander","name":"故障响应指挥官","category":"engineering","categoryName":"工程开发","description":"专精于生产环境故障管理、结构化响应协调、事后复盘、SLO/SLI 跟踪和 on-call 流程设计的事故指挥专家，为工程组织的可靠性保驾护航。","emoji":"🚨","color":"#e63946","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-network-engineer-china","name":"国内网络工程师","category":"engineering","categoryName":"工程开发","description":"面向国产网络设备的企业网工程专家——精通华为 VRP、华三 Comware、锐捷 RGOS，覆盖园区网/数据中心/广域网的 VLAN、STP、OSPF、IS-IS、BGP、MPLS、VXLAN、SDN 设计与排障，熟悉信创国产化替代与等保 2.0 合规组网。","emoji":"🌐","color":"teal","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-backend-architect","name":"后端架构师","category":"engineering","categoryName":"工程开发","description":"资深后端架构师，专精可扩展系统设计、数据库架构、API 开发和云基础设施。构建健壮、安全、高性能的服务端应用和微服务。","emoji":"⚙️","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"backend"},
+  {"id":"engineering-mechanical-design-engineer","name":"机械设计工程师","category":"engineering","categoryName":"工程开发","description":"通用机械产品设计专家——精通方案选型、传动/机构/结构件/连接设计、强度刚度疲劳振动校核、DFMA 与标准件选型，遵循 GB/ISO/JIS 国家标准，输出可制造可装配的工程图与 BOM。","emoji":"⚙️","color":"#546E7A","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-technical-writer","name":"技术文档工程师","category":"engineering","categoryName":"工程开发","description":"专精于开发者文档、API 参考、README 和教程的技术写作专家。把复杂的工程概念转化为清晰、准确、开发者真正会读也用得上的文档。","emoji":"✍️","color":"teal","skills":["工程开发"],"agent":"dsh","executor":"documenter"},
+  {"id":"engineering-rapid-prototyper","name":"快速原型师","category":"engineering","categoryName":"工程开发","description":"专注于超快速概念验证开发和 MVP 创建，使用高效工具和框架快速实现想法验证。","emoji":"⚡","color":"green","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-frontend-developer","name":"前端开发者","category":"engineering","categoryName":"工程开发","description":"精通现代 Web 技术、React/Vue/Angular 框架、UI 实现和性能优化的前端开发专家","emoji":"💻","color":"cyan","skills":["工程开发"],"agent":"dsh","executor":"frontend"},
+  {"id":"engineering-embedded-linux-driver-engineer","name":"嵌入式 Linux 驱动工程师","category":"engineering","categoryName":"工程开发","description":"嵌入式 Linux 内核驱动与 BSP 开发专家——精通 Linux 内核模块、设备树、Platform/I2C/SPI/USB 驱动框架、DMA、中断子系统、Yocto/Buildroot、U-Boot、交叉编译工具链。","emoji":"🔌","color":"#2D572C","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-embedded-firmware-engineer","name":"嵌入式固件工程师","category":"engineering","categoryName":"工程开发","description":"裸机和 RTOS 固件开发专家——精通 ESP32/ESP-IDF、PlatformIO、Arduino、ARM Cortex-M、STM32 HAL/LL、Nordic nRF5/nRF Connect SDK、FreeRTOS、Zephyr。","emoji":"🔧","color":"orange","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-software-architect","name":"软件架构师","category":"engineering","categoryName":"工程开发","description":"软件架构专家，精通系统设计、领域驱动设计、架构模式和技术决策，构建可扩展、可维护的系统。","emoji":"🏛️","color":"indigo","skills":["工程开发"],"agent":"dsh","executor":"architect"},
+  {"id":"engineering-pc-host-engineer","name":"上位机工程师","category":"engineering","categoryName":"工程开发","description":"Qt/QML 桌面上位机开发专家——精通 Qt Widgets/Quick、QSerialPort 串口、Modbus/CAN/TCP 工业协议、QChart/QCustomPlot 实时数据可视化，以及与 STM32/ESP32 等下位机的协议对接和跨平台打包部署。","emoji":"🖥️","color":"#41CD52","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-data-engineer","name":"数据工程师","category":"engineering","categoryName":"工程开发","description":"专注于构建可靠数据管线、湖仓架构和可扩展数据基础设施的数据工程专家。精通 ETL/ELT、Apache Spark、dbt、流处理系统和云数据平台，将原始数据转化为可信赖的分析就绪资产。","emoji":"📊","color":"orange","skills":["工程开发"],"agent":"dsh","executor":"backend"},
+  {"id":"engineering-database-optimizer","name":"数据库优化师","category":"engineering","categoryName":"工程开发","description":"数据库性能专家，专注于 Schema 设计、查询优化、索引策略和性能调优，精通 PostgreSQL、MySQL 及 Supabase、PlanetScale 等现代数据库。","emoji":"🗄️","color":"amber","skills":["工程开发"],"agent":"dsh","executor":"backend"},
+  {"id":"engineering-threat-detection-engineer","name":"威胁检测工程师（工程侧）","category":"engineering","categoryName":"工程开发","description":"专精于 SIEM 规则开发、MITRE ATT&CK 覆盖度映射、威胁狩猎、告警调优和检测即代码流水线的安全运营检测工程专家。","emoji":"🛡️","color":"#7b2d8e","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-wechat-mini-program-developer","name":"微信小程序开发者","category":"engineering","categoryName":"工程开发","description":"专注微信小程序全栈开发的工程专家，精通 WXML/WXSS/WXS、微信原生API、微信支付集成、订阅消息、云开发，擅长在微信生态内构建高性能、体验流畅的小程序应用。","emoji":"💬","color":"green","skills":["工程开发"],"agent":"dsh","executor":"frontend"},
+  {"id":"engineering-mobile-app-builder","name":"移动应用开发者","category":"engineering","categoryName":"工程开发","description":"精通 iOS/Android 原生开发和跨平台框架的移动端专家，擅长性能优化、平台特性集成，专注打造流畅的移动体验。","emoji":"📱","color":"purple","skills":["工程开发"],"agent":"dsh","executor":"frontend"},
+  {"id":"engineering-email-intelligence-engineer","name":"邮件智能工程师","category":"engineering","categoryName":"工程开发","description":"专精从原始邮件线程中提取结构化、可供 AI 推理的数据，服务于智能体和自动化系统。","emoji":"📧","color":"indigo","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-voice-ai-integration-engineer","name":"语音 AI 集成工程师","category":"engineering","categoryName":"工程开发","description":"专精于使用 Whisper 系列模型和云端 ASR 服务构建端到端语音转录流水线——从原始音频采集、预处理、转录文本清洗、字幕生成、说话人分离，到结构化下游集成至应用、API 和 CMS 平台。","emoji":"🎙️","color":"violet","skills":["工程开发"],"agent":"dsh","executor":"integrator"},
+  {"id":"engineering-autonomous-optimization-architect","name":"自主优化架构师","category":"engineering","categoryName":"工程开发","description":"智能系统治理专家，持续对 API 进行影子测试以优化性能，同时严格执行财务和安全护栏，防止成本失控。","emoji":"🔄","color":"#673AB7","skills":["工程开发"],"agent":"dsh","executor":"architect"},
+  {"id":"engineering-minimal-change-engineer","name":"最小变更工程师","category":"engineering","categoryName":"工程开发","description":"专注于最小可行差异的工程专家——只修复被要求的内容，拒绝范围蔓延，宁可写三行相似代码也不做过早抽象。这种纪律性能防止 bug 修复 PR 变成重构雪崩。","emoji":"🪶","color":"#708090","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-ai-engineer","name":"AI 工程师","category":"engineering","categoryName":"工程开发","description":"精通机器学习模型开发与部署的 AI 工程专家，擅长从数据处理到模型上线的全链路工程化，专注构建可靠、可扩展的 AI 系统。","emoji":"🤖","color":"purple","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-ai-data-remediation-engineer","name":"AI 数据修复工程师","category":"engineering","categoryName":"工程开发","description":"自愈数据管道专家——使用气隙隔离的本地 SLM 和语义聚类，自动检测、分类和修复大规模数据异常。专注于修复层：拦截坏数据、通过 Ollama 生成确定性修复逻辑，并保证零数据丢失。不是通用数据工程师——而是当你的数据出了问题且管道不能停的时候，出手的外科手术级专家。","emoji":"🧹","color":"green","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-cms-developer","name":"CMS 开发者","category":"engineering","categoryName":"工程开发","description":"Drupal 与 WordPress 专家，精通主题开发、自定义插件/模块、内容架构和代码优先的 CMS 实现。","emoji":"📋","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-devops-automator","name":"DevOps 自动化师","category":"engineering","categoryName":"工程开发","description":"精通基础设施自动化、CI/CD 流水线开发和云运维的 DevOps 专家","emoji":"🚀","color":"orange","skills":["工程开发"],"agent":"dsh","executor":"operator"},
+  {"id":"engineering-drupal-shopping-cart","name":"Drupal 购物车工程师","category":"engineering","categoryName":"工程开发","description":"资深 Drupal 电商工程师，精通 Drupal Commerce，负责商品目录管理、支付网关集成、checkout 流程设计、订单管理、税费与促销配置，以及在 Drupal 10/11 上交付高可靠的店面","emoji":"🛒","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-filament-optimization-specialist","name":"Filament 优化专家","category":"engineering","categoryName":"工程开发","description":"专精于重构和优化 Filament PHP 后台管理界面的专家，专注高影响力的结构性改造，而非表面调整，打造极致可用性与效率。","emoji":"🧵","color":"indigo","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-fpga-digital-design-engineer","name":"FPGA/ASIC 数字设计工程师","category":"engineering","categoryName":"工程开发","description":"FPGA 与 ASIC 数字前端设计专家——精通 Verilog/SystemVerilog、VHDL、Vivado/Quartus、AXI/AHB 总线、时序收敛、Zynq/Intel SoC FPGA、高层次综合（HLS）。","emoji":"🔬","color":"#1565C0","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-git-workflow-master","name":"Git 工作流大师","category":"engineering","categoryName":"工程开发","description":"Git 工作流专家，精通分支策略、版本控制最佳实践，包括约定式提交、变基、工作树和 CI 友好的分支管理。","emoji":"🔀","color":"orange","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-iot-solution-architect","name":"IoT 方案架构师","category":"engineering","categoryName":"工程开发","description":"物联网端到端方案设计专家——精通设备接入（MQTT/CoAP/LwM2M）、边缘计算、云平台（AWS IoT/Azure IoT/阿里云 IoT）、OTA、设备管理、数据管道和安全体系。","emoji":"📡","color":"#00897B","skills":["工程开发"],"agent":"dsh","executor":"architect"},
+  {"id":"engineering-it-service-manager","name":"IT 服务经理","category":"engineering","categoryName":"工程开发","description":"资深 IT 服务管理（ITSM）专家，运用 ITIL 4 框架进行服务目录设计、incident（事件）与 problem（问题）管理、变更控制、SLA 治理、CMDB 维护以及持续服务改进——确保 IT 在任何规模的组织中都能交付可靠、可衡量的业务价值","emoji":"🖧","color":"blue","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-orgscript-engineer","name":"OrgScript 工程师","category":"engineering","categoryName":"工程开发","description":"精通 OrgScript 语法的设计、解析与实现，擅长 AST 校验和业务逻辑定义。","emoji":"📜","color":"green","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-prompt-engineer","name":"Prompt 工程师","category":"engineering","categoryName":"工程开发","description":"专精于为 LLM（大语言模型）打磨、测试并系统化优化 prompt 的专家——把含糊的指令变成可靠、可上生产的 AI 行为。","emoji":"🧬","color":"violet","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-solidity-smart-contract-engineer","name":"Solidity 智能合约工程师","category":"engineering","categoryName":"工程开发","description":"精通 EVM 智能合约架构、Gas 优化、可升级代理模式、DeFi 协议开发和安全优先合约设计的 Solidity 开发专家，覆盖 Ethereum 及 L2 链。","emoji":"📝","color":"orange","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"engineering-sre","name":"SRE (站点可靠性工程师)","category":"engineering","categoryName":"工程开发","description":"站点可靠性工程专家，精通 SLO、错误预算、可观测性、混沌工程和减少重复劳动，守护大规模生产系统的稳定性。","emoji":"🛠️","color":"#e63946","skills":["工程开发"],"agent":"dsh","executor":"operator"},
+  {"id":"engineering-wordpress-shopping-cart","name":"WordPress 购物车工程师","category":"engineering","categoryName":"工程开发","description":"WordPress 电商专家工程师，专精 WooCommerce，负责商品目录管理、payment gateway 集成、checkout 定制、订单管理、税费与优惠券配置，以及在 WordPress 上交付以转化率为导向的店铺","emoji":"🛍️","color":"purple","skills":["工程开发"],"agent":"dsh","executor":"implementer"},
+  {"id":"testing-test-results-analyzer","name":"测试结果分析师","category":"testing","categoryName":"质量测试","description":"专注测试结果评估和质量度量分析的测试分析专家，把原始测试数据变成可执行的洞察，驱动质量决策。","emoji":"📈","color":"indigo","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-tool-evaluator","name":"工具评估师","category":"testing","categoryName":"质量测试","description":"专注工具评测和选型的技术评估专家，通过全面的功能对比、性能测试和成本分析，帮团队选对工具、用好工具。","emoji":"🔧","color":"teal","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-workflow-optimizer","name":"工作流优化师","category":"testing","categoryName":"质量测试","description":"专注流程分析和优化的效率专家，通过消除瓶颈、精简流程和引入自动化，让团队干活更快、出错更少、人也更舒服。","emoji":"🔄","color":"green","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-embedded-qa-engineer","name":"嵌入式测试工程师","category":"testing","categoryName":"质量测试","description":"嵌入式系统质量保障专家——精通硬件在环测试（HIL）、固件自动化测试、OTA 回归、EMC/ESD 测试规划、量产测试夹具设计、故障注入与可靠性验证。","emoji":"🔌","color":"#E65100","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-accessibility-auditor","name":"无障碍审核员","category":"testing","categoryName":"质量测试","description":"专注无障碍审核的可访问性专家，按 WCAG 标准审查界面、用辅助技术实测、确保产品人人可用。默认立场是找问题——没用屏幕阅读器测过的，就不算无障碍。","emoji":"♿","color":"#0077B6","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-reality-checker","name":"现实检验者","category":"testing","categoryName":"质量测试","description":"阻止幻想式审批，基于证据的认证——默认为\"需要改进\"，要求压倒性证据才能认定生产就绪","emoji":"🎯","color":"red","skills":["质量测试"],"agent":"dsh","executor":"reviewer"},
+  {"id":"testing-performance-benchmarker","name":"性能基准师","category":"testing","categoryName":"质量测试","description":"专注系统性能测试和容量规划的性能工程专家，用数据找到性能瓶颈，用基准测试证明优化效果。","emoji":"📊","color":"lime","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-evidence-collector","name":"证据收集者","category":"testing","categoryName":"质量测试","description":"专注测试证据链完整性的质量专家，确保每一个测试结论都有充分的证据支撑，让质量报告经得起任何质疑。","emoji":"🗂️","color":"#708090","skills":["质量测试"],"agent":"dsh","executor":"verifier"},
+  {"id":"testing-api-tester","name":"API 测试员","category":"testing","categoryName":"质量测试","description":"专注于全面 API 验证、性能测试和质量保证的 API 测试专家，覆盖所有系统和第三方集成","emoji":"🔗","color":"purple","skills":["质量测试"],"agent":"dsh","executor":"integrator"},
+  {"id":"project-manager-senior","name":"高级项目经理","category":"project-management","categoryName":"项目管理","description":"把规格说明书拆成可执行任务的资深 PM，记得住以前项目的经验教训，专注务实的范围控制和精确的需求还原。","emoji":"👔","color":"blue","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-studio-operations","name":"工作室运营","category":"project-management","categoryName":"项目管理","description":"专注工作室日常效率、流程优化和资源协调的运营管理专家，让所有团队都有好用的工具和顺畅的流程，保证事情稳定推进。","emoji":"⚙️","color":"green","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-studio-producer","name":"工作室制片人","category":"project-management","categoryName":"项目管理","description":"高级战略领导者，擅长创意与技术项目的统筹协调、资源分配和多项目组合管理，让创意方向和商业目标对齐，管好复杂的跨部门项目。","emoji":"🎬","color":"gold","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-meeting-notes-specialist","name":"会议纪要专家","category":"project-management","categoryName":"项目管理","description":"从会议 transcript（逐字记录）或零散笔记中提取结构化的决议、action item 和待解决问题，整理成清晰的四段式 summary。","emoji":"📋","color":"blue","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-experiment-tracker","name":"实验追踪员","category":"project-management","categoryName":"项目管理","description":"专注实验设计、执行追踪和数据驱动决策的项目管理专家，用科学方法管理 A/B 测试、功能实验和假设验证，拿数据说话而不是拍脑袋。","emoji":"🧪","color":"purple","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-project-shepherd","name":"项目牧羊人","category":"project-management","categoryName":"项目管理","description":"专注跨部门项目协调、时间线管理和利益方对齐的项目管理专家，把项目从立项一路护送到交付，管好资源、风险和各方沟通。","emoji":"🐑","color":"blue","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"project-management-jira-workflow-steward","name":"Jira工作流管家","category":"project-management","categoryName":"项目管理","description":"交付运营专家，执行Jira关联的Git工作流，确保提交可追溯、PR结构规范、分支策略安全可控。","emoji":"📋","color":"orange","skills":["项目管理"],"agent":"dsh","executor":"planner"},
+  {"id":"security-architect","name":"安全架构师","category":"security","categoryName":"安全","description":"资深安全架构师，专精威胁建模（threat modeling）、安全设计（secure-by-design）架构、信任边界分析、纵深防御（defense in depth），以及面向 Web、API、云原生和分布式系统的基于风险的安全评审。负责设计安全模型；把代码级 SAST/DAST 与 SDLC 工作交给 AppSec 工程师。","emoji":"🛡️","color":"red","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-senior-secops","name":"高级安全运营工程师","category":"security","categoryName":"安全","description":"防御型应用安全专家。在做任何事之前，先扫描每一次代码提交，检查密钥泄露和敏感数据暴露；随后依据组织的安全标准实现或审计各项安全控制——涵盖认证、授权、令牌、Cookie、HTTP 头、CORS、限流、CSP、密钥管理、输入校验和安全日志。","emoji":"🛡️","color":"#E67E22","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-compliance-auditor","name":"合规审计师","category":"security","categoryName":"安全","description":"资深技术合规审计师，专精 SOC 2、ISO 27001、HIPAA 与 PCI-DSS 审计——从就绪度评估、证据收集到认证全程把控。","emoji":"📋","color":"orange","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-blockchain-security-auditor","name":"区块链安全审计师","category":"security","categoryName":"安全","description":"资深智能合约安全审计专家，专注于漏洞检测、形式化验证、攻击分析，以及为 DeFi 协议和区块链应用撰写全面的审计报告。","emoji":"🛡️","color":"red","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-penetration-tester","name":"渗透测试员","category":"security","categoryName":"安全","description":"进攻性安全专家，开展授权的渗透测试、红队行动以及面向网络、Web 应用和云基础设施的漏洞评估。","emoji":"🗡️","color":"#dc2626","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-incident-responder","name":"事件响应专家","category":"security","categoryName":"安全","description":"数字取证与事件响应专家，主导数据泄露调查、遏制活跃威胁、协调危机响应，并撰写能防止问题复发的事后复盘报告。","emoji":"🚨","color":"#f59e0b","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-threat-detection-engineer","name":"威胁检测工程师（安全运营）","category":"security","categoryName":"安全","description":"资深检测工程师，专注于 SIEM 规则开发、MITRE ATT&CK 覆盖映射、威胁狩猎、告警调优，以及面向安全运营团队的 detection-as-code（检测即代码）流水线。","emoji":"🎯","color":"#7b2d8e","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-threat-intelligence-analyst","name":"威胁情报分析师","category":"security","categoryName":"安全","description":"网络威胁情报专家，负责追踪对手团伙、将攻击活动映射到 MITRE ATT&CK、产出可落地的情报报告，并构建能抓住真实威胁的检测规则。","emoji":"🔍","color":"#7c3aed","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-appsec-engineer","name":"应用安全工程师","category":"security","categoryName":"安全","description":"AppSec 专家，通过威胁建模、安全代码审查、SAST/DAST 集成以及开发者安全教育，把\"写出安全代码\"变成默认选项，从而守护整个软件开发生命周期。","emoji":"🔐","color":"#059669","skills":["安全"],"agent":"dsh","executor":"security"},
+  {"id":"security-cloud-security-architect","name":"云安全架构师","category":"security","categoryName":"安全","description":"云原生安全专家，设计零信任架构，在 AWS、Azure 与 GCP 上落地纵深防御，并从第一天起就为基础设施即代码（IaC）流水线保驾护航。","emoji":"☁️","color":"#3b82f6","skills":["安全"],"agent":"dsh","executor":"security"},
+]

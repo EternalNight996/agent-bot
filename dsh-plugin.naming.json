@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "policy": "dsh-plugin-naming/v1",
+  "plugin": {
+    "namespace": "eternalnight996",
+    "name": "super-agent",
+    "coordinate": "eternalnight996/dsh-super-agents",
+    "packageName": "dsh-super-agents"
+  },
+  "names": {
+    "pluginNames": [
+      "agent-teams"
+    ],
+    "loaderIds": [
+      "dsh-super-agent"
+    ],
+    "services": [],
+    "tools": [],
+    "commands": [],
+    "skills": [],
+    "skillProviders": [],
+    "events": [],
+    "settingsNamespaces": [],
+    "routes": [
+      {
+        "kind": "prefix",
+        "path": "/plugins/dsh-super-agent"
+      }
+    ]
+  }
+}
