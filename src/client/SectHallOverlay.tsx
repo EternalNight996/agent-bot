@@ -730,21 +730,7 @@ export function SectHallOverlay({
                 {ASCENSION_STORY.map(key => <p key={key}>{t(key)}</p>)}
               </div>
             </div>
-          ) : sheet === 'archive' ? (
-              <div className={css.history}>
-                <p className={css.settingsHint}>{t('office.archiveHint')}</p>
-                {archivedTeamIds.length === 0 ? <p className={css.settingsHint}>{t('office.archiveEmpty')}</p> : (
-                  <ul className={css.historyBlock}>
-                    {archivedTeamIds.map(id => (
-                      <li key={id} className={css.historyDetail}>
-                        <span className={css.historyTitle}>{id}</span>
-                        <button type="button" className={css.historyStartSmall} onClick={() => { setArchivedTeamIds(current => current.filter(item => item !== id)) }}>{t('office.archiveRestore')}</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ) : sheet === 'about' ? (
+          ) : sheet === 'about' ? (
             <div className={css.about}>
               <div className={css.aboutTabs} role="tablist">
                 {([
@@ -957,7 +943,7 @@ export function SectHallOverlay({
                   : <TeamConfigPanel
                       team={hall}
                       t={t}
-                      onContinue={openCaptain === undefined || hall.captainSessionId === '' ? undefined : () => { openCaptain(hall.captainSessionId as SessionId) }}
+                      onContinue={() => { setSheet(undefined) }}
                     />
           ) : sheet === 'teams' ? (
             <div className={css.history}>
@@ -1084,9 +1070,6 @@ export function SectHallOverlay({
                           <button type="button" className={css.historyStartSmall} onClick={startSect} title={t('quickstart.entryTitle')}>
                             <span aria-hidden>⛩</span>{t('quickstart.entry')}
                           </button>
-                          <button type="button" className={css.historyStartSmall} onClick={() => { setSheet('archive') }}>
-                            <span aria-hidden>🗄</span>{t('office.archive')}
-                          </button>
                         </div>
                       )}
                       <div className={css.homeStats}>
@@ -1140,10 +1123,7 @@ export function SectHallOverlay({
                     t={t}
                     workspace
                   fill
-                  onOpenCaptain={openCaptain === undefined || shownTeam.captainSessionId === '' ? undefined : () => {
-                    if (shownTeam.captainSessionId !== sessionId) openCaptain(shownTeam.captainSessionId as SessionId)
-                    setSheet(undefined)
-                  }}
+                  onOpenCaptain={() => { setSheet(undefined) }}
                   onSelectMember={(name) => { setSelectedMember(current => current === name ? undefined : name) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
