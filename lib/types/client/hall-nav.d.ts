@@ -3,7 +3,7 @@ export declare const HALL_PAGE_PREFIX = "dsh-super-agent:";
 /** 五张墙体设施卡对应的页面（Q4 固定命名）。 */
 export declare const HALL_FACILITY_PAGES: readonly ["config", "teams", "ranks", "gear", "about"];
 /** 附属页面：设置、组队向导、进度板、收件箱、藏经阁。 */
-export declare const HALL_EXTRA_PAGES: readonly ["settings", "start", "board", "inbox", "library", "progress"];
+export declare const HALL_EXTRA_PAGES: readonly ["settings", "start", "board", "inbox", "library", "progress", "archive"];
 export type HallPage = (typeof HALL_FACILITY_PAGES)[number] | (typeof HALL_EXTRA_PAGES)[number] | 'home';
 /** 主页：像素活动面板（t17：进入本插件时中间区默认落在这里）。 */
 export declare const HALL_HOME_PAGE: HallPage;

@@ -123,7 +123,7 @@ function writeTokenPoint(point: TokenPoint): void {
 }
 
 
-type SheetKind = HallSheetAction | 'character' | 'library' | 'home'
+type SheetKind = HallSheetAction | 'character' | 'library' | 'home' | 'archive'
 
 /** 「取经队志」里的四个页签（赞助排第一）。 */
 type AboutTab = 'sponsor' | 'group' | 'about' | 'feedback'
@@ -184,6 +184,7 @@ export function SectHallOverlay({
   const [archiveArmed, setArchiveArmed] = useState<number | undefined>()
   const [cleanupNotice, setCleanupNotice] = useState('')
   const [archivedTeamIds, setArchivedTeamIds] = useState<readonly string[]>([])
+  const [selectedMember, setSelectedMember] = useState<string | undefined>()
   const [characterId, setCharacterId] = useState<string | undefined>()
   const previousSessionRef = useRef(sessionId)
   // 法器 / 坐骑 / 技能各选各的，互不覆盖；按角色分开记，来回切换不会丢装备。
@@ -629,7 +630,7 @@ export function SectHallOverlay({
       : sheet === 'start' ? t('quickstart.title')
         : sheet === 'character' ? t('office.equipment')
           : sheet === 'ranks' ? t('office.ascension')
-            : sheet === 'about' ? t('office.aboutTitle')
+            : sheet === 'archive' ? t('office.archive') : sheet === 'about' ? t('office.aboutTitle')
               : sheet === 'inbox' ? t('workspace.inbox')
               : sheet === 'teams' ? t('office.facility.teams')
                 : sheet === 'board' ? t('workspace.tabBoard')
@@ -720,7 +721,21 @@ export function SectHallOverlay({
                 {ASCENSION_STORY.map(key => <p key={key}>{t(key)}</p>)}
               </div>
             </div>
-          ) : sheet === 'about' ? (
+          ) : sheet === 'archive' ? (
+              <div className={css.history}>
+                <p className={css.settingsHint}>{t('office.archiveHint')}</p>
+                {archivedTeamIds.length === 0 ? <p className={css.settingsHint}>{t('office.archiveEmpty')}</p> : (
+                  <ul className={css.historyBlock}>
+                    {archivedTeamIds.map(id => (
+                      <li key={id} className={css.historyDetail}>
+                        <span className={css.historyTitle}>{id}</span>
+                        <button type="button" className={css.historyStartSmall} onClick={() => { setArchivedTeamIds(current => current.filter(item => item !== id)) }}>{t('office.archiveRestore')}</button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : sheet === 'about' ? (
             <div className={css.about}>
               <div className={css.aboutTabs} role="tablist">
                 {([
@@ -1065,6 +1080,23 @@ export function SectHallOverlay({
                         <span className={css.homeStat}><strong>{formatTokens(activeCost?.total_tokens ?? 0)}</strong><small>{t('home.tokens')}</small></span>
                         <span className={css.homeStat}><strong>{money(activeCost?.usd ?? 0)}</strong><small>{t('home.cost')}</small></span>
                       </div>
+                      {selectedMember !== undefined ? (
+                        <div className={css.homeRequirements} data-member-detail>
+                          <div className={css.historyHead}>
+                            <strong>{selectedMember} · {t('home.memberTasks')}</strong>
+                            <button type="button" className={css.historyStartSmall} onClick={() => { setSelectedMember(undefined) }}>{t('home.memberBack')}</button>
+                          </div>
+                          <ul>
+                            {shownTeam.tasks.filter(task => task.assignee === selectedMember).map(task => (
+                              <li key={task.id}>
+                                <b>{task.subject}</b> · {task.status}
+                                {(task.acceptance ?? []).length > 0 ? ' · ' + (task.acceptance ?? []).join(' / ') : ''}
+                              </li>
+                            ))}
+                            {shownTeam.tasks.filter(task => task.assignee === selectedMember).length === 0 && <li>{t('home.noMemberTasks')}</li>}
+                          </ul>
+                        </div>
+                      ) : (
                       <details className={css.homeRequirements} open>
                         <summary>{t('home.requirements')} · {[
                           shownTeam.description !== undefined && shownTeam.description !== '' ? 1 : 0,
@@ -1084,6 +1116,7 @@ export function SectHallOverlay({
                           {shownTeam.description === undefined && shownTeam.planSummary === undefined && (shownTeam.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
                         </ul>
                       </details>
+                      )}
                     </section>
                   )}
                   <TeamSection
@@ -1091,7 +1124,11 @@ export function SectHallOverlay({
                     t={t}
                     workspace
                   fill
-                  onOpenCaptain={openCaptain === undefined || shownTeam.captainSessionId === '' ? undefined : () => { openCaptain(shownTeam.captainSessionId as SessionId); setSheet(undefined) }}
+                  onOpenCaptain={openCaptain === undefined || shownTeam.captainSessionId === '' ? undefined : () => {
+                    if (shownTeam.captainSessionId !== sessionId) openCaptain(shownTeam.captainSessionId as SessionId)
+                    setSheet(undefined)
+                  }}
+                  onSelectMember={(name) => { setSelectedMember(current => current === name ? undefined : name) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
                   onContinuePlanning={() => { setSheet(undefined) }}

@@ -331,6 +331,13 @@ export declare const zh: {
     'office.swordBox': string;
     'office.roster': string;
     'office.bill': string;
+    'office.archive': string;
+    'office.archiveHint': string;
+    'office.archiveEmpty': string;
+    'office.archiveRestore': string;
+    'home.memberTasks': string;
+    'home.noMemberTasks': string;
+    'home.memberBack': string;
     'office.floorDoctrine': string;
     'office.floorProgress': string;
     'office.floorInbox': string;
@@ -1430,6 +1437,13 @@ export declare const en: {
     'office.swordBox': string;
     'office.roster': string;
     'office.bill': string;
+    'office.archive': string;
+    'office.archiveHint': string;
+    'office.archiveEmpty': string;
+    'office.archiveRestore': string;
+    'home.memberTasks': string;
+    'home.noMemberTasks': string;
+    'home.memberBack': string;
     'office.floorDoctrine': string;
     'office.floorProgress': string;
     'office.floorInbox': string;

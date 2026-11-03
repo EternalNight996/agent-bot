@@ -14,7 +14,7 @@ export const HALL_PAGE_PREFIX = 'dsh-super-agent:'
 export const HALL_FACILITY_PAGES = ['config', 'teams', 'ranks', 'gear', 'about'] as const
 
 /** 附属页面：设置、组队向导、进度板、收件箱、藏经阁。 */
-export const HALL_EXTRA_PAGES = ['settings', 'start', 'board', 'inbox', 'library', 'progress'] as const
+export const HALL_EXTRA_PAGES = ['settings', 'start', 'board', 'inbox', 'library', 'progress', 'archive'] as const
 
 export type HallPage = (typeof HALL_FACILITY_PAGES)[number] | (typeof HALL_EXTRA_PAGES)[number] | 'home'
 

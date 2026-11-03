@@ -554,13 +554,15 @@ function DependencyMap({ tasks, members, t, discarded = false, workspace = false
   )
 }
 
-export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscarded, onNavigate, onOpenCaptain, viewingSessionId, t, historic = false, workspace = false, fill = false }: {
+export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscarded, onNavigate, onOpenCaptain, onSelectMember, viewingSessionId, t, historic = false, workspace = false, fill = false }: {
   readonly team: ActivityTeam
   readonly modelDirectory?: ModelDirectory
   readonly onContinuePlanning?: () => void
   readonly onDiscarded?: () => void
   /** Clicking the captain card returns to the main conversation. */
   readonly onOpenCaptain?: () => void
+  /** Hall home: clicking a member shows their task detail instead of navigating. */
+  readonly onSelectMember?: (memberName: string) => void
   /** Session whose conversation is open; the member card shows 对话中. */
   readonly viewingSessionId?: string
   /** Navigate to a member transcript (floater hides immediately). */
@@ -1028,6 +1030,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
                   className={css.memberRow}
                   data-activity={member.activity}
                   onClick={() => {
+                    if (onSelectMember !== undefined) { onSelectMember(member.name); return }
                     if (member.id !== '') {
                       onNavigate(team.captainSessionId as SessionId, member.id as SessionId)
                     }
