@@ -82,6 +82,7 @@ export declare const zh: {
     'team.stop': string;
     'team.stopped': string;
     'team.stopTitle': string;
+    'team.stopShort': string;
     'team.stopDescription': string;
     'team.stopCancel': string;
     'team.stopConfirm': string;
@@ -1199,6 +1200,7 @@ export declare const en: {
     'team.stop': string;
     'team.stopped': string;
     'team.stopTitle': string;
+    'team.stopShort': string;
     'team.stopDescription': string;
     'team.stopCancel': string;
     'team.stopConfirm': string;

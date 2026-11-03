@@ -933,10 +933,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
                   aria-label={t('team.stopTitle', { team: team.name })}
                 >
                   <span className={css.stopPopoverArrow} aria-hidden />
-                  <span className={css.stopPopoverTitle}>{t('team.stopTitle', { team: team.name })}</span>
-                  <span className={css.stopPopoverText}>
-                    {t('team.stopDescription', { tasks: unfinishedCount, members: busyCount })}
-                  </span>
+                  <span className={css.stopPopoverTitle}>{t('team.stopShort')}</span>
                   {stopError !== '' && (
                     <span className={css.stopModalError} role="alert">
                       <IconWarningOutline16 />{stopError}
