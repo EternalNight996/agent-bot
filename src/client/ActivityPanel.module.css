@@ -632,6 +632,8 @@
 .teamStopButton[data-action='stop'] { color: #e06666; }
 .teamStopButton[data-action='stop']:hover { color: #ff8080; }
 .teamDonePill { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 6px; color: var(--dsw-alias-label-tertiary); font-size: 10px; }
+.teamResumeButton[data-action='stop'] { color: #e06666; border-color: #e06666; }
+.teamResumeButton[data-action='stop']:hover:not(:disabled) { color: #ff8080; border-color: #ff8080; }
 .teamResumeButton[data-action='restart'] { color: #6fb6ff; border-color: #6fb6ff; }
 .teamResumeButton[data-action='restart']:hover:not(:disabled) { color: #9cccff; border-color: #9cccff; }
 .teamStopButton:hover {

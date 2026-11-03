@@ -809,51 +809,47 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {historic && <span className={css.historicPill}>{t(discarded ? 'team.discarded' : 'team.ended')}</span>}
           {stopped && <span className={css.historicPill}>{t('team.stopped')}</span>}
-          {!historic && !stopped && teamSettled(team) && (
-            team.delivery?.ok === true
-              ? <span className={css.teamDonePill} data-action="done">{'✓ ' + t('team.action.done')}</span>
-              : interruptedTask !== undefined
+          {!historic && (
+            stopped
+              ? (
+                <button type="button" className={css.teamResumeButton} data-control="team-resume" disabled={resuming} onClick={() => { void resumeTeam() }} title={t('team.resume')}>
+                  {'▶ '}{resuming ? t('team.resuming') : t('team.action.resume')}
+                </button>
+              )
+              : teamIsActive(team)
                 ? (
-                  <button
-                    type="button"
-                    className={css.teamResumeButton}
-                    data-control="team-resume-last"
-                    data-action="resume"
-                    disabled={resumingLast || resumeLimitReached}
-                    onClick={() => { void resumeLast() }}
-                    title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
-                  >
-                    {resumingLast ? t('team.resuming') : '▶ ' + t('team.action.resume')}
-                  </button>
-                )
-                : team.tasks.some(task => task.status === 'failed')
-                  ? (
-                    <button
-                      type="button"
-                      className={css.teamResumeButton}
-                      data-control="team-action"
-                      data-action="restart"
-                      disabled={retrying}
-                      onClick={() => { void retryFailed() }}
-                      title={t('team.action.restart')}
-                    >
-                      {retrying ? '重新中…' : '🔄 ' + t('team.action.restart')}
+                  <div className={css.stopAnchor} ref={stopAnchorRef}>
+                    <button type="button" className={css.teamResumeButton} data-control="team-action" data-action="stop" aria-haspopup="dialog" aria-expanded={stopOpen} onClick={() => { setStopError(''); setStopOpen(open => !open) }}>
+                      {'⏹ '}{t('team.action.stop')}
                     </button>
-                  )
-                  : null
-          )}
-          {stopped && (
-            <button
-              type="button"
-              className={css.teamResumeButton}
-              data-control="team-resume"
-              disabled={resuming}
-              onClick={() => { void resumeTeam() }}
-              title={t('team.resume')}
-            >
-              <span aria-hidden>▶</span>
-              {resuming ? t('team.resuming') : t('team.action.resume')}
-            </button>
+                    {stopOpen && (
+                      <div className={css.stopPopover} role="dialog" aria-label={t('team.stopShort')}>
+                        <span className={css.stopPopoverArrow} aria-hidden />
+                        <span className={css.stopPopoverTitle}>{t('team.stopShort')}</span>
+                        {stopError !== '' && <span className={css.stopModalError} role="alert">{stopError}</span>}
+                        <span className={css.stopModalActions}>
+                          <button type="button" disabled={stopping} onClick={() => { setStopOpen(false) }}>{t('team.stopCancel')}</button>
+                          <button type="button" data-danger disabled={stopping} onClick={() => { void stopTeam() }}>{stopping ? t('team.stopping') : t('team.stopConfirm')}</button>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+                : team.delivery?.ok === true
+                  ? <span className={css.teamDonePill} data-action="done">{'✓ '}{t('team.action.done')}</span>
+                  : interruptedTask !== undefined
+                    ? (
+                      <button type="button" className={css.teamResumeButton} data-control="team-resume-last" data-action="resume" disabled={resumingLast || resumeLimitReached} onClick={() => { void resumeLast() }} title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}>
+                        {'▶ '}{resumingLast ? t('team.resuming') : t('team.action.resume')}
+                      </button>
+                    )
+                    : team.tasks.some(task => task.status === 'failed')
+                      ? (
+                        <button type="button" className={css.teamResumeButton} data-control="team-action" data-action="restart" disabled={retrying} onClick={() => { void retryFailed() }} title={t('team.action.restart')}>
+                          {retrying ? '重新中…' : '🔄 ' + t('team.action.restart')}
+                        </button>
+                      )
+                      : null
           )}
           {retryNote !== '' && (
             <span
@@ -912,51 +908,6 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {team.acceptanceStale === true && <span className={css.cleanupMessage} role="alert">{t('team.acceptStale')}</span>}
           {acceptError !== '' && <span className={css.cleanupMessage} role="alert">{acceptError}</span>}
-          {canStop && (
-            <div className={css.stopAnchor} ref={stopAnchorRef}>
-              <button
-                type="button"
-                className={css.teamStopButton}
-                data-action="stop"
-                aria-label={t('team.stop')}
-                title={t('team.stop')}
-                aria-haspopup="dialog"
-                aria-expanded={stopOpen}
-                onClick={() => { setStopError(''); setStopOpen(open => !open) }}
-              >
-                <IconStopFill16 />
-              </button>
-              {stopOpen && (
-                <div
-                  className={css.stopPopover}
-                  role="dialog"
-                  aria-label={t('team.stopTitle', { team: team.name })}
-                >
-                  <span className={css.stopPopoverArrow} aria-hidden />
-                  <span className={css.stopPopoverTitle}>{t('team.stopShort')}</span>
-                  {stopError !== '' && (
-                    <span className={css.stopModalError} role="alert">
-                      <IconWarningOutline16 />{stopError}
-                    </span>
-                  )}
-                  <span className={css.stopModalActions}>
-                    <button
-                      type="button"
-                      ref={stopCancelRef}
-                      disabled={stopping}
-                      onClick={() => { setStopOpen(false) }}
-                    >
-                      {t('team.stopCancel')}
-                    </button>
-                    <button type="button" data-danger disabled={stopping} onClick={() => { void stopTeam() }}>
-                      <IconStopFill16 />
-                      {stopping ? t('team.stopping') : t('team.stopConfirm')}
-                    </button>
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
         </header>
 
         {resumeError !== '' && <p className={css.teamResumeError} role="alert">{resumeError}</p>}
