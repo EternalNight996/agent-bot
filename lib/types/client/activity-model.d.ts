@@ -89,6 +89,12 @@ export declare function memberFinishedAt(memberName: string, tasks: readonly Mem
  * @returns the members in display order.
  */
 export declare function orderDelegationMembers<TMember extends MemberListEntry>(members: readonly TMember[], tasks: readonly MemberFinishTask[]): readonly TMember[];
+/** All tasks reached a terminal status (completed/failed/cancelled). */
+export declare function teamSettled(team: {
+    readonly tasks: readonly {
+        readonly status: string;
+    }[];
+}): boolean;
 /** Whether the captain chat should keep showing the in-progress banner. */
 export declare function teamIsActive(team: {
     readonly phase?: string;

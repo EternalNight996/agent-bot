@@ -933,7 +933,11 @@ export function SectHallOverlay({
                 // static member/contract panel the user asked to drop).
                 : sessionId !== undefined
                   ? <LibraryPanel sessionId={sessionId} t={t} onStartTeam={startSect} />
-                  : <TeamConfigPanel team={hall} t={t} />
+                  : <TeamConfigPanel
+                      team={hall}
+                      t={t}
+                      onContinue={openCaptain === undefined || hall.captainSessionId === '' ? undefined : () => { openCaptain(hall.captainSessionId as SessionId) }}
+                    />
           ) : sheet === 'teams' ? (
             <div className={css.history}>
               {/* 已组队并跑过任务后，山门→名册仍然保留组队入口；已有取经队时向导会提示替换。 */}

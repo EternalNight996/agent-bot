@@ -161,6 +161,14 @@ export function orderDelegationMembers<TMember extends MemberListEntry>(
   ].map((entry) => entry.member)
 }
 
+/** All tasks reached a terminal status (completed/failed/cancelled). */
+export function teamSettled(team: {
+  readonly tasks: readonly { readonly status: string }[]
+}): boolean {
+  return team.tasks.length > 0
+    && team.tasks.every(task => task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
+}
+
 /** Whether the captain chat should keep showing the in-progress banner. */
 export function teamIsActive(team: {
   readonly phase?: string

@@ -42,7 +42,7 @@ function kindLabel(kind: string | undefined, t: AgentTeamsTranslate): string {
   return key === undefined ? kind : t(key)
 }
 
-export function TeamConfigPanel({ team, t }: { team: ActivityTeam; t: AgentTeamsTranslate }) {
+export function TeamConfigPanel({ team, t, onContinue }: { team: ActivityTeam; t: AgentTeamsTranslate; onContinue?: () => void }) {
   useCultivationVersion()
   const completed = team.tasks.filter(task => task.status === 'completed').length
   // 进度页已显示“已完成”时，法脉页的阶段也必须一致，不能还写“进行中”。
@@ -69,6 +69,13 @@ export function TeamConfigPanel({ team, t }: { team: ActivityTeam; t: AgentTeams
           </div>
         ))}
       </div>
+      {settled && onContinue !== undefined && (
+        <div className={css.actions}>
+          <button type="button" className={css.button} data-control="team-continue" onClick={onContinue}>
+            {t('config.continueTask')}
+          </button>
+        </div>
+      )}
       <h3 className={css.heading}>{t('config.members')}</h3>
       <div className={css.tableWrap}>
         <table className={css.table}>

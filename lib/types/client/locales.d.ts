@@ -1069,6 +1069,7 @@ export declare const zh: {
     'office.realm': string;
     'config.phaseStaged': string;
     'config.phaseRunning': string;
+    'config.continueTask': string;
     'config.phaseFailed': string;
     'home.acceptance': string;
     'config.phaseCompleted': string;
@@ -2166,6 +2167,7 @@ export declare const en: {
     'office.realm': string;
     'config.phaseStaged': string;
     'config.phaseRunning': string;
+    'config.continueTask': string;
     'config.phaseFailed': string;
     'home.acceptance': string;
     'config.phaseCompleted': string;

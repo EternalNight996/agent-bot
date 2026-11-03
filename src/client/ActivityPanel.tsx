@@ -57,6 +57,7 @@ import {
   relatedTaskIds,
   taskModelLabel,
   teamIsActive,
+  teamSettled,
   usesParallelTaskGrid,
 } from './activity-model.ts'
 import {
@@ -764,7 +765,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
       <section className={css.team} data-team-id={team.teamId} data-workspace-team={workspace || undefined} data-hall-fill={fill || undefined}>
         <header className={css.teamHead}>
           <span className={css.teamName} title={team.name}>{team.name}</span>
-          {!historic && team.phase === 'running' && !stopped && (
+          {!historic && team.phase === 'running' && !stopped && !teamSettled(team) && (
             <span className={css.statePill} data-state={allCompleted ? 'completed' : allSettled ? 'settled' : 'running'}>
               {t(allCompleted ? 'team.state.completed' : allSettled ? 'team.state.settled' : 'team.state.running')}
             </span>
