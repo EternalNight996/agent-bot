@@ -9,10 +9,10 @@
  * values for old teams and advanced compatibility, but are never offered by
  * the main UI and do not contribute an acceptance baseline.
  */
-export declare const TEAM_MODES: readonly ["draft", "analysis", "plan", "precision", "legacy", "compliance", "monetize"];
+export declare const TEAM_MODES: readonly ["draft", "analysis", "plan", "precision", "legacy", "compliance", "monetize", "stress"];
 export type TeamMode = typeof TEAM_MODES[number];
 /** The modes the founding UI offers, in experience order. */
-export declare const PRIMARY_MODES: readonly ["draft", "analysis", "plan", "precision", "compliance"];
+export declare const PRIMARY_MODES: readonly ["draft", "analysis", "plan", "precision", "compliance", "stress"];
 /** Default without an explicit user choice: the fast experience. */
 export declare const DEFAULT_MODE: TeamMode;
 export type VerifierStrategy = 'smoke' | 'unit-network' | 'legacy-regression' | 'compliance-audit';

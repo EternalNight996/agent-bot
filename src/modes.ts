@@ -9,11 +9,11 @@
  * values for old teams and advanced compatibility, but are never offered by
  * the main UI and do not contribute an acceptance baseline.
  */
-export const TEAM_MODES = ['draft', 'analysis', 'plan', 'precision', 'legacy', 'compliance', 'monetize'] as const
+export const TEAM_MODES = ['draft', 'analysis', 'plan', 'precision', 'legacy', 'compliance', 'monetize', 'stress'] as const
 export type TeamMode = typeof TEAM_MODES[number]
 
 /** The modes the founding UI offers, in experience order. */
-export const PRIMARY_MODES = ['draft', 'analysis', 'plan', 'precision', 'compliance'] as const
+export const PRIMARY_MODES = ['draft', 'analysis', 'plan', 'precision', 'compliance', 'stress'] as const
 
 /** Default without an explicit user choice: the fast experience. */
 export const DEFAULT_MODE: TeamMode = 'draft'
@@ -62,6 +62,7 @@ export const MODE_STRATEGIES: Record<TeamMode, ModeStrategy> = {
   legacy: { maxParallel: 2, audit: 'standard', grammar: '旧接口回归 → 最小修复 → 新单测 → 对外行为不变；只加不改。' },
   compliance: { maxParallel: 1, audit: 'strict', grammar: '边界审计 → 串行实现 → 合规验证 → 独立审查；所有操作可审计。' },
   monetize: { maxParallel: 4, audit: 'light', grammar: '主流程变现 → License 校验 → 华丽 UI 复用 → 快速交付。' },
+  stress: { maxParallel: 8, audit: 'standard', grammar: '压测目标 → 隔离环境施压 → 指标采集（P95/错误率/资源）→ 瓶颈定位 → 回归建议；先设上限与熔断。' },
 }
 
 export function modeStrategy(mode: TeamMode | undefined): ModeStrategy {
@@ -69,6 +70,19 @@ export function modeStrategy(mode: TeamMode | undefined): ModeStrategy {
 }
 
 export const MODE_SPECS: Record<TeamMode, ModeSpec> = {
+  stress: {
+    id: 'stress',
+    labelKey: 'mode.stress',
+    name: '压力测试',
+    emoji: '🔥',
+    color: '#ff7a45',
+    philosophy: '你是压力测试工程师：先在隔离环境设定并发/时长/数据量上限与熔断阈值，再施压；采集 P95/P99、错误率、CPU/内存/连接数曲线；瓶颈结论必须有数据支撑，禁止对生产环境施压、禁止无限并发、禁止修改业务数据。',
+    defaultExcluded: ['禁止对生产环境施压', '禁止无上限并发', '禁止修改业务数据'],
+    acceptanceDefaults: ['压测脚本可重复执行', '关键指标（P95/错误率/资源）已采集', '瓶颈结论有数据支撑'],
+    optionalAcceptance: [],
+    verifier: { strategy: 'unit-network', failLimit: 3, blockOnOldTestFail: false },
+    budget: { perTaskUsd: 4, perDayUsd: 60, retryPromptAt: 3 },
+  },
   draft: {
     id: 'draft',
     labelKey: 'mode.draft',

@@ -27,7 +27,7 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { OPEN_PANEL_EVENT } from './AgentTeamsCard.tsx'
 import type { AgentTeamsCardData } from './agent-teams-card-definition.ts'
 import { currentSessionId } from './session-navigation.ts'
-import { TEAM_CREATED_EVENT, shouldRevealTeam, teamHasStarted } from './team-reveal.ts'
+import { PLAN_APPROVED_EVENT, TEAM_CREATED_EVENT, shouldRevealTeam, teamHasStarted, type PlanApprovedDetail } from './team-reveal.ts'
 import { getActivityMonitorTargetsSnapshot, getActivitySnapshotsSnapshot, startActivityPolling, subscribeActivityMonitorTargets, subscribeActivitySnapshots, updateActivitySnapshots, type ActivityTeam } from './activity-monitor.ts'
 import { createTeamDiscovery, type WorkspaceActivityState } from './workspace-state.ts'
 import { ingestCultivation } from './cultivation-store.ts'
@@ -222,6 +222,24 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
     }
     window.addEventListener(TEAM_CREATED_EVENT, reveal)
     return () => { window.removeEventListener(TEAM_CREATED_EVENT, reveal) }
+  }, [current, sidebar, state])
+  // 审核通过后切到洪荒：计划审核页会把用户留在原地，这里把右栏切到该队并展开，
+  // 让“审核完 → 看队伍跑”成为一次连续动作。
+  useEffect(() => {
+    const approved = (event: Event): void => {
+      const detail = (event as CustomEvent<PlanApprovedDetail>).detail
+      if (detail?.teamId === undefined || detail.sessionId === undefined) return
+      if (current !== undefined && detail.sessionId !== current) return
+      state.select(detail.sessionId, detail.teamId)
+      if (sidebar === undefined) return
+      if (sidebar.mounted.getSnapshot() !== detail.sessionId) return
+      try {
+        if (sidebar.isExpanded() !== true) sidebar.toggleExpanded()
+        sidebar.openTab(TEAM_TAB_KIND)
+      } catch { /* column unavailable */ }
+    }
+    window.addEventListener(PLAN_APPROVED_EVENT, approved)
+    return () => { window.removeEventListener(PLAN_APPROVED_EVENT, approved) }
   }, [current, sidebar, state])
   // Direct workspace refresh if the shared activity poll has not produced any
   // teams yet; without this a new/staged team can look like an empty hall.

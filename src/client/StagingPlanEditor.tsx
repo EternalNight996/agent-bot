@@ -13,7 +13,7 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { ActivityMember, ActivityTask, ActivityTeam } from './activity-monitor.ts'
 import type { AgentTeamsTranslate } from './locales.ts'
 import { roleLabel } from './role-labels.ts'
-import { TEAM_CREATED_EVENT } from './team-reveal.ts'
+import { PLAN_APPROVED_EVENT, TEAM_CREATED_EVENT, type PlanApprovedDetail } from './team-reveal.ts'
 import { DEFAULT_MODE, getModeSpec, isTeamMode, type TeamMode } from '../modes.ts'
 import css from './ActivityPanel.module.css'
 
@@ -835,6 +835,13 @@ export function StagingPlanEditor({ team, sessionId, modelDirectory, onContinueP
         teamId: team.teamId,
         action: 'approve',
       })
+      // The plan is running now: hand the user to the 洪荒 view instead of
+      // leaving them on the review page while the team works elsewhere.
+      try {
+        window.dispatchEvent(new CustomEvent<PlanApprovedDetail>(PLAN_APPROVED_EVENT, {
+          detail: { sessionId: editorSessionId, teamId: team.teamId },
+        }))
+      } catch { /* no window (tests) */ }
     } catch (error: unknown) {
       setFeedback({ tone: 'error', message: t('plan.failed', { message: errorMessage(error) }) })
       setBusy(false)

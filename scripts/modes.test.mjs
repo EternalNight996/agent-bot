@@ -19,10 +19,13 @@ const base = {
   acceptance: ['主流程跑通'],
 }
 
-test('all seven stored modes carry a complete spec; five are offered', () => {
-  assert.deepEqual([...TEAM_MODES], ['draft', 'analysis', 'plan', 'precision', 'legacy', 'compliance', 'monetize'])
+test('all eight stored modes carry a complete spec; six are offered', () => {
+  assert.deepEqual([...TEAM_MODES], ['draft', 'analysis', 'plan', 'precision', 'legacy', 'compliance', 'monetize', 'stress'])
   // legacy/monetize stay accepted for stored teams but are not main-UI choices.
-  assert.deepEqual([...PRIMARY_MODES], ['draft', 'analysis', 'plan', 'precision', 'compliance'])
+  assert.deepEqual([...PRIMARY_MODES], ['draft', 'analysis', 'plan', 'precision', 'compliance', 'stress'])
+  assert.equal(getModeSpec('stress').name, '压力测试')
+  assert.ok(getModeSpec('stress').philosophy.includes('压力测试'))
+  assert.ok(MODE_SPECS.stress.verifier.failLimit >= 2)
   assert.equal(getModeSpec('analysis').name, '分析模式')
   assert.ok(getModeSpec('analysis').philosophy.includes('只做分析'))
   assert.equal(getModeSpec('plan').name, '计划模式')

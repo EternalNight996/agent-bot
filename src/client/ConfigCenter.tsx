@@ -5,6 +5,8 @@ import type { AgentTeamsTranslate } from './locales.ts'
 import { CAPTAIN_SKIN_OPTIONS, setCaptainSkin, useCaptainSkin } from './captain-skin.ts'
 import { ALL_SKINS, type SkinDefinition } from './skins.ts'
 import { AGENCY_ROLES, agencyRole, type AgencyRole } from '../agency-roles-lite.ts'
+import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
+import { modeLineup } from './mode-lineups.ts'
 import { addCustomAgencyRole, removeCustomAgencyRole, useCustomAgencyRoles, type CustomAgencyRole } from './custom-agency-roles.ts'
 import { hideAgencyRole, showAgencyRole, useHiddenAgencyRoles } from './hidden-agency-roles.ts'
 import {
@@ -303,6 +305,29 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                     </div>
                   </div>
                 )}
+              </section>
+            )
+          })}
+          <div className={css.sectionHead} style={{ marginTop: 6 }}>
+            <p className={css.hint}>{t('office.modeLineupHint')}</p>
+          </div>
+          {PRIMARY_MODES.map(mode => {
+            const seats = modeLineup(mode)
+            const spec = getModeSpec(mode)
+            return (
+              <section key={mode} className={css.row}>
+                <div className={css.rowHead}>
+                  <strong>{spec.emoji} {spec.name}</strong>
+                  <span className={css.badge}>{seats.length}</span>
+                </div>
+                <div className={css.entries}>
+                  {seats.map((seat, index) => (
+                    <span key={seat.role} className={css.entry}>
+                      <span className={css.rowNo} aria-hidden>{index + 1}</span>
+                      {seat.name}
+                    </span>
+                  ))}
+                </div>
               </section>
             )
           })}

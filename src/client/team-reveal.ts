@@ -14,6 +14,13 @@
 
 /** Window event dispatched after the quick-start dialog staged a team. */
 export const TEAM_CREATED_EVENT = 'agent-teams:team-created'
+/** Window event dispatched after the plan-review editor approved a staged plan. */
+export const PLAN_APPROVED_EVENT = 'agent-teams:plan-approved'
+
+export interface PlanApprovedDetail {
+  readonly sessionId: string
+  readonly teamId: string
+}
 
 export interface TeamRevealInput {
   /** Which signal asked for the reveal. */

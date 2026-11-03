@@ -472,6 +472,7 @@ export declare const zh: {
     'office.configSearch': string;
     'office.configNoMatch': string;
     'office.lineupConfigHint': string;
+    'office.modeLineupHint': string;
     'office.lineupSetDefault': string;
     'office.lineupDefaultActive': string;
     'office.lineupDelete': string;
@@ -647,6 +648,9 @@ export declare const zh: {
     'mode.legacy': string;
     'mode.compliance': string;
     'mode.monetize': string;
+    'mode.stress': string;
+    'mode.desc.stress': string;
+    'mode.fit.stress': string;
     'mode.desc.draft': string;
     'mode.desc.analysis': string;
     'mode.desc.plan': string;
@@ -1560,6 +1564,7 @@ export declare const en: {
     'office.configSearch': string;
     'office.configNoMatch': string;
     'office.lineupConfigHint': string;
+    'office.modeLineupHint': string;
     'office.lineupSetDefault': string;
     'office.lineupDefaultActive': string;
     'office.lineupDelete': string;
@@ -1735,6 +1740,9 @@ export declare const en: {
     'mode.legacy': string;
     'mode.compliance': string;
     'mode.monetize': string;
+    'mode.stress': string;
+    'mode.desc.stress': string;
+    'mode.fit.stress': string;
     'mode.desc.draft': string;
     'mode.desc.analysis': string;
     'mode.desc.plan': string;
