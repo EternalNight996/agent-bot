@@ -50,3 +50,8 @@ Do not vendor skill copies into this repository: project skills are fetched live
 An issue can be **fixed in main**, **published**, and **verified in a specific environment** at different times. Link the commit or PR when merged, the exact package/channel when published, and the test or reporter confirmation when verified. Close a duplicate with its canonical tracking link; do not call it fixed merely because the duplicate was closed.
 
 Please leave independent enhancements and reports missing key evidence open with a concrete next step. Release preparation follows the compatibility gate in `compatibility.json`; preview packages use `next`, and `latest` requires the recommended host and the complete compatibility gate.
+
+## Tags
+
+Cut a git tag only for a formal npm release; development iterations are committed to main without tags so the tag list stays a reliable release history.
+

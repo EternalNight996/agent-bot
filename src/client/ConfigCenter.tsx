@@ -5,8 +5,6 @@ import type { AgentTeamsTranslate } from './locales.ts'
 import { CAPTAIN_SKIN_OPTIONS, setCaptainSkin, useCaptainSkin } from './captain-skin.ts'
 import { ALL_SKINS, type SkinDefinition } from './skins.ts'
 import { AGENCY_ROLES, agencyRole, type AgencyRole } from '../agency-roles-lite.ts'
-import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
-import { modeLineup } from './mode-lineups.ts'
 import { setRoleSkills as saveRoleSkills, useRoleSkills } from './role-skills.ts'
 import { addCustomAgencyRole, removeCustomAgencyRole, useCustomAgencyRoles, type CustomAgencyRole } from './custom-agency-roles.ts'
 import { hideAgencyRole, showAgencyRole, useHiddenAgencyRoles } from './hidden-agency-roles.ts'
@@ -233,26 +231,28 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                         <option value="codex">codex</option>
                       </select>
                     </label>
+                    <details className={css.skillDropdown}>
+                      <summary>{t('office.roleSkillPicker')} · {(skillOverrides[role.id] ?? role.skills).length}</summary>
+                      <p className={css.meta}>{t('office.roleSkillPickerHint')}</p>
+                      <div className={css.skillPicker}>
+                        {(skillCatalog ?? []).map(skill => {
+                          const active = (skillOverrides[role.id] ?? role.skills).includes(skill.name)
+                          return (
+                            <label key={skill.name} className={css.skillOption} data-active={active || undefined} title={skill.description}>
+                              <input type="checkbox" checked={active} onChange={() => {
+                                const base = [...(skillOverrides[role.id] ?? role.skills)]
+                                saveRoleSkills(role.id, active ? base.filter(name => name !== skill.name) : [...base, skill.name])
+                              }} />
+                              <span>{skill.name}</span>
+                              {skill.provider !== '' && <small>{skill.provider}</small>}
+                            </label>
+                          )
+                        })}
+                        {skillCatalog === undefined && <p className={css.hint}>{t('office.roleSkillPickerLoading')}</p>}
+                      </div>
+                    </details>
                     <p className={css.promptLabel}>{t('office.rolePromptFull')}</p>
                     <textarea className={css.promptEditor} rows={6} value={prompt} onChange={(event) => { setPromptDrafts(current => ({ ...current, [role.id]: event.target.value })) }} />
-                    <p className={css.promptLabel}>{t('office.roleSkillPicker')}</p>
-                    <p className={css.meta}>{t('office.roleSkillPickerHint')}</p>
-                    <div className={css.skillPicker}>
-                      {(skillCatalog ?? []).map(skill => {
-                        const active = (skillOverrides[role.id] ?? role.skills).includes(skill.name)
-                        return (
-                          <label key={skill.name} className={css.skillOption} data-active={active || undefined} title={skill.description}>
-                            <input type="checkbox" checked={active} onChange={() => {
-                              const base = [...(skillOverrides[role.id] ?? role.skills)]
-                              saveRoleSkills(role.id, active ? base.filter(name => name !== skill.name) : [...base, skill.name])
-                            }} />
-                            <span>{skill.name}</span>
-                            {skill.provider !== '' && <small>{skill.provider}</small>}
-                          </label>
-                        )
-                      })}
-                      {skillCatalog === undefined && <p className={css.hint}>{t('office.roleSkillPickerLoading')}</p>}
-                    </div>
                     <div className={css.actions}>
                       <button type="button" className={css.button} onClick={() => { saveRolePrompt(role.id, prompt); setPromptDrafts(current => ({ ...current, [role.id]: prompt })) }}>{t('office.rolePromptSave')}</button>
                       {prompts[role.id] !== undefined && <button type="button" className={css.button} onClick={() => { saveRolePrompt(role.id, ''); setPromptDrafts(current => ({ ...current, [role.id]: catalogPrompts[role.id] || rolePromptText(role, agent) })) }}>{t('office.rolePromptReset')}</button>}
@@ -343,29 +343,6 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                     </div>
                   </div>
                 )}
-              </section>
-            )
-          })}
-          <div className={css.sectionHead} style={{ marginTop: 6 }}>
-            <p className={css.hint}>{t('office.modeLineupHint')}</p>
-          </div>
-          {PRIMARY_MODES.map(mode => {
-            const seats = modeLineup(mode)
-            const spec = getModeSpec(mode)
-            return (
-              <section key={mode} className={css.row}>
-                <div className={css.rowHead}>
-                  <strong>{spec.emoji} {spec.name}</strong>
-                  <span className={css.badge}>{seats.length}</span>
-                </div>
-                <div className={css.entries}>
-                  {seats.map((seat, index) => (
-                    <span key={seat.role} className={css.entry}>
-                      <span className={css.rowNo} aria-hidden>{index + 1}</span>
-                      {seat.name}
-                    </span>
-                  ))}
-                </div>
               </section>
             )
           })}

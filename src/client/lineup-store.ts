@@ -2,6 +2,8 @@
 import { useSyncExternalStore } from 'react'
 import { FACTIONS } from '../factions.ts'
 import { agencyRoleForExecutor } from '../agency-roles-lite.ts'
+import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
+import { modeLineup } from './mode-lineups.ts'
 import { SKINS, skinIdForName } from './skins.ts'
 
 export interface LineupEntry {
@@ -21,8 +23,22 @@ const CUSTOM_LINEUPS_KEY = 'dsh-super-agent.customLineups'
 const LINEUP_OVERRIDES_KEY = 'dsh-super-agent.lineupOverrides.v2'
 const listeners = new Set<() => void>()
 
+/** 真实落库的模式预设阵容：可编辑、可设为默认、可作为开队选择。 */
+function modePresetLineups(): LineupDefinition[] {
+  return PRIMARY_MODES.map(mode => {
+    const spec = getModeSpec(mode)
+    return {
+      id: 'mode-' + mode,
+      name: spec.name + '阵容',
+      theme: spec.emoji + ' 模式预设',
+      builtin: true,
+      entries: modeLineup(mode).map(seat => ({ role: seat.role, skin: seat.skin })),
+    }
+  })
+}
+
 function baseLineups(): LineupDefinition[] {
-  return FACTIONS.filter(faction => faction.id !== 'pilgrim').map(faction => ({
+  const factions = FACTIONS.filter(faction => faction.id !== 'pilgrim').map(faction => ({
     id: faction.id,
     name: faction.name,
     theme: faction.motif,
@@ -50,6 +66,7 @@ function baseLineups(): LineupDefinition[] {
       })
     })(),
   }))
+  return [...factions, ...modePresetLineups()]
 }
 
 function readCustom(): LineupDefinition[] {

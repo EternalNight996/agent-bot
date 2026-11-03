@@ -21,8 +21,8 @@ test('catalog and skins are complete', () => {
   }
 })
 
-test('initial lineups keep only the essential five seats', () => {
-  for (const lineup of allLineups()) {
+test('initial faction lineups keep only the essential five seats', () => {
+  for (const lineup of allLineups().filter(entry => !entry.id.startsWith('mode-'))) {
     assert.equal(lineup.entries.length, 5, lineup.name + ' must start with five seats')
     assert.deepEqual(lineup.entries.map(entry => entry.role).sort(), [
       'product-manager', 'engineering-code-reviewer', 'engineering-senior-developer', 'testing-evidence-collector', 'design-ui-designer',
