@@ -943,7 +943,7 @@ export function SectHallOverlay({
                   : <TeamConfigPanel
                       team={hall}
                       t={t}
-                      onContinue={() => { setSheet(undefined) }}
+                      onContinue={() => { setSheet(current => current ?? 'home') }}
                     />
           ) : sheet === 'teams' ? (
             <div className={css.history}>
@@ -1137,8 +1137,10 @@ export function SectHallOverlay({
                   fill
                   onOpenCaptain={() => {
                     const target = shownTeam.captainSessionId !== '' ? shownTeam.captainSessionId : sessionId
+
                     if (openCaptain !== undefined && target !== '') openCaptain(target as SessionId)
-                    setSheet(undefined)
+                    // 保持福地面板有内容：只回主对话，不关右栏正文。
+                    setSheet(current => current ?? 'home')
                   }}
                   onSelectMember={(name) => { setSelectedMember(current => current === name ? undefined : name) }}
                   viewingSessionId={sessionId}
