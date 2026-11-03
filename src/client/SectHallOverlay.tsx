@@ -43,6 +43,7 @@ import {
   useHallSidebarVisible, writeHallCollapsed, writeHallPage, type HallPage,
 } from './hall-nav.ts'
 import { hallMember, setHallMember, useHallMember } from './hall-selection.ts'
+import { lineupById, useLineups } from './lineup-store.ts'
 import css from './SectHallOverlay.module.css'
 
 function formatDuration(ms: number): string {
@@ -564,6 +565,9 @@ export function SectHallOverlay({
   const shownTeam = selectedTeam ?? hall
   const modeId = shownTeam.planSummary?.mode
   const modeName = modeId !== undefined && isTeamMode(modeId) ? getModeSpec(modeId).name : '—'
+  const lineups = useLineups()
+  const lineupId = (() => { try { return window.localStorage.getItem('dsh-super-agent.lastFaction') ?? undefined } catch { return undefined } })()
+  const lineupName = lineupId === undefined ? '—' : (lineupById(lineupId)?.name ?? lineups[0]?.name ?? '—')
   const memberTasks = selectedMember === undefined ? [] : shownTeam.tasks.filter(task => task.assignee === selectedMember)
   const memberPassed = memberTasks.filter(task => task.status === 'completed').length
   const selectedTeamUpdatedAt = selectedTeam === undefined ? undefined : Math.max(selectedTeam.createdAt ?? 0, ...selectedTeam.tasks.map(task => task.updatedAt ?? 0))
@@ -1096,6 +1100,7 @@ export function SectHallOverlay({
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
                         <span className={css.homeStat} data-tone="blocked"><strong>{blockedCount}</strong><small>{t('home.blocked')}</small></span>
                         <span className={css.homeStat} data-tone="mode"><strong>{modeName}</strong><small>{t('home.mode')}</small></span>
+                        <span className={css.homeStat} data-tone="lineup"><strong>{lineupName}</strong><small>{t('home.lineup')}</small></span>
                         <span className={css.homeStat}><strong>{elapsedText}</strong><small>{t('home.elapsed')}</small></span>
                         <span className={css.homeStat}><strong>{formatTokens(activeCost?.total_tokens ?? 0)}</strong><small>{t('home.tokens')}</small></span>
                         <span className={css.homeStat}><strong>{money(activeCost?.usd ?? 0)}</strong><small>{t('home.cost')}</small></span>

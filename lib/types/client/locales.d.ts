@@ -27,6 +27,7 @@ export declare const zh: {
     'home.requirements': string;
     'home.goal': string;
     'home.mode': string;
+    'home.lineup': string;
     'home.scale': string;
     'home.platforms': string;
     'home.constraint': string;
@@ -1147,6 +1148,7 @@ export declare const en: {
     'home.requirements': string;
     'home.goal': string;
     'home.mode': string;
+    'home.lineup': string;
     'home.scale': string;
     'home.platforms': string;
     'home.constraint': string;
