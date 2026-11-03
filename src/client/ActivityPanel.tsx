@@ -653,7 +653,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
         method: 'POST',
         cache: 'no-store',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: team.captainSessionId, reason: t('team.resumeReason') }),
+        body: JSON.stringify({ sessionId: team.captainSessionId !== '' ? team.captainSessionId : (viewingSessionId ?? ''), reason: t('team.resumeReason') }),
       })
       if (!response.ok) {
         let message = `HTTP ${response.status}`
@@ -663,8 +663,11 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
         } catch {}
         throw new Error(message)
       }
+      setRetryNote('已继续，等待下一轮快照')
     } catch (error: unknown) {
-      setResumeError(t('team.resumeFailed', { message: error instanceof Error ? error.message : String(error) }))
+      const message = error instanceof Error ? error.message : String(error)
+      setResumeError(t('team.resumeFailed', { message }))
+      setRetryNote('继续失败：' + message)
     } finally {
       setResuming(false)
     }

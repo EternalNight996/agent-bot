@@ -519,6 +519,7 @@
 
 /* 停止后保留“重新开始”，与停止按钮同一位置语言。 */
 .teamResumeButton {
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 4px;
