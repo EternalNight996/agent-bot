@@ -1243,8 +1243,6 @@
 .homeRequirements ul { margin: 6px 0 0; padding-left: 16px; color: var(--dsw-alias-label-secondary); font-size: 9.5px; line-height: 1.6; }
 .homeRequirements b { color: var(--dsw-alias-label-primary); font-weight: 600; }
 
-.libraryInline { margin-top: 10px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 8px; }
-.ranksInline { margin-top: 10px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 8px; }
 .sheetBody {
   flex: 1 1 auto;
   min-height: 0;
