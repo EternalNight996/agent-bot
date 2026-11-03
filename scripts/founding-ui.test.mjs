@@ -11,23 +11,23 @@ const dialog = readFileSync(new URL('../src/client/QuickStartDialog.tsx', import
 const locales = readFileSync(new URL('../src/client/locales.ts', import.meta.url), 'utf8')
 const index = readFileSync(new URL('../src/index.ts', import.meta.url), 'utf8')
 
-test('功能直交 is the shipped default doctrine', () => {
+test('功能直交 is the shipped default doctrine, without a doctrine picker', () => {
   const ship = QUICK_START_TEMPLATES.find(template => template.id === 'ship')
   assert.ok(ship !== undefined)
   assert.equal(ship.label, '功能直交')
   assert.match(ship.tasks[0].description, /功能直交/)
   // Unknown ids fall back to the first template, which must be ship.
   assert.equal(buildQuickStartPlan('any goal', 'no-such-doctrine').template, 'ship')
-  const shipIndex = dialog.indexOf("id: 'ship'")
-  const featIndex = dialog.indexOf("id: 'feat'")
-  assert.ok(shipIndex >= 0, 'the dialog must offer the ship doctrine')
-  assert.ok(featIndex < 0 || shipIndex < featIndex, 'ship must be the first doctrine card')
+  // 玄门道统（法脉）选项已去掉：和模式/阵容重复，向导固定用功能直交。
+  assert.ok(!dialog.includes('quickstart-template-'), 'the doctrine cards must not render')
+  assert.ok(!dialog.includes("currentStep === 'doctrine'"), 'the doctrine step is gone')
+  assert.match(dialog, /useState<string>\('ship'\)/, 'the wizard pins the ship doctrine')
   assert.match(index, /DEFAULT_DOCTRINE/, 'the server route must default to the ship doctrine')
 })
 
 test('视觉爆炸 and 复刻项目 live in the 目标 step, with no separate 志向 step', () => {
-  assert.match(dialog, /const STEPS = \['vow', 'doctrine', 'interview', 'sect', 'oath'\]/)
-  assert.match(dialog, /const SOLO_STEPS = \['vow', 'doctrine', 'interview', 'oath'\]/)
+  assert.match(dialog, /const STEPS = \['vow', 'interview', 'sect', 'oath'\]/)
+  assert.match(dialog, /const SOLO_STEPS = \['vow', 'interview', 'oath'\]/)
   assert.ok(!dialog.includes('data-step="ambition"'), 'the ambition step is merged into the goal step')
   assert.match(dialog, /quickstart\.ambitionLabel/)
   // 视觉爆炸 is an optional, off-by-default toggle in the 开发模式 block.
@@ -57,6 +57,17 @@ test('the founding entry opens the hall start page, never the inbox sheet', () =
   assert.match(hall, /OPEN_HALL_START_EVENT/)
   assert.match(hall, /setSheet\('start'\)/)
   assert.match(workspace, /action !== 'start'/, 'the workspace sheet must not route start into the inbox fallback')
+})
+
+test('the 洪荒协作 tab is permanent: no close button, only switching', () => {
+  const client = readFileSync(new URL('../src/client/index.tsx', import.meta.url), 'utf8')
+  // 宿主 dock 的关闭按钮由它自己渲染，插件按 tabId 命中并隐藏；
+  // 快捷键/菜单关闭则用 close handler 抛错否决（宿主约定：失败保留标签）。
+  assert.match(client, /data-dockkit-tab-close/)
+  assert.match(client, /registerCloseHandler/)
+  assert.match(client, /the 洪荒协作 page is permanent/)
+  // 不再把「用户关标签」当成收起福地的信号：标签必须被补回来。
+  assert.ok(!client.includes('COLLAPSE_HALL_EVENT'))
 })
 
 test('the token show/hide control actually toggles and glides', () => {

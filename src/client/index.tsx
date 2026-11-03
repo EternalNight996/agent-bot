@@ -21,7 +21,6 @@ import type {} from '@deepseek-ai/dsh-client-ui-model-selection/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { ActivitySurface, TEAM_TAB_ID, TEAM_TAB_KIND, WorkspaceActivity, createWorkspaceBridge } from './WorkspaceActivity.tsx'
 import { getActivitySnapshotsSnapshot } from './activity-monitor.ts'
-import { COLLAPSE_HALL_EVENT } from './hall-events.ts'
 import { TeamTurnCard } from './TeamChatEntry.tsx'
 import { ComposerStopButton } from './ComposerStopButton.tsx'
 import { TeamQuickStart } from './QuickStartDialog.tsx'
@@ -47,7 +46,7 @@ const REOPEN_DELAY_MS = 300
 const REOPEN_BUDGET = 5
 /** 宿主可能还没暴露 openTabs（旧版本）：结构类型 + 可选，缺失时自愈整体跳过。 */
 type OpenTabsSource = {
-  getSnapshot(): readonly { readonly sessionId?: string; readonly kind: string }[]
+  getSnapshot(): readonly { readonly sessionId?: string; readonly kind: string; readonly tabId?: string }[]
   subscribe(listener: () => void): () => void
 }
 
@@ -128,34 +127,25 @@ export function apply(ctx: ClientContext): void {
       kind: TEAM_TAB_KIND,
       title: () => t('workspace.title'),
     }))
-    // t83：主视图标签自愈 —— 宿主恢复成空布局、或用户手动关掉「取经队协作」时自动把它加回来。
-    // 只在「当前会话有队伍」时生效；用官方 openTab，碰宿主 dock 代码与存储。
+    // 洪荒协作页常驻：宿主恢复成空布局时把「取经队协作」标签补回来；关标签这条路
+    // 由下面的 close handler 直接拒绝，这里只兜底重建。只在「当前会话有队伍」时开。
     native.effect(() => {
       const source = (native.sidebarRight as unknown as { openTabs?: OpenTabsSource }).openTabs
       // 旧宿主没有 openTabs 观察点：不启用自愈，返回空清理函数保持 effect 契约。
       if (source === undefined) return () => {}
       let timer: ReturnType<typeof window.setTimeout> | undefined
       let budget = REOPEN_BUDGET
-      // t84：记录「刚才标签是否在」——只有「在 → 不在」才代表用户关掉了它（要顺手收起福地）；
-      // 激活时本来就没有（刷新后宿主恢复空布局）只重开标签，不收起。
-      let wasOpen = false
       const attempt = (): void => {
         const sessionId = native.sidebarRight.mounted.getSnapshot()
         if (sessionId === undefined) return
-        const open = source.getSnapshot().some(tab => tab.sessionId === sessionId && tab.kind === TEAM_TAB_KIND)
-        if (open) { budget = REOPEN_BUDGET; wasOpen = true; return }
-        // 无队伍的会话不主动开标签，也不触发收起。
-        const hasTeam = getActivitySnapshotsSnapshot().teams.some(team => team.captainSessionId === sessionId)
-        if (!hasTeam) { wasOpen = false; return }
-        const closedByUser = wasOpen
-        wasOpen = false
-        if (budget <= 0) return
-        budget -= 1
-        // 用户手动关掉协作标签：收起福地（令牌出现）即可，绝不自动重开。
-        if (closedByUser) {
-          window.dispatchEvent(new CustomEvent(COLLAPSE_HALL_EVENT))
+        if (source.getSnapshot().some(tab => tab.sessionId === sessionId && tab.kind === TEAM_TAB_KIND)) {
+          budget = REOPEN_BUDGET
           return
         }
+        // 无队伍的会话不主动开标签。
+        const hasTeam = getActivitySnapshotsSnapshot().teams.some(team => team.captainSessionId === sessionId)
+        if (!hasTeam || budget <= 0) return
+        budget -= 1
         try { native.sidebarRight.openTab(TEAM_TAB_KIND) } catch { /* kind 尚未注册 */ }
       }
       const schedule = (): void => {
@@ -171,6 +161,44 @@ export function apply(ctx: ClientContext): void {
         offTabs()
         offMounted()
       }
+    })
+    // 洪荒协作页「只切换、不关闭」：
+    // 1) 宿主的 dock 关闭按钮由它自己渲染，插件用一条按 tabId 命中的样式把本插件标签的
+    //    × 去掉（[data-dockkit-tab-close=<tabId>]），tabId 从 openTabs 观察点取；
+    // 2) 快捷键/菜单仍可能触发 closeTab，宿主约定 close handler 抛错即保留标签，这里据此否决。
+    native.effect(() => {
+      const styleId = 'agent-teams-tab-lock'
+      let style = document.getElementById(styleId) as HTMLStyleElement | null
+      if (style === null) {
+        style = document.createElement('style')
+        style.id = styleId
+        document.head.appendChild(style)
+      }
+      const source = (native.sidebarRight as unknown as { openTabs?: OpenTabsSource }).openTabs
+      const paint = (): void => {
+        const ids = [...new Set((source?.getSnapshot() ?? [])
+          .filter(tab => tab.kind === TEAM_TAB_KIND && typeof tab.tabId === 'string' && tab.tabId !== '')
+          .map(tab => tab.tabId as string))]
+        style!.textContent = ids
+          .map(id => '[data-dockkit-tab-close="' + id.replace(/["\\]/g, '\\$&') + '"]{display:none!important}')
+          .join('\n')
+      }
+      paint()
+      const off = source?.subscribe(paint)
+      return () => {
+        off?.()
+        style?.remove()
+      }
+    })
+    native.effect(() => {
+      const register = (native.sidebarRight as unknown as {
+        registerCloseHandler?: (kind: string, handler: () => void) => () => void
+      }).registerCloseHandler
+      // 旧宿主没有 close handler：仍然保留上面的样式隐藏与自愈。
+      if (typeof register !== 'function') return () => {}
+      return register.call(native.sidebarRight, TEAM_TAB_KIND, () => {
+        throw new Error('agent-teams: the 洪荒协作 page is permanent; switch tabs instead of closing it')
+      })
     })
     native.slots.inject('conversation.session.header.actions', () => native.slots.register({
       name: 'conversation.session.header.actions', id: 'agent-teams-create', order: 49,

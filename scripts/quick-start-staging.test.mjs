@@ -55,9 +55,9 @@ test('an ordinary-work template stays ordinary work', () => {
   assert.ok(calls.every(call => call.input.kind === undefined || call.input.kind === 'review'))
 })
 
-test('every doctrine the quick-start dialog offers has a server template', () => {
-  // The dialog silently falls back to the first template for an unknown id, so
-  // a doctrine missing here would stage the fix workflow under another label.
+test('the founding UI keeps no doctrine picker; the server keeps every template', () => {
+  // 玄门道统（法脉）选项已从向导移除，但服务端模板要留全：旧 draft / API 仍可能
+  // 传这些 id，缺一个就会把另一套工作流套上。
   const dialog = readFileSync(new URL('../src/client/QuickStartDialog.tsx', import.meta.url), 'utf8')
   const offered = [...dialog.matchAll(/\{ id: '([^']+)', labelKey: 'quickstart\.tpl/g)].map(match => match[1])
   // Drama is temporarily hidden from the founding UI (its server template is kept for rollback).
@@ -66,6 +66,7 @@ test('every doctrine the quick-start dialog offers has a server template', () =>
   for (const id of offered) {
     assert.ok(server.has(id), 'the dialog offers "' + id + '" but src/quick-start.ts has no such template')
   }
+  assert.ok(!dialog.includes('quickstart-template-'), 'the doctrine picker stays removed from the wizard')
 })
 
 test('the founding UI only renders the explicit modes', () => {

@@ -199,12 +199,12 @@ async function findRecentStagedTeam(sessionId: string, since: number, signal?: A
     return undefined
   }
 }
-/** 组队步骤：目标（视觉爆炸 + 复刻项目） → 法脉 → 需求 → 取经队 → 立誓。 */
-const STEPS = ['vow', 'doctrine', 'interview', 'sect', 'oath'] as const
-const SOLO_STEPS = ['vow', 'doctrine', 'interview', 'oath'] as const
+/** 组队步骤：目标（视觉爆炸 + 复刻项目） → 需求 → 阵营 → 立誓。
+ * 法脉（任务模板）不再让用户选：它和模式/阵容重复，功能直交作为固定默认值。 */
+const STEPS = ['vow', 'interview', 'sect', 'oath'] as const
+const SOLO_STEPS = ['vow', 'interview', 'oath'] as const
 type Step = typeof STEPS[number]
-const STEP_LABEL: Record<Step, 'quickstart.stepDoctrine' | 'quickstart.stepGoal' | 'quickstart.stepInterview' | 'quickstart.stepSect' | 'quickstart.stepOath'> = {
-  doctrine: 'quickstart.stepDoctrine',
+const STEP_LABEL: Record<Step, 'quickstart.stepGoal' | 'quickstart.stepInterview' | 'quickstart.stepSect' | 'quickstart.stepOath'> = {
   vow: 'quickstart.stepGoal',
   interview: 'quickstart.stepInterview',
   sect: 'quickstart.stepSect',
@@ -275,7 +275,8 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   // Compatibility only: the task-type picker is gone, founding is always engineering.
   const [projectKind] = useState<'engineering' | 'drama'>(() => draft?.projectKind ?? 'engineering')
   const [goal, setGoal] = useState(() => draft?.goal ?? '')
-  const [template, setTemplate] = useState<string>(() => draft?.template ?? TEMPLATES[0]?.id ?? 'fix')
+  // 玄门道统（法脉）选项已移除：固定功能直交，只保留 draft/bag 的兼容字段。
+  const [template, setTemplate] = useState<string>('ship')
   // 每个开发模式都自带一张阵容预设（人数/职责随模式变化）：新会话默认选它，
   // 只有该预设被隐藏时才回退到全局上次阵营。
   const modeLineupFor = (value: TeamMode): string | undefined => {
@@ -375,7 +376,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     setStep(next?.step ?? 0)
     setMode(next?.mode ?? DEFAULT_MODE)
     setGoal(next?.goal ?? '')
-    setTemplate(next?.template ?? TEMPLATES[0]?.id ?? 'fix')
+    setTemplate('ship')
     setRoles(next?.roles ?? [...(TEMPLATES[0]?.roles ?? [])])
     setSectMode(next?.sectMode ?? 'random')
     setRolledSect(next?.rolledSect ?? randomSect().id)
@@ -413,10 +414,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         if (!response.ok || body?.ok !== true) return
         const bag: FoundingBagView | undefined = asFoundingBag(body.bag)
         if (bag === undefined) return
-        if (typeof bag.doctrine === 'string' && TEMPLATES.some(entry => entry.id === bag.doctrine)) {
-          setTemplate(bag.doctrine)
-          if (sectMode === 'custom') setRoles([...templateOf(bag.doctrine).roles])
-        }
         if (isTeamMode(bag.mode)) setMode(primaryModeOf(bag.mode))
         setVisualEnabled(bag.ambition === 'visual')
         if (bag.reference?.input !== undefined) {
@@ -512,12 +509,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   }
   const activeSect = sectMode === 'custom' ? undefined : sectPreset(sectMode === 'random' ? rolledSect : sectMode)
   const sectRoles = activeSect?.roles ?? roles
-  const chooseTemplate = (id: string): void => {
-    setTemplate(id)
-    // 佛道势力已经配好法门时，换模板不再覆盖这套法门（自定义模式才跟随模板）；
-    // 阵营成员表优先级更高，换模板不拆阵营。
-    if (sectMode === 'custom' && faction === undefined) setRoles([...templateOf(id).roles])
-  }
   const selectFaction = (id: string, remember = true): void => {
     const def = lineupById(id)
     if (def === undefined) return
@@ -536,8 +527,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     const preset = modeLineupFor(next)
     if (preset !== undefined) selectFaction(preset, false)
   }
-  // 只剩 5 种法脉：短剧法脉暂时只在服务端保留，客户端不再展示（可回滚）。
-  const visibleTemplates = TEMPLATES
   const chooseSect = (id: string): void => {
     setFaction(undefined)
     writeLastFaction(undefined)
@@ -940,8 +929,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     if (currentStep === 'vow' && superFast) { goTo(steps.indexOf('oath')); return }
     goTo(step + 1)
   }
-  const doctrineDetail = templateOf(template)
-  const doctrineName = t(doctrineDetail.labelKey)
   const activeLineup = lineupById(faction)
   const sectName = solo
     ? t('quickstart.soloSectName')
@@ -975,29 +962,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
               )
             })}
           </ol>
-
-          {currentStep === 'doctrine' && (
-            <section className={css.stepPane} data-step="doctrine">
-              <div className={css.templates} role="radiogroup" aria-label={t('quickstart.template')}>
-                {visibleTemplates.map(entry => (
-                  <button
-                    key={entry.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={template === entry.id}
-                    className={css.templateCard}
-                    data-control={'quickstart-template-' + entry.id}
-                    disabled={busy}
-                    onClick={() => { chooseTemplate(entry.id) }}
-                  >
-                    <span className={css.templateName}>{t(entry.labelKey)}</span>
-                    <span className={css.templateDesc}>{t(entry.descKey as Parameters<typeof t>[0])}</span>
-                    <span className={css.templateMeta}>{entry.roles.length} {t('quickstart.roleCount')}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
 
           {currentStep === 'vow' && (
             <section className={css.stepPane} data-step="vow">
@@ -1371,8 +1335,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
               {submitting && <p className={css.busyNote} role="status">{t('quickstart.generating')}</p>}
               <dl className={css.summary}>
                 <div className={css.summaryRow}><dt>{t('mode.select')}</dt><dd>{getModeSpec(mode).emoji} {t(getModeSpec(mode).labelKey as Parameters<typeof t>[0])}</dd></div>
-                <div className={css.summaryRow}><dt>{t('quickstart.summaryDoctrine')}</dt><dd>{doctrineName}</dd></div>
-                <div className={css.summaryRow}><dt>{t('quickstart.summaryAmbition')}</dt><dd>{visualEnabled ? '💥 ' + t('quickstart.ambitionLabel') : t('quickstart.ambitionOff')}</dd></div>
+                    <div className={css.summaryRow}><dt>{t('quickstart.summaryAmbition')}</dt><dd>{visualEnabled ? '💥 ' + t('quickstart.ambitionLabel') : t('quickstart.ambitionOff')}</dd></div>
                 <div className={css.summaryRow}><dt>{t('quickstart.summarySect')}</dt><dd>{sectName}</dd></div>
                 <div className={css.summaryRow}><dt>{t('quickstart.summaryRoster')}</dt><dd><span className={css.chips}>{roster.map(personChip)}</span></dd></div>
                 {referenceInput.trim() !== '' && (
