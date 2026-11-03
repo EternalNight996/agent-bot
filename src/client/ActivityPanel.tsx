@@ -612,6 +612,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
   const [resumeError, setResumeError] = useState('')
   const [resumingLast, setResumingLast] = useState(false)
   const [resumeLastError, setResumeLastError] = useState('')
+  const [retryNote, setRetryNote] = useState('')
   const discarded = historic && team.phase === 'staged'
   const stopped = !historic && team.halted === true
   const busyCount = team.members.filter((member) => member.activity === 'working').length
@@ -787,6 +788,8 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
                     disabled={resumingLast || resumeLimitReached}
                     onClick={() => {
                       if (interruptedTask !== undefined) { void resumeLast(); return }
+                      setRetryNote(t('team.retryNote'))
+                      window.setTimeout(() => { setRetryNote('') }, 8000)
                       onOpenCaptain?.()
                     }}
                     title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
@@ -809,6 +812,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
               {resuming ? t('team.resuming') : t('team.action.resume')}
             </button>
           )}
+          {retryNote !== '' && <span className={css.cleanupMessage} role="status">{retryNote}</span>}
           <span className={css.teamStats}>
             <span data-stat="members">{t('team.stats.members', { count: team.members.length })}</span>
             <span data-stat="tasks">{t('team.stats.completed', { completed: completedCount, total: team.tasks.length })}</span>
