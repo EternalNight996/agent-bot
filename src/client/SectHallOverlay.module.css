@@ -1248,6 +1248,8 @@
 .acceptChip[data-status='fail'] { color: #e08080; background: color-mix(in srgb, #e08080 14%, transparent); }
 .acceptChip[data-status='running'] { color: #f2c14e; background: color-mix(in srgb, #f2c14e 14%, transparent); }
 .acceptChip[data-status='pending'] { color: var(--dsw-alias-label-tertiary); }
+.requirementBar { height: 4px; margin: 6px 0 4px; border-radius: 2px; background: color-mix(in srgb, var(--dsw-alias-label-tertiary) 25%, transparent); overflow: hidden; }
+.requirementBar span { display: block; height: 100%; background: #7ad08a; }
 
 .sheetBody {
   flex: 1 1 auto;

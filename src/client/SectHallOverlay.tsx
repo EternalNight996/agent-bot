@@ -1115,19 +1115,21 @@ export function SectHallOverlay({
                         </div>
                       ) : (
                       <details className={css.homeRequirements} open>
-                        <summary>{t('home.requirements')} · {(shownTeam.acceptance ?? []).filter(criterion => shownTeam.tasks.some(task => task.status === 'completed' && (task.acceptance ?? []).includes(criterion))).length}/{(shownTeam.acceptance ?? []).length} PASS</summary>
+                        <summary>{t('home.requirements')} · {passedCount}/{shownTeam.tasks.length} PASS</summary>
+                        <div className={css.requirementBar}><span style={{ width: (shownTeam.tasks.length === 0 ? 0 : Math.round((passedCount / shownTeam.tasks.length) * 100)) + '%' }} /></div>
                         <ul className={css.acceptList}>
-                          {(shownTeam.acceptance ?? []).map((criterion, index) => {
-                            const hostTask = shownTeam.tasks.find(task => (task.acceptance ?? []).includes(criterion))
-                            const status = hostTask === undefined ? 'pending' : hostTask.status === 'completed' ? 'pass' : hostTask.status === 'failed' ? 'fail' : 'running'
+                          {shownTeam.tasks.map(task => {
+                            const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
+                            const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
                             return (
-                              <li key={index} data-status={status}>
-                                <span className={css.acceptChip} data-status={status}>{status === 'pass' ? 'PASS' : status === 'fail' ? 'FAIL' : status === 'running' ? 'RUN' : '—'}</span>
-                                {criterion}
+                              <li key={task.id} data-status={state}>
+                                <span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span>
+                                <b>{task.subject}</b>
+                                {task.assignee !== '' ? ' · ' + task.assignee : ''}
                               </li>
                             )
                           })}
-                          {(shownTeam.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
+                          {shownTeam.tasks.length === 0 && <li>{t('home.noRequirements')}</li>}
                         </ul>
                       </details>
                       )}
