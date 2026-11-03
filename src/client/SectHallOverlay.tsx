@@ -542,6 +542,18 @@ export function SectHallOverlay({
         </button>
       </div>
     )
+    const memberByName = (name: string): { id: string } | undefined => shownTeam.members.find(item => item.name === name)
+    // 主清单行 → 该角色会话；未分派/无会话则置灰不可点（避免点出空白页）。
+    const jumpToMember = (name: string): void => {
+      if (name === '') return
+      const member = memberByName(name)
+      if (member === undefined || member.id === '') return
+      setHallMember(name)
+      const owner = ownerSessionId ?? shownTeam.captainSessionId
+      if (owner === '') return
+      openMember(owner as SessionId, member.id as SessionId)
+    }
+    const clickable = (name: string): boolean => name !== '' && (memberByName(name)?.id ?? '') !== ''
     const visibleHistory = history.filter(team => !archivedTeamIds.includes(team.teamId))
     const viewingCurrent = hasTeam && (historyTeamId === undefined || historyTeamId === CURRENT_TEAM_SENTINEL)
     const selectedHistory = visibleHistory.find(team => team.teamId === historyTeamId)
@@ -1096,7 +1108,16 @@ export function SectHallOverlay({
                                 const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
                                 const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
                                 return items.map((criterion, index) => (
-                                  <tr key={task.id + '-' + index} data-status={state}>
+                                  <tr
+                                    key={task.id + '-' + index}
+                                    data-status={state}
+                                    data-clickable={clickable(task.assignee) || undefined}
+                                    role={clickable(task.assignee) ? 'link' : undefined}
+                                    tabIndex={clickable(task.assignee) ? 0 : undefined}
+                                    title={clickable(task.assignee) ? t('home.openMember', { name: task.assignee }) : undefined}
+                                    onClick={() => { jumpToMember(task.assignee) }}
+                                    onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); jumpToMember(task.assignee) } }}
+                                  >
                                     <td><span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span></td>
                                     <td>{criterion}</td>
                                     <td className={css.mono}>{task.id}</td>
@@ -1118,7 +1139,16 @@ export function SectHallOverlay({
                               const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
                               const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
                               return (
-                                <tr key={task.id} data-status={state}>
+                                <tr
+                                  key={task.id}
+                                  data-status={state}
+                                  data-clickable={clickable(task.assignee) || undefined}
+                                  role={clickable(task.assignee) ? 'link' : undefined}
+                                  tabIndex={clickable(task.assignee) ? 0 : undefined}
+                                  title={clickable(task.assignee) ? t('home.openMember', { name: task.assignee }) : undefined}
+                                  onClick={() => { jumpToMember(task.assignee) }}
+                                  onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); jumpToMember(task.assignee) } }}
+                                >
                                   <td><span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span></td>
                                   <td>{task.subject}</td>
                                   <td>{task.assignee !== '' ? task.assignee : '—'}</td>

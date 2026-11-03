@@ -340,6 +340,7 @@ export declare const zh: {
     'home.colStatus': string;
     'home.colTask': string;
     'home.colAssignee': string;
+    'home.openMember': string;
     'home.noMemberTasks': string;
     'home.memberBack': string;
     'office.floorDoctrine': string;
@@ -1450,6 +1451,7 @@ export declare const en: {
     'home.colStatus': string;
     'home.colTask': string;
     'home.colAssignee': string;
+    'home.openMember': string;
     'home.noMemberTasks': string;
     'home.memberBack': string;
     'office.floorDoctrine': string;

@@ -1256,6 +1256,10 @@
 .reqTable tr[data-status='pass'] td:first-child { border-left: 2px solid #7ad08a; }
 .reqTable tr[data-status='fail'] td:first-child { border-left: 2px solid #e08080; }
 .reqTable tr[data-status='running'] td:first-child { border-left: 2px solid #f2c14e; }
+.reqTable tr[data-clickable='true'] { cursor: pointer; }
+.reqTable tr[data-clickable='true']:hover td { background: color-mix(in srgb, #f2c14e 8%, transparent); }
+.reqTable tr[data-clickable='true']:focus-visible { outline: 1px solid #f2c14e; outline-offset: -1px; }
+.reqTable tr[data-clickable='true'] td[colspan] { cursor: default; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .sheetBody {
