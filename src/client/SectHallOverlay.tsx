@@ -650,11 +650,6 @@ export function SectHallOverlay({
               ＋ {t('office.newTask')}
             </button>
           )}
-          {hasTeam && (
-            <button type="button" className={css.sheetAction} data-control="hall-library" onClick={() => { setSheet(sheet === 'library' ? 'board' : 'library') }}>
-              {sheet === 'library' ? t('library.back') : '📚 ' + t('library.title')}
-            </button>
-          )}
           <button type="button" className={css.sheetClose} onClick={finishSheet} aria-label={t('office.closePanel')}>×</button>
         </header>
         <div className={css.sheetBody}>
@@ -1077,6 +1072,11 @@ export function SectHallOverlay({
                   onContinuePlanning={() => { setSheet(undefined) }}
                   onDiscarded={() => { setSheet(undefined) }}
                 />
+                {sessionId !== undefined && (
+                  <section className={css.libraryInline} data-inline-library>
+                    <LibraryPanel sessionId={sessionId} t={t} onStartTeam={startSect} />
+                  </section>
+                )}
                 </>
               )
           )}

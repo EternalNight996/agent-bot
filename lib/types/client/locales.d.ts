@@ -330,6 +330,7 @@ export declare const zh: {
     'office.hintShort': string;
     'office.swordBox': string;
     'office.roster': string;
+    'office.bill': string;
     'office.floorDoctrine': string;
     'office.floorProgress': string;
     'office.floorInbox': string;
@@ -1428,6 +1429,7 @@ export declare const en: {
     'office.hintShort': string;
     'office.swordBox': string;
     'office.roster': string;
+    'office.bill': string;
     'office.floorDoctrine': string;
     'office.floorProgress': string;
     'office.floorInbox': string;
