@@ -198,6 +198,8 @@ export function SectHallOverlay({
   }, [archivedTeamIds])
   // 成员选择放模块级：切子会话会让右栏重挂载，局部 state 会丢。
   const selectedMember = useHallMember()
+  // 阵容名用于洪荒统计栏；hook 必须在组件顶层，不能放进 renderSheet。
+  const lineups = useLineups()
   const [characterId, setCharacterId] = useState<string | undefined>()
   const previousSessionRef = useRef(sessionId)
   // 法器 / 坐骑 / 技能各选各的，互不覆盖；按角色分开记，来回切换不会丢装备。
@@ -565,7 +567,6 @@ export function SectHallOverlay({
   const shownTeam = selectedTeam ?? hall
   const modeId = shownTeam.planSummary?.mode
   const modeName = modeId !== undefined && isTeamMode(modeId) ? getModeSpec(modeId).name : '—'
-  const lineups = useLineups()
   const lineupId = (() => { try { return window.localStorage.getItem('dsh-super-agent.lastFaction') ?? undefined } catch { return undefined } })()
   const lineupName = lineupId === undefined ? '—' : (lineupById(lineupId)?.name ?? lineups[0]?.name ?? '—')
   const memberTasks = selectedMember === undefined ? [] : shownTeam.tasks.filter(task => task.assignee === selectedMember)
