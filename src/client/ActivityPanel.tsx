@@ -772,6 +772,16 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {historic && <span className={css.historicPill}>{t(discarded ? 'team.discarded' : 'team.ended')}</span>}
           {stopped && <span className={css.historicPill}>{t('team.stopped')}</span>}
+          {!historic && teamSettled(team) && onOpenCaptain !== undefined && (
+            <button
+              type="button"
+              className={css.teamResumeButton}
+              data-control="team-continue"
+              onClick={onOpenCaptain}
+            >
+              {t('config.continueTask')}
+            </button>
+          )}
           {!historic && interruptedTask !== undefined && (
             <button
               type="button"
