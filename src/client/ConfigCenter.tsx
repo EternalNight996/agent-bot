@@ -7,6 +7,7 @@ import { ALL_SKINS, type SkinDefinition } from './skins.ts'
 import { AGENCY_ROLES, agencyRole, type AgencyRole } from '../agency-roles-lite.ts'
 import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
 import { modeLineup } from './mode-lineups.ts'
+import { setRoleSkills as saveRoleSkills, useRoleSkills } from './role-skills.ts'
 import { addCustomAgencyRole, removeCustomAgencyRole, useCustomAgencyRoles, type CustomAgencyRole } from './custom-agency-roles.ts'
 import { hideAgencyRole, showAgencyRole, useHiddenAgencyRoles } from './hidden-agency-roles.ts'
 import {
@@ -81,6 +82,25 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
   const [polishing, setPolishing] = useState('')
   const customRoles = useCustomAgencyRoles()
   const hiddenRoles = useHiddenAgencyRoles()
+  // 角色技能多选：来源为宿主技能库（含 memory-eternal 暴露的技能）。
+  const skillOverrides = useRoleSkills()
+  const [skillCatalog, setSkillCatalog] = useState<ReadonlyArray<{ name: string; description: string; provider: string }> | undefined>()
+  useEffect(() => {
+    if (tab !== 'roles' || skillCatalog !== undefined || sessionId === undefined) return
+    let cancelled = false
+    void fetch('/plugins/dsh-super-agent/skills?sessionId=' + encodeURIComponent(sessionId))
+      .then(response => (response.ok ? response.json() : null))
+      .then((body: { skills?: unknown } | null) => {
+        if (cancelled || !Array.isArray(body?.skills)) return
+        setSkillCatalog((body.skills as Array<Record<string, unknown>>).flatMap(item => (
+          typeof item['name'] === 'string' && item['name'] !== ''
+            ? [{ name: item['name'], description: String(item['description'] ?? ''), provider: String(item['provider'] ?? '') }]
+            : []
+        )))
+      })
+      .catch(() => undefined)
+    return () => { cancelled = true }
+  }, [tab, sessionId, skillCatalog])
   const allRoles: readonly (AgencyRole | CustomAgencyRole)[] = [...AGENCY_ROLES.filter(role => !hiddenRoles.includes(role.id)), ...customRoles]
   const [roleCreating, setRoleCreating] = useState(false)
   const [roleName, setRoleName] = useState('')
@@ -215,6 +235,24 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                     </label>
                     <p className={css.promptLabel}>{t('office.rolePromptFull')}</p>
                     <textarea className={css.promptEditor} rows={6} value={prompt} onChange={(event) => { setPromptDrafts(current => ({ ...current, [role.id]: event.target.value })) }} />
+                    <p className={css.promptLabel}>{t('office.roleSkillPicker')}</p>
+                    <p className={css.meta}>{t('office.roleSkillPickerHint')}</p>
+                    <div className={css.skillPicker}>
+                      {(skillCatalog ?? []).map(skill => {
+                        const active = (skillOverrides[role.id] ?? role.skills).includes(skill.name)
+                        return (
+                          <label key={skill.name} className={css.skillOption} data-active={active || undefined} title={skill.description}>
+                            <input type="checkbox" checked={active} onChange={() => {
+                              const base = [...(skillOverrides[role.id] ?? role.skills)]
+                              saveRoleSkills(role.id, active ? base.filter(name => name !== skill.name) : [...base, skill.name])
+                            }} />
+                            <span>{skill.name}</span>
+                            {skill.provider !== '' && <small>{skill.provider}</small>}
+                          </label>
+                        )
+                      })}
+                      {skillCatalog === undefined && <p className={css.hint}>{t('office.roleSkillPickerLoading')}</p>}
+                    </div>
                     <div className={css.actions}>
                       <button type="button" className={css.button} onClick={() => { saveRolePrompt(role.id, prompt); setPromptDrafts(current => ({ ...current, [role.id]: prompt })) }}>{t('office.rolePromptSave')}</button>
                       {prompts[role.id] !== undefined && <button type="button" className={css.button} onClick={() => { saveRolePrompt(role.id, ''); setPromptDrafts(current => ({ ...current, [role.id]: catalogPrompts[role.id] || rolePromptText(role, agent) })) }}>{t('office.rolePromptReset')}</button>}

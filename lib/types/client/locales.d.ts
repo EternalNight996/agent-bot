@@ -473,6 +473,9 @@ export declare const zh: {
     'office.configNoMatch': string;
     'office.lineupConfigHint': string;
     'office.modeLineupHint': string;
+    'office.roleSkillPicker': string;
+    'office.roleSkillPickerHint': string;
+    'office.roleSkillPickerLoading': string;
     'office.lineupSetDefault': string;
     'office.lineupDefaultActive': string;
     'office.lineupDelete': string;
@@ -1565,6 +1568,9 @@ export declare const en: {
     'office.configNoMatch': string;
     'office.lineupConfigHint': string;
     'office.modeLineupHint': string;
+    'office.roleSkillPicker': string;
+    'office.roleSkillPickerHint': string;
+    'office.roleSkillPickerLoading': string;
     'office.lineupSetDefault': string;
     'office.lineupDefaultActive': string;
     'office.lineupDelete': string;

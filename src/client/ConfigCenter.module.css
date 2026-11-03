@@ -129,6 +129,23 @@
 .entry small { color: var(--dsw-alias-label-tertiary); font-size: 8px; }
 .entry button { border: 0; background: transparent; color: #d46a6a; cursor: pointer; }
 
+/* 角色技能多选：来源是宿主技能库（memory-eternal 等 provider）。 */
+.skillPicker { display: flex; flex-wrap: wrap; gap: 4px; }
+.skillOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 4px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 8.5px;
+  cursor: pointer;
+}
+.skillOption input { margin: 0; width: 10px; height: 10px; }
+.skillOption small { color: var(--dsw-alias-label-tertiary); font-size: 7.5px; }
+.skillOption[data-active='true'] { border-color: #f2c14e; color: #f2c14e; background: color-mix(in srgb, #f2c14e 10%, transparent); }
+
 .actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .hiddenRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 9px; }
 .sectionHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
