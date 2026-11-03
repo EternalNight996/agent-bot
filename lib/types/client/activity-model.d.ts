@@ -146,6 +146,8 @@ export declare function teamElapsedMs(team: {
         readonly status: string;
     }[];
 }, now: number): number;
+/** Compact token count: 1_234_567 → `1.23M`, 12_345 → `12.3K`. */
+export declare function formatTokens(tokens: number): string;
 /** `1h 02m 03s` label shared by the library overview and the cost ledger. */
 export declare function formatElapsed(ms: number): string;
 /** Use a fill-width grid when the task graph has no real dependency edges. */

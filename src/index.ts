@@ -932,8 +932,13 @@ export function apply(ctx: Context, config: Config): void {
         ].filter(root => root !== ''))]
         const allEntries = mergeCostEntries((await Promise.all(roots.map(root => readCostLogEntries(root)))).flat())
         // A task with actual usage supersedes its provisional spawn estimate.
+        // Spawn estimates often carry no taskId, so also drop every estimate for
+        // a team that already reported actual usage — otherwise the same work is
+        // billed twice and the ledger reads several times the real spend.
         const actualKeys = new Set(allEntries.filter(entry => entry.decision === 'usage-actual').map(entry => `${entry.teamId ?? ''}|${entry.taskId ?? ''}`))
-        const effectiveAll = allEntries.filter(entry => entry.decision === 'usage-actual' || !actualKeys.has(`${entry.teamId ?? ''}|${entry.taskId ?? ''}`))
+        const teamsWithActual = new Set(allEntries.filter(entry => entry.decision === 'usage-actual').map(entry => entry.teamId ?? ''))
+        const effectiveAll = allEntries.filter(entry => entry.decision === 'usage-actual'
+          || (!teamsWithActual.has(entry.teamId ?? '') && !actualKeys.has(`${entry.teamId ?? ''}|${entry.taskId ?? ''}`)))
         const entries = teamFilter === '' ? effectiveAll : effectiveAll.filter(entry => entry.teamId === teamFilter)
         const todayUsd = todayCostFromEntries(effectiveAll)
         const byTask = new Map<string, { taskId: string; usd: number; count: number; inputTokens: number; outputTokens: number; actual: boolean }>()

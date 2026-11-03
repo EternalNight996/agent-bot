@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import { usdToCny } from '../currency.ts'
-import { formatElapsed } from './activity-model.ts'
+import { formatElapsed, formatTokens } from './activity-model.ts'
 import type { AgentTeamsTranslate } from './locales.ts'
 import css from './CostLedger.module.css'
 
@@ -97,7 +97,7 @@ export function CostDetail({ sessionId, teamId, t, createdAt, updatedAt, running
         <strong>{t('cost.ledger.title')}</strong>
         <span className={css.total}>{t('cost.ledger.total')} {money(totalUsd)}</span>
         <span className={css.meta}>{t('cost.ledger.elapsed', { time: elapsed })}</span>
-        <span className={css.meta}>{t('cost.ledger.tokens', { count: totalTokens })}</span>
+        <span className={css.meta}>{t('cost.ledger.tokens', { count: formatTokens(totalTokens) })}</span>
         <button type="button" className={css.refresh} onClick={load}>{t('cost.ledger.refresh')}</button>
       </header>
       {error !== '' && <p className={css.error}>{error}</p>}

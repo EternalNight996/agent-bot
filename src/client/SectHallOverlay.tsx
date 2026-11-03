@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom'
 import type { ModelDirectoryResolver } from '@deepseek-ai/dsh-client-ui-model-selection/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { ActivityTeam } from './activity-monitor.ts'
-import { teamElapsedCounting } from './activity-model.ts'
+import { formatTokens, teamElapsedCounting, teamElapsedMs } from './activity-model.ts'
 import type { AgentTeamsTranslate } from './locales.ts'
 import { TeamSection } from './ActivityPanel.tsx'
 import { HallInbox } from './HallInbox.tsx'
@@ -542,7 +542,8 @@ export function SectHallOverlay({
     const passedCount = hall.tasks.filter(task => task.state === 'completed').length
     const runningCount = hall.tasks.filter(task => task.state === 'running' || task.state === 'claimed' || task.state === 'open').length
     const blockedCount = hall.tasks.filter(task => task.state === 'blocked' || task.state === 'failed' || task.state === 'cancelled').length
-    const elapsedText = formatDuration(Date.now() - (hall.createdAt ?? Date.now()))
+    // 已结束/有失败/被停止的队伍必须停表：沿用 teamElapsedMs 的冻结语义。
+    const elapsedText = formatDuration(teamElapsedMs(hall, Date.now()))
     const historyTasks = hall.tasks.filter(task => task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
     const taskStatusLabel = (status: string): string => status === 'completed'
       ? t('task.status.completed')
@@ -1035,18 +1036,26 @@ export function SectHallOverlay({
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
                         <span className={css.homeStat} data-tone="blocked"><strong>{blockedCount}</strong><small>{t('home.blocked')}</small></span>
                         <span className={css.homeStat}><strong>{elapsedText}</strong><small>{t('home.elapsed')}</small></span>
-                        <span className={css.homeStat}><strong>{activeCost?.total_tokens ?? 0}</strong><small>{t('home.tokens')}</small></span>
+                        <span className={css.homeStat}><strong>{formatTokens(activeCost?.total_tokens ?? 0)}</strong><small>{t('home.tokens')}</small></span>
                         <span className={css.homeStat}><strong>{money(activeCost?.usd ?? 0)}</strong><small>{t('home.cost')}</small></span>
                       </div>
-                      <details className={css.homeRequirements}>
-                        <summary>{t('home.requirements')}</summary>
+                      <details className={css.homeRequirements} open>
+                        <summary>{t('home.requirements')} · {[
+                          hall.description !== undefined && hall.description !== '' ? 1 : 0,
+                          hall.planSummary?.mode === undefined ? 0 : 1,
+                          hall.planSummary?.scale === undefined ? 0 : 1,
+                          hall.planSummary?.platforms?.length ?? 0,
+                          hall.planSummary?.constraints?.length ?? 0,
+                          hall.acceptance?.length ?? 0,
+                        ].reduce((sum, value) => sum + value, 0)}</summary>
                         <ul>
                           {hall.description !== undefined && hall.description !== '' && <li><b>{t('home.goal')}</b>{hall.description}</li>}
                           {hall.planSummary?.mode !== undefined && <li><b>{t('home.mode')}</b>{hall.planSummary.mode}</li>}
                           {hall.planSummary?.scale !== undefined && <li><b>{t('home.scale')}</b>{hall.planSummary.scale}</li>}
                           {hall.planSummary?.platforms !== undefined && hall.planSummary.platforms.length > 0 && <li><b>{t('home.platforms')}</b>{hall.planSummary.platforms.join(' / ')}</li>}
+                          {(hall.acceptance ?? []).map((item, index) => <li key={'acceptance-' + index}><b>{t('home.acceptance')}</b>{item}</li>)}
                           {(hall.planSummary?.constraints ?? []).map((item, index) => <li key={'constraint-' + index}><b>{t('home.constraint')}</b>{item}</li>)}
-                          {hall.description === undefined && hall.planSummary === undefined && <li>{t('home.noRequirements')}</li>}
+                          {hall.description === undefined && hall.planSummary === undefined && (hall.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
                         </ul>
                       </details>
                     </section>

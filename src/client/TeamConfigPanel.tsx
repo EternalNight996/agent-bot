@@ -46,12 +46,15 @@ export function TeamConfigPanel({ team, t }: { team: ActivityTeam; t: AgentTeams
   useCultivationVersion()
   const completed = team.tasks.filter(task => task.status === 'completed').length
   // 进度页已显示“已完成”时，法脉页的阶段也必须一致，不能还写“进行中”。
+  // 有失败/取消的任务同样视为已结束：全部任务终态即不再“进行中”。
   const allCompleted = team.tasks.length > 0 && completed === team.tasks.length
+  const anyFailed = team.tasks.some(task => task.status === 'failed' || task.status === 'cancelled')
+  const settled = team.tasks.length > 0 && team.tasks.every(task => task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
   const facts = [
     { label: t('config.team'), value: team.name, sub: team.teamId },
     { label: t('config.phase'), value: team.halted === true
       ? t('config.halted')
-      : t(team.phase === 'staged' ? 'config.phaseStaged' : allCompleted ? 'config.phaseCompleted' : 'config.phaseRunning') },
+      : t(team.phase === 'staged' ? 'config.phaseStaged' : allCompleted ? 'config.phaseCompleted' : settled && anyFailed ? 'config.phaseFailed' : settled ? 'config.phaseCompleted' : 'config.phaseRunning') },
     { label: t('config.members'), value: String(team.members.length) },
     { label: t('config.tasks'), value: `${completed}/${team.tasks.length}` },
   ]

@@ -229,6 +229,14 @@ export function teamElapsedMs(team: {
   return Math.max(0, end - team.createdAt)
 }
 
+/** Compact token count: 1_234_567 → `1.23M`, 12_345 → `12.3K`. */
+export function formatTokens(tokens: number): string {
+  if (!Number.isFinite(tokens) || tokens <= 0) return '0'
+  if (tokens >= 1_000_000) return (tokens / 1_000_000).toFixed(tokens >= 10_000_000 ? 0 : 2).replace(/\.0+$|(\.\d)0$/, '$1') + 'M'
+  if (tokens >= 1_000) return (tokens / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
+  return String(Math.round(tokens))
+}
+
 /** `1h 02m 03s` label shared by the library overview and the cost ledger. */
 export function formatElapsed(ms: number): string {
   const seconds = Math.max(0, Math.floor(ms / 1000))

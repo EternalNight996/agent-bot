@@ -84,6 +84,8 @@ export interface ActivityTeam {
         constraints?: string[];
     };
     readonly halted?: boolean;
+    /** User-confirmed acceptance items from the founding interview. */
+    readonly acceptance?: readonly string[];
     readonly goal?: {
         readonly id: string;
         readonly objective: string;

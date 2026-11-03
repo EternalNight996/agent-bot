@@ -83,6 +83,8 @@ export interface ActivityTeam {
   readonly planProjectRoot?: string
   readonly planSummary?: { mode?: string; scale?: string; platforms?: string[]; constraints?: string[] }
   readonly halted?: boolean
+  /** User-confirmed acceptance items from the founding interview. */
+  readonly acceptance?: readonly string[]
   readonly goal?: { readonly id: string; readonly objective: string; readonly phase: string; readonly roundsStarted: number; readonly maxGoalRounds: number }
   readonly nativeTeam?: { readonly id: string; readonly members: number; readonly tasks: number; readonly completed: number }
   readonly acceptedAt?: number

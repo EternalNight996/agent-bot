@@ -1069,6 +1069,8 @@ export declare const zh: {
     'office.realm': string;
     'config.phaseStaged': string;
     'config.phaseRunning': string;
+    'config.phaseFailed': string;
+    'home.acceptance': string;
     'config.phaseCompleted': string;
     'config.kind.work': string;
     'config.kind.requirements': string;
@@ -2164,6 +2166,8 @@ export declare const en: {
     'office.realm': string;
     'config.phaseStaged': string;
     'config.phaseRunning': string;
+    'config.phaseFailed': string;
+    'home.acceptance': string;
     'config.phaseCompleted': string;
     'config.kind.work': string;
     'config.kind.requirements': string;
