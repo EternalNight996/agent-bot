@@ -1242,6 +1242,12 @@
 .homeRequirements summary { cursor: pointer; color: var(--dsw-alias-label-primary); font-size: 10px; }
 .homeRequirements ul { margin: 6px 0 0; padding-left: 16px; color: var(--dsw-alias-label-secondary); font-size: 9.5px; line-height: 1.6; }
 .homeRequirements b { color: var(--dsw-alias-label-primary); font-weight: 600; }
+.acceptList { list-style: none; padding-left: 0 !important; }
+.acceptChip { display: inline-block; min-width: 34px; margin-right: 6px; padding: 0 4px; border-radius: 3px; font-size: 8px; font-weight: 700; text-align: center; }
+.acceptChip[data-status='pass'] { color: #7ad08a; background: color-mix(in srgb, #7ad08a 14%, transparent); }
+.acceptChip[data-status='fail'] { color: #e08080; background: color-mix(in srgb, #e08080 14%, transparent); }
+.acceptChip[data-status='running'] { color: #f2c14e; background: color-mix(in srgb, #f2c14e 14%, transparent); }
+.acceptChip[data-status='pending'] { color: var(--dsw-alias-label-tertiary); }
 
 .sheetBody {
   flex: 1 1 auto;

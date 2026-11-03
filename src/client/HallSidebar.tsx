@@ -14,8 +14,6 @@ import css from './HallSidebar.module.css'
 /** 顶部导航条：原底栏的 6 个入口（经 / 榜 / 山 / 志 / 阁 / ⚙），横排、每项 ≥44 高。 */
 const NAV: ReadonlyArray<{ readonly page: HallPage; readonly glyph: string; readonly label: AgentTeamsLocaleKey }> = [
   { page: 'home', glyph: '⌂', label: 'hall.home' },
-  { page: 'start', glyph: '＋', label: 'quickstart.entry' },
-  { page: 'archive', glyph: '🗄', label: 'office.archive' },
   // 名册固定第二；法脉与总进度互换位置（内容仍随标签）。
   { page: 'teams', glyph: '山', label: 'office.bill' },
   { page: 'about', glyph: '志', label: 'office.floorAbout' },

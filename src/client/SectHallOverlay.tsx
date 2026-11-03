@@ -1002,7 +1002,8 @@ export function SectHallOverlay({
                     <button type="button" onClick={() => { setArchiveArmed(undefined) }}>{t('quickstart.cancel')}</button>
                   </span>
                 )}
-              </div>
+              
+                        </div>
               {cleanupNotice !== '' && <p className={css.settingsHint} role="status">{cleanupNotice}</p>}
               {!hasTeam && visibleHistory.length === 0 && historyTasks.length === 0 && (
                 <p className={css.settingsHint}>{t('office.historyEmpty')}</p>
@@ -1079,6 +1080,13 @@ export function SectHallOverlay({
                               )
                             })}
                           </select>
+                        
+                          <button type="button" className={css.historyStartSmall} onClick={startSect} title={t('quickstart.entryTitle')}>
+                            <span aria-hidden>⛩</span>{t('quickstart.entry')}
+                          </button>
+                          <button type="button" className={css.historyStartSmall} onClick={() => { setSheet('archive') }}>
+                            <span aria-hidden>🗄</span>{t('office.archive')}
+                          </button>
                         </div>
                       )}
                       <div className={css.homeStats}>
@@ -1107,22 +1115,19 @@ export function SectHallOverlay({
                         </div>
                       ) : (
                       <details className={css.homeRequirements} open>
-                        <summary>{t('home.requirements')} · {[
-                          shownTeam.description !== undefined && shownTeam.description !== '' ? 1 : 0,
-                          shownTeam.planSummary?.mode === undefined ? 0 : 1,
-                          shownTeam.planSummary?.scale === undefined ? 0 : 1,
-                          shownTeam.planSummary?.platforms?.length ?? 0,
-                          shownTeam.planSummary?.constraints?.length ?? 0,
-                          shownTeam.acceptance?.length ?? 0,
-                        ].reduce((sum, value) => sum + value, 0)}</summary>
-                        <ul>
-                          {shownTeam.description !== undefined && shownTeam.description !== '' && <li><b>{t('home.goal')}</b>{shownTeam.description}</li>}
-                          {shownTeam.planSummary?.mode !== undefined && <li><b>{t('home.mode')}</b>{shownTeam.planSummary.mode}</li>}
-                          {shownTeam.planSummary?.scale !== undefined && <li><b>{t('home.scale')}</b>{shownTeam.planSummary.scale}</li>}
-                          {shownTeam.planSummary?.platforms !== undefined && shownTeam.planSummary.platforms.length > 0 && <li><b>{t('home.platforms')}</b>{shownTeam.planSummary.platforms.join(' / ')}</li>}
-                          {(shownTeam.acceptance ?? []).map((item, index) => <li key={'acceptance-' + index}><b>{t('home.acceptance')}</b>{item}</li>)}
-                          {(shownTeam.planSummary?.constraints ?? []).map((item, index) => <li key={'constraint-' + index}><b>{t('home.constraint')}</b>{item}</li>)}
-                          {shownTeam.description === undefined && shownTeam.planSummary === undefined && (shownTeam.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
+                        <summary>{t('home.requirements')} · {(shownTeam.acceptance ?? []).filter(criterion => shownTeam.tasks.some(task => task.status === 'completed' && (task.acceptance ?? []).includes(criterion))).length}/{(shownTeam.acceptance ?? []).length} PASS</summary>
+                        <ul className={css.acceptList}>
+                          {(shownTeam.acceptance ?? []).map((criterion, index) => {
+                            const hostTask = shownTeam.tasks.find(task => (task.acceptance ?? []).includes(criterion))
+                            const status = hostTask === undefined ? 'pending' : hostTask.status === 'completed' ? 'pass' : hostTask.status === 'failed' ? 'fail' : 'running'
+                            return (
+                              <li key={index} data-status={status}>
+                                <span className={css.acceptChip} data-status={status}>{status === 'pass' ? 'PASS' : status === 'fail' ? 'FAIL' : status === 'running' ? 'RUN' : '—'}</span>
+                                {criterion}
+                              </li>
+                            )
+                          })}
+                          {(shownTeam.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
                         </ul>
                       </details>
                       )}
