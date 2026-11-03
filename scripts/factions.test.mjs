@@ -63,7 +63,11 @@ test('the faction preference is global; the mode owns runtime strategy', () => {
   assert.match(dialog, /dsh-super-agent\.lastFaction/)
   assert.match(dialog, /readLastFaction\(\)/)
   assert.match(dialog, /writeLastFaction\(id\)/)
-  assert.match(dialog, /const defaultFaction = lastFaction/, 'a fresh session falls back to the last visible lineup')
+  // 每个开发模式自带阵容预设：新会话先默认该模式的阵容，预设被隐藏时才回退上次阵容。
+  assert.match(dialog, /const modeLineupFor = \(value: TeamMode\)/, 'the mode owns a lineup preset')
+  assert.match(dialog, /const fallbackFaction = lastFaction/, 'a hidden mode preset falls back to the last visible lineup')
+  assert.match(dialog, /const preset = modeLineupFor\(mode\)/, 'the first render defaults to the mode lineup')
+  assert.match(dialog, /chooseMode\(item\)/, 'picking a mode default-selects its lineup')
   assert.match(scheduler, /modeStrategy\(fresh\.clarification\?\.mode\)\.maxParallel/)
   assert.match(scheduler, /openCount >= modeStrategy/)
   assert.equal(modeStrategy('draft').maxParallel, 4)

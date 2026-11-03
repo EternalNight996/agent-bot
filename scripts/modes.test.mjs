@@ -6,7 +6,7 @@ import test from 'node:test'
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DEFAULT_MODE, MODE_SPECS, PRIMARY_MODES, TEAM_MODES, getModeSpec, isTeamMode, modeAcceptanceOptions, modePhilosophyText } from '../lib/modes.js'
+import { DEFAULT_MODE, MODE_SPECS, PRIMARY_MODES, TEAM_MODES, getModeSpec, isTeamMode, modeAcceptanceOptions, modeAddsAcceptanceBaseline, modePhilosophyText } from '../lib/modes.js'
 import { normalizeClarification, describeClarification } from '../lib/clarify.js'
 import { buildConstitution, constitutionPreamble, readConstitution } from '../lib/constitution.js'
 import { fallbackClarifyOptions, parseClarifyOptions } from '../lib/clarify-options.js'
@@ -26,6 +26,10 @@ test('all eight stored modes carry a complete spec; six are offered', () => {
   assert.equal(getModeSpec('stress').name, '压力测试')
   assert.ok(getModeSpec('stress').philosophy.includes('压力测试'))
   assert.ok(MODE_SPECS.stress.verifier.failLimit >= 2)
+  // Stress is a delivery mode: its baseline rides into the clarification like
+  // the other explicit modes instead of being dropped.
+  assert.equal(modeAddsAcceptanceBaseline('stress'), true)
+  assert.equal(modeAddsAcceptanceBaseline('draft'), false)
   assert.equal(getModeSpec('analysis').name, '分析模式')
   assert.ok(getModeSpec('analysis').philosophy.includes('只做分析'))
   assert.equal(getModeSpec('plan').name, '计划模式')

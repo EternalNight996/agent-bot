@@ -12,5 +12,9 @@ export interface ModeLineupSeat {
     readonly name: string;
     readonly skin: string;
 }
+/** Lineup id prefix for a mode's preset roster (shared by the settings page and the founding lobby). */
+export declare const MODE_LINEUP_PREFIX = "mode-";
+/** Stable lineup id for one mode's preset roster. */
+export declare function modeLineupId(mode: TeamMode): string;
 /** Seats for a mode: role id, display name, and the cycling skin id. */
 export declare function modeLineup(mode: TeamMode): readonly ModeLineupSeat[];

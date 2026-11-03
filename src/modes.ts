@@ -203,7 +203,7 @@ export function modeAcceptanceOptions(mode: TeamMode | undefined): string[] {
  * draft (the default) and the compatibility-only modes never append defaults.
  */
 export function modeAddsAcceptanceBaseline(mode: TeamMode | undefined): boolean {
-  return mode === 'precision' || mode === 'compliance' || mode === 'analysis' || mode === 'plan'
+  return mode === 'precision' || mode === 'compliance' || mode === 'analysis' || mode === 'plan' || mode === 'stress'
 }
 
 /** Human label for prompts and the constitution. */

@@ -677,6 +677,8 @@ export declare const zh: {
     'mode.stress': string;
     'mode.desc.stress': string;
     'mode.fit.stress': string;
+    'mode.accept.stress': string;
+    'mode.never.stress': string;
     'mode.desc.draft': string;
     'mode.desc.analysis': string;
     'mode.desc.plan': string;
@@ -830,6 +832,8 @@ export declare const zh: {
     'quickstart.vowHint': string;
     'quickstart.sectHint': string;
     'quickstart.factionCostHint': string;
+    'quickstart.modeLineupHint': string;
+    'quickstart.factionModeDefault': string;
     'quickstart.solo': string;
     'quickstart.soloActive': string;
     'quickstart.soloCleared': string;
@@ -1798,6 +1802,8 @@ export declare const en: {
     'mode.stress': string;
     'mode.desc.stress': string;
     'mode.fit.stress': string;
+    'mode.accept.stress': string;
+    'mode.never.stress': string;
     'mode.desc.draft': string;
     'mode.desc.analysis': string;
     'mode.desc.plan': string;
@@ -1951,6 +1957,8 @@ export declare const en: {
     'quickstart.vowHint': string;
     'quickstart.sectHint': string;
     'quickstart.factionCostHint': string;
+    'quickstart.modeLineupHint': string;
+    'quickstart.factionModeDefault': string;
     'quickstart.solo': string;
     'quickstart.soloActive': string;
     'quickstart.soloCleared': string;

@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 import { FACTIONS } from '../factions.ts'
 import { agencyRoleForExecutor } from '../agency-roles-lite.ts'
 import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
-import { modeLineup } from './mode-lineups.ts'
+import { modeLineup, modeLineupId } from './mode-lineups.ts'
 import { SKINS, skinIdForName } from './skins.ts'
 
 export interface LineupEntry {
@@ -28,7 +28,7 @@ function modePresetLineups(): LineupDefinition[] {
   return PRIMARY_MODES.map(mode => {
     const spec = getModeSpec(mode)
     return {
-      id: 'mode-' + mode,
+      id: modeLineupId(mode),
       name: spec.name + '阵容',
       theme: spec.emoji + ' 模式预设',
       builtin: true,

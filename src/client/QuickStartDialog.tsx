@@ -13,6 +13,7 @@ import { TEAM_CREATED_EVENT } from './team-reveal.ts'
 import { ROLE_META } from './role-labels.ts'
 import { SECT_PRESETS, randomSect, sectPreset } from './sects.ts'
 import { useLineups, lineupById } from './lineup-store.ts'
+import { modeLineupId } from './mode-lineups.ts'
 import { ALL_SKINS } from './skins.ts'
 import { useCustomSkins } from './custom-skins.ts'
 import { useHiddenSkins } from './hidden-skins.ts'
@@ -275,14 +276,22 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   const [projectKind] = useState<'engineering' | 'drama'>(() => draft?.projectKind ?? 'engineering')
   const [goal, setGoal] = useState(() => draft?.goal ?? '')
   const [template, setTemplate] = useState<string>(() => draft?.template ?? TEMPLATES[0]?.id ?? 'fix')
-  // 新会话未带草稿时沿用全局上次阵营；有草稿时以草稿为准。
+  // 每个开发模式都自带一张阵容预设（人数/职责随模式变化）：新会话默认选它，
+  // 只有该预设被隐藏时才回退到全局上次阵营。
+  const modeLineupFor = (value: TeamMode): string | undefined => {
+    const id = modeLineupId(value)
+    return visibleFactions.some(lineup => lineup.id === id) ? id : undefined
+  }
   const lastFaction = draft === undefined ? readLastFaction() : undefined
-  const defaultFaction = lastFaction !== undefined && visibleFactions.some(lineup => lineup.id === lastFaction)
+  const fallbackFaction = lastFaction !== undefined && visibleFactions.some(lineup => lineup.id === lastFaction)
     ? lastFaction
     : visibleFactions[0]?.id
-  const initialFaction: string | undefined = draft?.faction !== undefined && visibleFactions.some(lineup => lineup.id === draft.faction)
-    ? draft.faction
-    : draft === undefined ? defaultFaction : undefined
+  const initialFaction: string | undefined = (() => {
+    if (draft?.faction !== undefined && visibleFactions.some(lineup => lineup.id === draft.faction)) return draft.faction
+    const preset = modeLineupFor(mode)
+    if (preset !== undefined) return preset
+    return draft === undefined ? fallbackFaction : undefined
+  })()
   const initialFactionRoles = initialFaction === undefined
     ? undefined
     : lineupById(initialFaction)?.entries.map(entry => entry.role)
@@ -509,13 +518,23 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     // 阵营成员表优先级更高，换模板不拆阵营。
     if (sectMode === 'custom' && faction === undefined) setRoles([...templateOf(id).roles])
   }
-  const selectFaction = (id: string): void => {
+  const selectFaction = (id: string, remember = true): void => {
     const def = lineupById(id)
     if (def === undefined) return
     setFaction(id)
-    writeLastFaction(id)
+    if (remember) writeLastFaction(id)
     setSectMode('custom')
     setRoles([...new Set(def.entries.map(entry => entry.role))])
+  }
+  // 选模式即选阵容：模式卡点击后默认切到该模式的阵容预设（用户仍可换）。
+  const chooseMode = (next: TeamMode): void => {
+    setMode(next)
+    setSuperFast(false)
+    setInterviewQuestions([])
+    setInterviewAnswers({})
+    setInterviewState('loading')
+    const preset = modeLineupFor(next)
+    if (preset !== undefined) selectFaction(preset, false)
   }
   // 只剩 5 种法脉：短剧法脉暂时只在服务端保留，客户端不再展示（可回滚）。
   const visibleTemplates = TEMPLATES
@@ -1094,7 +1113,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                         data-active={active || undefined}
                         disabled={busy}
                         title={t(('mode.desc.' + item) as Parameters<typeof t>[0]) + ' · ' + neverAdded}
-                        onClick={() => { setMode(item); setSuperFast(false); setInterviewQuestions([]); setInterviewAnswers({}); setInterviewState('loading') }}
+                        onClick={() => { chooseMode(item) }}
                       >
                         <span className={css.modeName}>{spec.emoji} {t(spec.labelKey as Parameters<typeof t>[0])}</span>
                         <span className={css.modeLine}>{t(('mode.fit.' + item) as Parameters<typeof t>[0])}</span>
@@ -1103,6 +1122,14 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                     )
                   })}
                 </div>
+                {(() => {
+                  const preset = lineupById(modeLineupId(mode))
+                  return preset === undefined ? null : (
+                    <p className={css.modeLineupHint} data-control="quickstart-mode-lineup">
+                      {t('quickstart.modeLineupHint', { lineup: preset.name, count: preset.entries.length })}
+                    </p>
+                  )
+                })()}
                 <div className={css.modeDivider} role="separator">
                   <span>{t('quickstart.visualSeparator')}</span>
                 </div>
@@ -1198,7 +1225,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                   <span>阵营</span>
                   <div className={css.factionGrid} data-control="quickstart-factions">
                     {visibleFactions.map(def => (
-                      <div key={def.id} className={css.factionItem} data-expanded={faction === def.id || undefined}>
+                      <div key={def.id} className={css.factionItem} data-expanded={faction === def.id || undefined} data-mode-default={def.id === modeLineupId(mode) || undefined}>
                         <button
                           type="button"
                           className={css.factionCard}
@@ -1208,7 +1235,9 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                         >
                           <span className={css.factionTop}>
                             <strong>{def.name}</strong>
-                            <em>阵容</em>
+                            <em data-mode-default={def.id === modeLineupId(mode) || undefined}>
+                              {def.id === modeLineupId(mode) ? t('quickstart.factionModeDefault') : '阵容'}
+                            </em>
                           </span>
                           <span className={css.factionTagline}>{def.theme}</span>
                           <span className={css.factionMeta}>{def.entries.length} 个角色 · {new Set(def.entries.map(entry => entry.role)).size} 个职责</span>

@@ -118,11 +118,12 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
   const stagedFallback = sessionTeams.length === 0 ? snapshots.teams.find(team => team.phase === 'staged') : undefined
   const hallTeam = sessionTeams.find(team => team.teamId === wanted) ?? sessionTeams[0] ?? linkedTeam ?? stagedFallback
   const visibleTeam = hallTeam ?? directTeam
-  // 名册页看历史：同一师父会话下已经归档的取经队。
-  const ownerCaptain = hallTeam?.captainSessionId ?? current
-  const historyTeams = ownerCaptain === undefined
-    ? []
-    : snapshots.archivedTeams.filter(team => team.captainSessionId === ownerCaptain)
+  // 历史：工作区维度，而不是只认当前会话——桌面端重启后会话 id 会变，
+  // 旧队伍仍在同一个工作区里，必须继续出现在洪荒的历史切换栏。
+  const historyTeams = [...snapshots.teams, ...snapshots.archivedTeams]
+    .filter(team => team.teamId !== visibleTeam?.teamId)
+    .filter((team, index, all) => all.findIndex(item => item.teamId === team.teamId) === index)
+    .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
   const targets = useSyncExternalStore(subscribeActivityMonitorTargets, getActivityMonitorTargetsSnapshot)
   const currentTargets = useMemo(() => targets.filter(target => target.sessionId === current), [targets, current])
   // One discovery tracker per visit, outside polling effects restarted by card registration.

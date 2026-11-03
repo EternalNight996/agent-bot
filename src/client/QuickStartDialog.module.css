@@ -656,6 +656,15 @@
 .modeLine { font-size: 10px; line-height: 1.4; color: #9aa4b2; overflow-wrap: anywhere; }
 .modeCard[data-active='true'] .modeLine { color: #c9b27a; }
 
+/* 模式自带阵容：模式卡下方常驻一行，说明当前模式默认会拉起几张席位。 */
+.modeLineupHint {
+  margin: 0;
+  padding: 0 1px;
+  color: #c9b27a;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 /* 道统：上方只做类型选择，说明固定在下方详情框里。 */
 .doctrineDetail {
   display: flex;
@@ -1011,6 +1020,11 @@
   font-family: var(--serif, serif);
   font-size: 15px;
   letter-spacing: .02em;
+}
+
+.factionTop em[data-mode-default] {
+  border-color: color-mix(in srgb, #6fb6ff 65%, transparent);
+  color: #8ab4ff;
 }
 
 .factionTop em {
