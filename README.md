@@ -102,6 +102,19 @@ Then:
     git clone https://github.com/EternalNight996/dsh-super-agents
     dsh plugin --profile desktop add ./dsh-super-agents
 
+**If GitHub git is slow (restricted networks)**
+
+Git's smart protocol is often throttled even when plain HTTPS downloads are fine, so `git clone` / `pnpm add github:…` can appear to hang. `--registry=<mirror>` only changes the npm registry; it does not proxy GitHub. Use one of these instead:
+
+    # a) the released tarball, downloaded over plain HTTPS from
+    #    https://github.com/EternalNight996/dsh-super-agents/releases
+    dsh plugin --profile desktop add ./dsh-super-agents-<version>.tgz
+
+    # b) a published npm version (mirrors such as npmmirror work)
+    dsh plugin --profile desktop add dsh-super-agents@0.1.138
+
+Do not use bare `pnpm add <github-url>` for this plugin: a DSH plugin must be installed into a DSH profile.
+
 **CLI / headless**
 
     dsh --profile desktop

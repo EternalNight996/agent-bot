@@ -102,6 +102,19 @@
     git clone https://github.com/EternalNight996/dsh-super-agents
     dsh plugin --profile desktop add ./dsh-super-agents
 
+**GitHub 很慢时（网络受限）**
+
+git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `pnpm add github:…` 也会一直卡住。`--registry=<镜像>` 只改 npm 源，不会代理 GitHub。改用下面任一方式：
+
+    # a) 从 Release 用普通 HTTPS 下载构建好的 tgz
+    #    https://github.com/EternalNight996/dsh-super-agents/releases
+    dsh plugin --profile desktop add ./dsh-super-agents-<版本>.tgz
+
+    # b) 安装已发布的 npm 版本（npmmirror 等镜像可用）
+    dsh plugin --profile desktop add dsh-super-agents@0.1.138
+
+插件必须装进 DSH profile，不要用裸 `pnpm add <github-url>`。
+
 **CLI / Headless**
 
     dsh --profile desktop
