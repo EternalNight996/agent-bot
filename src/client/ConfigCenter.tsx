@@ -9,7 +9,7 @@ import { setRoleSkills as saveRoleSkills, useRoleSkills } from './role-skills.ts
 import { addCustomAgencyRole, removeCustomAgencyRole, useCustomAgencyRoles, type CustomAgencyRole } from './custom-agency-roles.ts'
 import { hideAgencyRole, showAgencyRole, useHiddenAgencyRoles } from './hidden-agency-roles.ts'
 import {
-  addLineupEntry, createLineup, deleteLineup, removeLineupEntry, resetLineup, useLineups,
+  addLineupEntry, createLineup, deleteLineup, MAX_LINEUP_ENTRIES, removeLineupEntry, resetLineup, useLineups,
   type LineupDefinition,
 } from './lineup-store.ts'
 import { hideLineup, showLineup, useHiddenLineups } from './hidden-lineups.ts'
@@ -329,7 +329,7 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                       <select value={draftSkin} onChange={(event) => { setDraftSkin(event.target.value) }}>
                         {skins.map(skin => <option key={skin.id} value={skin.id}>{skin.name} · {skin.theme}</option>)}
                       </select>
-                      <button type="button" className={css.button} onClick={() => { addLineupEntry(lineup.id, { role: draftRole, skin: draftSkin }) }}>{t('office.lineupAddEntry')}</button>
+                      <button type="button" className={css.button} disabled={lineup.entries.length >= MAX_LINEUP_ENTRIES} onClick={() => { addLineupEntry(lineup.id, { role: draftRole, skin: draftSkin }) }}>{t('office.lineupAddEntry')}</button>
                     </div>
                     <div className={css.actions}>
                       <button type="button" className={css.button} data-active={defaultLineup === lineup.id || undefined} onClick={() => { try { window.localStorage.setItem('dsh-super-agent.lastFaction', lineup.id) } catch { /* private mode */ } setDefaultLineup(lineup.id) }}>

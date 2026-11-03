@@ -40,7 +40,6 @@ export const MODE_ROSTERS: Readonly<Record<TeamMode, readonly string[]>> = {
     'testing-performance-benchmarker',
     'engineering-devops-automator',
     'testing-evidence-collector',
-    'engineering-code-reviewer',
   ],
   compliance: [
     'product-manager',
@@ -48,8 +47,6 @@ export const MODE_ROSTERS: Readonly<Record<TeamMode, readonly string[]>> = {
     'security-cloud-security-architect',
     'engineering-devops-automator',
     'testing-evidence-collector',
-    'engineering-code-reviewer',
-    'testing-accessibility-auditor',
   ],
   legacy: [
     'engineering-codebase-onboarding-engineer',

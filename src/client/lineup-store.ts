@@ -166,9 +166,13 @@ export function setLineupEntries(id: string, entries: readonly LineupEntry[]): v
   persist()
 }
 
+/** 阵容人数上限：初始化与手动增员都不超过 5 人。 */
+export const MAX_LINEUP_ENTRIES = 5
+
 export function addLineupEntry(id: string, entry: LineupEntry): void {
   const lineup = lineupById(id)
   if (lineup === undefined) return
+  if (lineup.entries.length >= MAX_LINEUP_ENTRIES) return
   setLineupEntries(id, [...lineup.entries, entry])
 }
 

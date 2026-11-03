@@ -14,6 +14,8 @@ export declare function lineupById(id: string | undefined): LineupDefinition | u
 export declare function createLineup(name: string, theme: string): LineupDefinition | undefined;
 export declare function deleteLineup(id: string): void;
 export declare function setLineupEntries(id: string, entries: readonly LineupEntry[]): void;
+/** 阵容人数上限：初始化与手动增员都不超过 5 人。 */
+export declare const MAX_LINEUP_ENTRIES = 5;
 export declare function addLineupEntry(id: string, entry: LineupEntry): void;
 export declare function removeLineupEntry(id: string, index: number): void;
 export declare function resetLineup(id: string): void;
