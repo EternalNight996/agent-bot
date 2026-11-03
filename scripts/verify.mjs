@@ -303,20 +303,15 @@ check(
     && localesSource.includes("'member.state.notCreated': '未创建'"),
 )
 const expectedArtwork = [
-  'avatar-captain.png',
-  'avatar-planner.png', 'avatar-implementer.png', 'avatar-verifier.png',
-  'avatar-reviewer.png', 'avatar-researcher.png', 'avatar-analyst.png',
-  'avatar-writer.png', 'avatar-auditor.png', 'avatar-architect.png',
-  'avatar-tester.png', 'avatar-documenter.png', 'avatar-operator.png',
-  'avatar-talisman.png', 'avatar-healer.png', 'avatar-beastmaster.png',
-  'avatar-puppeteer.png', 'avatar-musician.png', 'avatar-poisoner.png',
-  'avatar-monk.png', 'avatar-demon.png',
+  'avatar-captain.png', 'avatar-planner.png', 'avatar-implementer.png',
+  'avatar-verifier.png', 'avatar-reviewer.png', 'avatar-architect.png',
+  'avatar-healer.png', 'avatar-demon.png',
   'state-working.png', 'state-idle.png', 'state-unknown.png',
 ].sort()
 const artworkDir = new URL('../assets/agent-teams/', import.meta.url)
 const packagedArtwork = (await readdir(artworkDir)).sort()
 check(
-  'artwork directory contains exactly the captain, twelve 道途 portraits, and three state icons',
+  'artwork directory contains exactly the eight cycling skin portraits and three state icons',
   JSON.stringify(packagedArtwork) === JSON.stringify(expectedArtwork),
   `artwork = ${JSON.stringify(packagedArtwork)}`,
 )
@@ -348,7 +343,7 @@ check(
   'client mapping and host allowlist reference every packaged artwork asset',
   expectedArtwork.every(name => artworkSource.includes(name) || hostSource.includes(name))
     && artworkSource.includes('avatar-implementer.png')
-    && artworkSource.includes('avatar-operator.png'),
+    && artworkSource.includes('avatar-demon.png'),
   'a packaged image is unreachable or one of the role mappings is missing',
 )
 const allRoleArtwork = [
@@ -358,9 +353,10 @@ const allRoleArtwork = [
   'monk', 'demon',
 ].map(role => memberArtUrl(role, role))
 check(
-  'every built-in 道途 resolves to its own embedded portrait, including a bare role id as the name',
+  'every built-in 道途 resolves to one of the seven duty portraits, including a bare role id as the name',
+  // The eighth shipped portrait is the captain skin, which is not a member role.
   allRoleArtwork.every(uri => typeof uri === 'string' && uri.startsWith('data:image/png;base64,'))
-    && new Set(allRoleArtwork).size === allRoleArtwork.length,
+    && new Set(allRoleArtwork).size === 7,
   `resolved artwork = ${JSON.stringify(allRoleArtwork.map(uri => (uri ?? '').slice(0, 32)))}`,
 )
 check(

@@ -1,6 +1,6 @@
 # Project maintenance skills
 
-This repository does not vendor skill copies. DSH plugin lifecycle skills are resolved live from the shared memory vault (memory-eternal); query the vault for the current skill address instead of copying skills here.
+Before using a DSH plugin lifecycle skill, read `skills/README.md`: this repository vendors only the maintenance subset (6 skills). Other lifecycle skills are resolved live from the shared memory vault (memory-eternal); query the vault for the current skill address instead of copying them here.
 
 Skill examples are community guidance. Historical version examples are not the current support policy; verify exact Harness tags, npm artifacts, the resolved dependency graph, and AgentTeams behavior.
 

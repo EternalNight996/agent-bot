@@ -14,7 +14,7 @@
  */
 /** Public avatar data URL for a skin catalog entry. */
 export declare function avatarArt(file: string): string;
-/** Selectable skins for custom lineup characters (skin name is the pixel identity). */
+/** Selectable skins for custom lineup characters: the same eight cycling portraits. */
 export declare const SKIN_OPTIONS: readonly [{
     readonly id: "demon";
     readonly name: "蚩尤";
@@ -24,8 +24,12 @@ export declare const SKIN_OPTIONS: readonly [{
     readonly name: "盘古";
     readonly art: string;
 }, {
-    readonly id: "planner";
+    readonly id: "captain";
     readonly name: "鸿钧";
+    readonly art: string;
+}, {
+    readonly id: "planner";
+    readonly name: "帝俊";
     readonly art: string;
 }, {
     readonly id: "verifier";
@@ -36,28 +40,12 @@ export declare const SKIN_OPTIONS: readonly [{
     readonly name: "天道";
     readonly art: string;
 }, {
-    readonly id: "analyst";
-    readonly name: "伏羲";
-    readonly art: string;
-}, {
     readonly id: "architect";
     readonly name: "杨眉大仙";
     readonly art: string;
 }, {
-    readonly id: "operator";
-    readonly name: "祖龙";
-    readonly art: string;
-}, {
     readonly id: "healer";
     readonly name: "女娲";
-    readonly art: string;
-}, {
-    readonly id: "monk";
-    readonly name: "接引";
-    readonly art: string;
-}, {
-    readonly id: "tester";
-    readonly name: "神农";
     readonly art: string;
 }];
 /** Captain skin options: exclusive portraits, defaulting to 紫霄宫/鸿钧. */

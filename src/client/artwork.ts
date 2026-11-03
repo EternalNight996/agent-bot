@@ -27,58 +27,64 @@ export function avatarArt(file: string): string { return art(file) }
 import { customRoles } from './custom-roles.ts'
 import { agencyRole } from '../agency-roles-lite.ts'
 
-/** One portrait per built-in role id (the wire id, never the display name). */
+/**
+ * Role id → one of the eight shipped skin portraits. The hall and the roster
+ * cycle twenty duties through the same eight faces instead of shipping one
+ * image per duty; the mapping keeps related duties together (planning, build,
+ * verify, review, design, support, attack).
+ */
 const ROLE_ART: Readonly<Record<string, string>> = {
   planner: 'avatar-planner.png',
   implementer: 'avatar-implementer.png',
   verifier: 'avatar-verifier.png',
   reviewer: 'avatar-reviewer.png',
-  researcher: 'avatar-researcher.png',
-  analyst: 'avatar-analyst.png',
-  writer: 'avatar-writer.png',
-  auditor: 'avatar-auditor.png',
   architect: 'avatar-architect.png',
-  tester: 'avatar-tester.png',
-  documenter: 'avatar-documenter.png',
-  operator: 'avatar-operator.png',
-  talisman: 'avatar-talisman.png',
   healer: 'avatar-healer.png',
-  beastmaster: 'avatar-beastmaster.png',
-  puppeteer: 'avatar-puppeteer.png',
-  musician: 'avatar-musician.png',
-  poisoner: 'avatar-poisoner.png',
-  monk: 'avatar-monk.png',
   demon: 'avatar-demon.png',
+  researcher: 'avatar-planner.png',
+  analyst: 'avatar-planner.png',
+  writer: 'avatar-architect.png',
+  documenter: 'avatar-architect.png',
+  auditor: 'avatar-verifier.png',
+  tester: 'avatar-verifier.png',
+  operator: 'avatar-implementer.png',
+  frontend: 'avatar-implementer.png',
+  backend: 'avatar-implementer.png',
+  integrator: 'avatar-implementer.png',
+  talisman: 'avatar-healer.png',
+  musician: 'avatar-healer.png',
+  monk: 'avatar-healer.png',
+  beastmaster: 'avatar-demon.png',
+  puppeteer: 'avatar-demon.png',
+  poisoner: 'avatar-demon.png',
+  security: 'avatar-demon.png',
 }
 
-/** Selectable skins for custom lineup characters (skin name is the pixel identity). */
+/** Selectable skins for custom lineup characters: the same eight cycling portraits. */
 export const SKIN_OPTIONS = [
   { id: 'demon', name: '蚩尤', art: art('avatar-demon.png') },
   { id: 'implementer', name: '盘古', art: art('avatar-implementer.png') },
-  { id: 'planner', name: '鸿钧', art: art('avatar-planner.png') },
+  { id: 'captain', name: '鸿钧', art: art('avatar-captain.png') },
+  { id: 'planner', name: '帝俊', art: art('avatar-planner.png') },
   { id: 'verifier', name: '鲲鹏', art: art('avatar-verifier.png') },
   { id: 'reviewer', name: '天道', art: art('avatar-reviewer.png') },
-  { id: 'analyst', name: '伏羲', art: art('avatar-analyst.png') },
   { id: 'architect', name: '杨眉大仙', art: art('avatar-architect.png') },
-  { id: 'operator', name: '祖龙', art: art('avatar-operator.png') },
   { id: 'healer', name: '女娲', art: art('avatar-healer.png') },
-  { id: 'monk', name: '接引', art: art('avatar-monk.png') },
-  { id: 'tester', name: '神农', art: art('avatar-tester.png') },
 ] as const
 
-/** Keyword fallback for custom roles, mapped onto the closest 法门 portrait. */
+/** Keyword fallback for custom roles, mapped onto the closest shipped portrait. */
 const KEYWORD_ART: ReadonlyArray<readonly [RegExp, string]> = [
-  [/数据|分析|推演|指标|analys|metric|data/, 'avatar-analyst.png'],
-  [/研究|调研|取证|探索|resear|investig|explor/, 'avatar-researcher.png'],
+  [/数据|分析|推演|指标|analys|metric|data/, 'avatar-planner.png'],
+  [/研究|调研|取证|探索|resear|investig|explor/, 'avatar-planner.png'],
   [/\bqa\b|质量|验证|校验|verif|quality/, 'avatar-verifier.png'],
-  [/测试|回归|test|regress/, 'avatar-tester.png'],
+  [/测试|回归|test|regress/, 'avatar-verifier.png'],
   [/实现|开发|工程|代码|编程|engineer|implement|backend|\bapi\b|runtime/, 'avatar-implementer.png'],
   [/架构|设计|边界|architect|design/, 'avatar-architect.png'],
   [/审查|裁断|评审|review|judge/, 'avatar-reviewer.png'],
-  [/审计|巡查|安全|风险|audit|secur/, 'avatar-auditor.png'],
-  [/文档|撰写|写作|书记|docs|writer|spec/, 'avatar-writer.png'],
-  [/传道|示例|document|tutorial/, 'avatar-documenter.png'],
-  [/发布|构建|部署|运维|打包|release|build|deploy|\bops\b/, 'avatar-operator.png'],
+  [/审计|巡查|安全|风险|audit|secur/, 'avatar-demon.png'],
+  [/文档|撰写|写作|书记|docs|writer|spec/, 'avatar-architect.png'],
+  [/传道|示例|document|tutorial/, 'avatar-architect.png'],
+  [/发布|构建|部署|运维|打包|release|build|deploy|\bops\b/, 'avatar-implementer.png'],
   [/规划|拆解|排程|plan|strateg/, 'avatar-planner.png'],
 ]
 

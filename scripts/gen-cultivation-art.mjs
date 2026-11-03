@@ -4,7 +4,10 @@
  * Pure Node (zlib) so the repo needs no image tooling: every icon is a 32x32
  * pixel grid with a 1px outline and two-tone shading, scaled x4 to a 128x128
  * RGBA PNG. Larger grids plus outlines keep the portraits readable at 40px.
- * The set is keyed by role id, so every built-in 道途 resolves to a portrait.
+ *
+ * Role visuals cover every duty, but only the eight cycling skin portraits are
+ * written to assets/agent-teams/: the roster renders duties through those eight
+ * faces, so generating one image per duty would ship dead weight.
  */
 import { deflateSync } from 'node:zlib'
 import { writeFileSync, mkdirSync } from 'node:fs'
@@ -399,11 +402,16 @@ function emitRoleVisuals() {
 
 emitRoleVisuals()
 
+/** Portraits that ship: the eight cycling skins. AVATARS still feeds role visuals. */
+const SHIPPED_AVATARS = [
+  'avatar-captain.png', 'avatar-planner.png', 'avatar-implementer.png', 'avatar-verifier.png',
+  'avatar-reviewer.png', 'avatar-architect.png', 'avatar-healer.png', 'avatar-demon.png',
+]
 mkdirSync(OUT, { recursive: true })
-for (const [name, palette] of Object.entries(AVATARS)) {
-  writeFileSync(join(OUT, name), encode(drawAvatar(palette)))
+for (const name of SHIPPED_AVATARS) {
+  writeFileSync(join(OUT, name), encode(drawAvatar(AVATARS[name])))
 }
 writeFileSync(join(OUT, 'state-working.png'), encode(drawWorking()))
 writeFileSync(join(OUT, 'state-idle.png'), encode(drawIdle()))
 writeFileSync(join(OUT, 'state-unknown.png'), encode(drawUnknown()))
-console.log('wrote', Object.keys(AVATARS).length + STATES.length, 'images')
+console.log('wrote', SHIPPED_AVATARS.length + STATES.length, 'images')
