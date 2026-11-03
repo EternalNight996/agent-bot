@@ -561,6 +561,8 @@ export function SectHallOverlay({
   const selectedTeam = viewingCurrent ? hall : selectedHistory
   // 切历史时，首页统计/需求清单/队伍卡都必须跟随所选历史队伍，而不是当前队。
   const shownTeam = selectedTeam ?? hall
+  const memberTasks = selectedMember === undefined ? [] : shownTeam.tasks.filter(task => task.assignee === selectedMember)
+  const memberPassed = memberTasks.filter(task => task.status === 'completed').length
   const selectedTeamUpdatedAt = selectedTeam === undefined ? undefined : Math.max(selectedTeam.createdAt ?? 0, ...selectedTeam.tasks.map(task => task.updatedAt ?? 0))
     const selectedState = viewingCurrent ? teamVisualState(hall) : selectedHistory === undefined ? 'waiting' : teamVisualState(selectedHistory)
     const costByTeam = new Map((costReport?.by_team ?? []).map(item => [item.teamId, item.usd]))
@@ -1100,6 +1102,8 @@ export function SectHallOverlay({
                             <strong>{selectedMember} · {t('home.memberRequirements')}</strong>
                             <button type="button" className={css.historyStartSmall} onClick={() => { setHallMember(undefined) }}>{t('home.memberBack')}</button>
                           </div>
+                          <div className={css.requirementBar}><span style={{ width: (memberTasks.length === 0 ? 0 : Math.round((memberPassed / memberTasks.length) * 100)) + '%' }} /></div>
+                          <span className={css.settingsMeta}>{memberPassed}/{memberTasks.length} PASS</span>
                           <table className={css.reqTable}>
                             <thead><tr><th>{t('home.colStatus')}</th><th>{t('home.memberRequirements')}</th><th>{t('home.colTask')}</th></tr></thead>
                             <tbody>
