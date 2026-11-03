@@ -1005,7 +1005,7 @@ export function SectHallOverlay({
                         t={t}
                         historic
                         workspace
-                        onOpenCaptain={openCaptain === undefined ? undefined : () => { openCaptain(selectedHistory.captainSessionId as SessionId) }}
+                        onOpenCaptain={openCaptain === undefined ? undefined : () => { setHallMember(undefined); openCaptain(selectedHistory.captainSessionId as SessionId) }}
                         onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
                       />
                     </div>
@@ -1141,7 +1141,8 @@ export function SectHallOverlay({
                     const target = shownTeam.captainSessionId !== '' ? shownTeam.captainSessionId : sessionId
 
                     if (openCaptain !== undefined && target !== '') openCaptain(target as SessionId)
-                    // 保持福地面板有内容：只回主对话，不关右栏正文。
+                    // 点掌教 = 回主对话 + 回到全队需求清单。
+                    setHallMember(undefined)
                     setSheet(current => current ?? 'home')
                   }}
                   onSelectMember={(name) => { setHallMember(hallMember() === name ? undefined : name) }}
