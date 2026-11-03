@@ -774,29 +774,34 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {historic && <span className={css.historicPill}>{t(discarded ? 'team.discarded' : 'team.ended')}</span>}
           {stopped && <span className={css.historicPill}>{t('team.stopped')}</span>}
-          {!historic && !stopped && teamSettled(team) && onOpenCaptain !== undefined && (
-            <button
-              type="button"
-              className={css.teamResumeButton}
-              data-control="team-action"
-              data-action={team.tasks.some(task => task.status === 'failed' || task.status === 'cancelled') ? 'restart' : 'end'}
-              onClick={onOpenCaptain}
-            >
-              {team.tasks.some(task => task.status === 'failed' || task.status === 'cancelled') ? '🔄 ' + t('team.action.restart') : '🔚 ' + t('team.action.end')}
-            </button>
-          )}
-          {!historic && interruptedTask !== undefined && (
-            <button
-              type="button"
-              className={css.teamResumeButton}
-              data-control="team-resume-last"
-              disabled={resumingLast || resumeLimitReached}
-              onClick={() => { void resumeLast() }}
-              title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
-            >
-              <span aria-hidden>↺</span>
-              {resumingLast ? t('team.resuming') : t('team.resumeLast')}
-            </button>
+          {!historic && !stopped && teamSettled(team) && (
+            interruptedTask !== undefined
+              ? (
+                <button
+                  type="button"
+                  className={css.teamResumeButton}
+                  data-control="team-action"
+                  data-action="restart"
+                  disabled={resumingLast || resumeLimitReached}
+                  onClick={() => { void resumeLast() }}
+                  title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
+                >
+                  {resumingLast ? t('team.resuming') : '🔄 ' + t('team.action.restart')}
+                </button>
+              )
+              : onOpenCaptain !== undefined
+                ? (
+                  <button
+                    type="button"
+                    className={css.teamResumeButton}
+                    data-control="team-action"
+                    data-action="end"
+                    onClick={onOpenCaptain}
+                  >
+                    {'🔚 ' + t('team.action.end')}
+                  </button>
+                )
+                : null
           )}
           {stopped && (
             <button
