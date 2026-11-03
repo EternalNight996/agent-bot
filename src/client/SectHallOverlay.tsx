@@ -1136,7 +1136,7 @@ export function SectHallOverlay({
                     workspace
                   fill
                   onOpenCaptain={() => {
-                    const target = sessionId ?? shownTeam.captainSessionId
+                    const target = shownTeam.captainSessionId !== '' ? shownTeam.captainSessionId : sessionId
                     if (openCaptain !== undefined && target !== '') openCaptain(target as SessionId)
                     setSheet(undefined)
                   }}

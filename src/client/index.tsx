@@ -151,8 +151,11 @@ export function apply(ctx: ClientContext): void {
         wasOpen = false
         if (budget <= 0) return
         budget -= 1
-        // 顺序：先收起（落盘 collapsed=true，令牌出现），再重开标签，避免「标签开了但福地还展开」的中间态。
-        if (closedByUser) window.dispatchEvent(new CustomEvent(COLLAPSE_HALL_EVENT))
+        // 用户手动关掉协作标签：收起福地（令牌出现）即可，绝不自动重开。
+        if (closedByUser) {
+          window.dispatchEvent(new CustomEvent(COLLAPSE_HALL_EVENT))
+          return
+        }
         try { native.sidebarRight.openTab(TEAM_TAB_KIND) } catch { /* kind 尚未注册 */ }
       }
       const schedule = (): void => {
