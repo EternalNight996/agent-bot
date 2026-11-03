@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.138] - 2026-11-03
+
+### Added
+- 设置中心的角色列表、阵容列表显示序号（两位补零），阵容内每个席位显示位置号。
+
+### Changed
+- `assets/agent-teams` 只保留 8 张循环皮肤头像 + 3 个状态图标；全部 24 个职责映射到这 8 张，嵌入图从 29 KB 降到 17 KB。
+- 找回维护必需的 6 个 skill（development / write / test / release / upgrade / upgrade-audit），其余仍从共享记忆库实时获取；`upstream-lock.json` 收敛到该子集。
+- 角色视觉生成器只写这 8 张头像，职责视觉数据仍覆盖全部职责。
+
 ## [0.1.137] - 2026-11-03
 
 ### Changed
