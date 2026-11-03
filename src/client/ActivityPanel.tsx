@@ -778,26 +778,38 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           {!historic && !stopped && teamSettled(team) && (
             team.delivery?.ok === true
               ? <span className={css.teamDonePill} data-action="done">{'✓ ' + t('team.action.done')}</span>
-              : team.tasks.some(task => task.status === 'failed')
+              : interruptedTask !== undefined
                 ? (
                   <button
                     type="button"
                     className={css.teamResumeButton}
-                    data-control="team-action"
-                    data-action="restart"
+                    data-control="team-resume-last"
+                    data-action="resume"
                     disabled={resumingLast || resumeLimitReached}
-                    onClick={() => {
-                      if (interruptedTask !== undefined) { void resumeLast(); return }
-                      setRetryNote(t('team.retryNote'))
-                      window.setTimeout(() => { setRetryNote('') }, 8000)
-                      onOpenCaptain?.()
-                    }}
+                    onClick={() => { void resumeLast() }}
                     title={resumeLimitReached ? t('team.resumeLimit') : t('team.resumeLastHint')}
                   >
-                    {resumingLast ? t('team.resuming') : '🔄 ' + t('team.action.restart')}
+                    {resumingLast ? t('team.resuming') : '▶ ' + t('team.action.resume')}
                   </button>
                 )
-                : null
+                : team.tasks.some(task => task.status === 'failed')
+                  ? (
+                    <button
+                      type="button"
+                      className={css.teamResumeButton}
+                      data-control="team-action"
+                      data-action="restart"
+                      onClick={() => {
+                        setRetryNote(t('team.retryNote'))
+                        window.setTimeout(() => { setRetryNote('') }, 8000)
+                        onOpenCaptain?.()
+                      }}
+                      title={t('team.retryNote')}
+                    >
+                      {'🔄 ' + t('team.action.restart')}
+                    </button>
+                  )
+                  : null
           )}
           {stopped && (
             <button
