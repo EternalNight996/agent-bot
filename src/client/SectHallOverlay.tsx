@@ -41,6 +41,7 @@ import {
   readHallCollapsed, readHallPage, shouldArmHallFallback, useHallHost,
   useHallSidebarVisible, writeHallCollapsed, writeHallPage, type HallPage,
 } from './hall-nav.ts'
+import { hallMember, setHallMember, useHallMember } from './hall-selection.ts'
 import css from './SectHallOverlay.module.css'
 
 function formatDuration(ms: number): string {
@@ -193,7 +194,8 @@ export function SectHallOverlay({
   useEffect(() => {
     try { window.localStorage.setItem('dsh-super-agent.archivedTeams.v1', JSON.stringify(archivedTeamIds)) } catch { /* private mode */ }
   }, [archivedTeamIds])
-  const [selectedMember, setSelectedMember] = useState<string | undefined>()
+  // 成员选择放模块级：切子会话会让右栏重挂载，局部 state 会丢。
+  const selectedMember = useHallMember()
   const [characterId, setCharacterId] = useState<string | undefined>()
   const previousSessionRef = useRef(sessionId)
   // 法器 / 坐骑 / 技能各选各的，互不覆盖；按角色分开记，来回切换不会丢装备。
@@ -1084,7 +1086,7 @@ export function SectHallOverlay({
                         <div className={css.homeRequirements} data-member-detail>
                           <div className={css.historyHead}>
                             <strong>{selectedMember} · {t('home.memberRequirements')}</strong>
-                            <button type="button" className={css.historyStartSmall} onClick={() => { setSelectedMember(undefined) }}>{t('home.memberBack')}</button>
+                            <button type="button" className={css.historyStartSmall} onClick={() => { setHallMember(undefined) }}>{t('home.memberBack')}</button>
                           </div>
                           <table className={css.reqTable}>
                             <thead><tr><th>{t('home.colStatus')}</th><th>{t('home.memberRequirements')}</th><th>{t('home.colTask')}</th></tr></thead>
@@ -1142,7 +1144,7 @@ export function SectHallOverlay({
                     // 保持福地面板有内容：只回主对话，不关右栏正文。
                     setSheet(current => current ?? 'home')
                   }}
-                  onSelectMember={(name) => { setSelectedMember(current => current === name ? undefined : name) }}
+                  onSelectMember={(name) => { setHallMember(hallMember() === name ? undefined : name) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
                   onContinuePlanning={() => { setSheet(undefined) }}
