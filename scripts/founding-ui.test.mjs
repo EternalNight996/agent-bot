@@ -59,6 +59,20 @@ test('the founding entry opens the hall start page, never the inbox sheet', () =
   assert.match(workspace, /action !== 'start'/, 'the workspace sheet must not route start into the inbox fallback')
 })
 
+test('the token show/hide control actually toggles and glides', () => {
+  const hall = readFileSync(new URL('../src/client/SectHallOverlay.tsx', import.meta.url), 'utf8')
+  const css = readFileSync(new URL('../src/client/SectHallOverlay.module.css', import.meta.url), 'utf8')
+  // 「显示」不能只开右栏：collapsed 不翻回来，福地内容不渲染、令牌继续压暗，
+  // 看起来就是点了没反应。收起/展开必须走同一条 toggleCollapsed。
+  assert.match(hall, /className={css\.tokenToggle}[\s\S]{0,400}?toggleCollapsed\(\)/)
+  assert.doesNotMatch(hall, /if \(collapsed\) \{ bringHallBack\(\); return \}/)
+  // 压暗/恢复走过渡而不是瞬切；悬浮桥接让按钮在鼠标从令牌移过去时不会消失。
+  assert.match(css, /\.tokenWrap\[data-hidden='true'\] \.token \{[^}]*opacity: 0\.45/)
+  assert.match(css, /transition: opacity 220ms ease/)
+  assert.match(css, /\[data-hover='true'\] \.tokenToggle/)
+  assert.match(hall, /onPointerEnter=\{holdTokenHover\}/)
+})
+
 test('goal attachments and plan agent executors are wired', () => {
   assert.match(dialog, /uploadGoalFiles/, 'the goal step must upload dropped files')
   assert.match(dialog, /onDrop=/)

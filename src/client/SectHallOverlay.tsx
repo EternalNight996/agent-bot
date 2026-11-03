@@ -244,6 +244,32 @@ export function SectHallOverlay({
   const tokenDrag = useRef<{
     startX: number; startY: number; baseX: number; baseY: number; lastX: number; lastY: number; moved: boolean
   } | null>(null)
+  // 令牌悬浮态：显示/隐藏按钮悬在令牌上方，中间有一条视觉空隙；只用 CSS :hover
+  // 时鼠标移向按钮的瞬间就会丢失 hover，按钮立刻不可点。这里用 240ms 宽限把
+  // 「令牌 → 按钮」这段路接起来，并让令牌的压暗/恢复走过渡而不是瞬切。
+  const [tokenHover, setTokenHover] = useState(false)
+  const tokenHoverTimer = useRef<number | undefined>(undefined)
+  const holdTokenHover = (): void => {
+    if (tokenHoverTimer.current !== undefined) {
+      window.clearTimeout(tokenHoverTimer.current)
+      tokenHoverTimer.current = undefined
+    }
+    setTokenHover(true)
+  }
+  const releaseTokenHover = (): void => {
+    if (tokenHoverTimer.current !== undefined) window.clearTimeout(tokenHoverTimer.current)
+    tokenHoverTimer.current = window.setTimeout(() => {
+      tokenHoverTimer.current = undefined
+      setTokenHover(false)
+    }, 240)
+  }
+  useEffect(() => () => {
+    if (tokenHoverTimer.current !== undefined) window.clearTimeout(tokenHoverTimer.current)
+  }, [])
+  // 令牌点击语义要跟 aria-label 一致：已展开且福地可见时，再点令牌就收起；
+  // 只有「已展开但宿主把福地藏了」才重新调出来。hallVisible 在下方才算出来，
+  // 用 ref 把最新值带到这里（事件回调只在渲染后触发）。
+  const hallVisibleRef = useRef(false)
 
   // 福地常驻：即使当前会话还没有队伍，也保留浮层（空福地里只有师父）。
   const hasTeam = team !== undefined
@@ -345,8 +371,9 @@ export function SectHallOverlay({
   }
 
   const activateToken = (): void => {
-    if (collapsed) { toggleCollapsed(); return }
-    // 已展开但侧栏被宿主收起（宿主回收 → 令牌仍显示）：再点一次把它调回来。
+    // 收起态点击 = 展开；已展开且福地可见时再点 = 收起（与 aria-label / title 一致）；
+    // 只有「已展开但宿主把福地藏了」才重新把它调回来。
+    if (collapsed || hallVisibleRef.current) { toggleCollapsed(); return }
     bringHallBack()
   }
 
@@ -1216,6 +1243,7 @@ export function SectHallOverlay({
   // F2：展开但福地不可见（宿主未挂载/右栏收起）时留 200ms 宽限再退回令牌，
   // 避免首帧或收起动画里「令牌 + 展开态」并存。
   const hallVisible = sidebarHost !== null && sidebarVisible
+  hallVisibleRef.current = hallVisible
   const showToken = true
   // 展开后宿主迟迟没挂载（无会话态/宿主降级）才退回令牌兜底，首帧不再与展开态并存（F2）。
   // 同时按 t24-R2-1③：300ms 重试一次 openTab，800ms 仍未挂载就把 collapsed 落盘为 true，
@@ -1273,6 +1301,9 @@ export function SectHallOverlay({
         <div
           className={css.tokenWrap}
           data-hidden={collapsed ? 'true' : undefined}
+          data-hover={tokenHover ? 'true' : undefined}
+          onPointerEnter={holdTokenHover}
+          onPointerLeave={releaseTokenHover}
           style={{ left: tokenAt.x, top: tokenAt.y, width: tokenSize.w, height: tokenSize.h }}
         >
           <button
@@ -1299,10 +1330,9 @@ export function SectHallOverlay({
             className={css.tokenToggle}
             onClick={(event) => {
               event.stopPropagation()
-              if (collapsed) { bringHallBack(); return }
-              setCollapsed(true)
-              writeHallCollapsed(true)
-              onCollapseSidebar?.()
+              // 与令牌本体走同一条收起/展开路径：只开右栏而不把 collapsed 翻回来，
+              // 会让「显示」看起来毫无反应（内容不渲染、令牌继续压暗）。
+              toggleCollapsed()
             }}
           >
             {collapsed ? t('office.tokenShow') : t('office.tokenHide')}
