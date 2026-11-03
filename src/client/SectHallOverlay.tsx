@@ -1100,8 +1100,6 @@ export function SectHallOverlay({
                         <span className={css.homeStat} data-tone="pass"><strong>{passedCount}/{shownTeam.tasks.length}</strong><small>{t('home.passed')}</small></span>
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
                         <span className={css.homeStat} data-tone="blocked"><strong>{blockedCount}</strong><small>{t('home.blocked')}</small></span>
-                        <span className={css.homeStat} data-tone="mode"><strong>{modeName}</strong><small>{t('home.mode')}</small></span>
-                        <span className={css.homeStat} data-tone="lineup"><strong>{lineupName}</strong><small>{t('home.lineup')}</small></span>
                         <span className={css.homeStat}><strong>{elapsedText}</strong><small>{t('home.elapsed')}</small></span>
                         <span className={css.homeStat}><strong>{formatTokens(activeCost?.total_tokens ?? 0)}</strong><small>{t('home.tokens')}</small></span>
                         <span className={css.homeStat}><strong>{money(activeCost?.usd ?? 0)}</strong><small>{t('home.cost')}</small></span>
