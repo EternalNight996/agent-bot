@@ -28,6 +28,7 @@ import { ingestCultivation, useCultivationVersion, xpOf } from './cultivation-st
 import { COLLAPSE_HALL_EVENT, OPEN_HALL_SHEET_EVENT, OPEN_HALL_START_EVENT, type HallSheetAction } from './hall-events.ts'
 import { ASCENSION_RANKS, ASCENSION_STORY, ASCENSION_TIER_KEYS, ASCENSION_TIPS, rankAtLevel } from './immortals.ts'
 import { FACTIONS } from '../factions.ts'
+import { getModeSpec, isTeamMode } from '../modes.ts'
 import { permissionLabel, roleDuty, roleLabel, rolePrompt } from './role-catalog.ts'
 import { addCustomRole, removeCustomRole, useCustomRoles } from './custom-roles.ts'
 import { hideLineup, showLineup, useHiddenLineups } from './hidden-lineups.ts'
@@ -561,6 +562,8 @@ export function SectHallOverlay({
   const selectedTeam = viewingCurrent ? hall : selectedHistory
   // 切历史时，首页统计/需求清单/队伍卡都必须跟随所选历史队伍，而不是当前队。
   const shownTeam = selectedTeam ?? hall
+  const modeId = shownTeam.planSummary?.mode
+  const modeName = modeId !== undefined && isTeamMode(modeId) ? getModeSpec(modeId).name : '—'
   const memberTasks = selectedMember === undefined ? [] : shownTeam.tasks.filter(task => task.assignee === selectedMember)
   const memberPassed = memberTasks.filter(task => task.status === 'completed').length
   const selectedTeamUpdatedAt = selectedTeam === undefined ? undefined : Math.max(selectedTeam.createdAt ?? 0, ...selectedTeam.tasks.map(task => task.updatedAt ?? 0))
@@ -1092,6 +1095,7 @@ export function SectHallOverlay({
                         <span className={css.homeStat} data-tone="pass"><strong>{passedCount}/{shownTeam.tasks.length}</strong><small>{t('home.passed')}</small></span>
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
                         <span className={css.homeStat} data-tone="blocked"><strong>{blockedCount}</strong><small>{t('home.blocked')}</small></span>
+                        <span className={css.homeStat} data-tone="mode"><strong>{modeName}</strong><small>{t('home.mode')}</small></span>
                         <span className={css.homeStat}><strong>{elapsedText}</strong><small>{t('home.elapsed')}</small></span>
                         <span className={css.homeStat}><strong>{formatTokens(activeCost?.total_tokens ?? 0)}</strong><small>{t('home.tokens')}</small></span>
                         <span className={css.homeStat}><strong>{money(activeCost?.usd ?? 0)}</strong><small>{t('home.cost')}</small></span>

@@ -319,6 +319,7 @@
   min-width: 0;
   position: relative;
 }
+.modePill { flex: 0 0 auto; padding: 1px 7px; border: 1px solid color-mix(in srgb, #f2c14e 45%, transparent); border-radius: 999px; color: #f2c14e; font-size: 9.5px; white-space: nowrap; }
 .actionToast {
   position: absolute;
   right: 4px;

@@ -74,6 +74,7 @@ import {
   type ActivityTeam,
 } from './activity-monitor.ts'
 import { isInterruptedTask } from '../interruptions.ts'
+import { getModeSpec, isTeamMode } from '../modes.ts'
 import { ACTION_ART, memberArtUrl } from './artwork.ts'
 import { useCaptainSkin } from './captain-skin.ts'
 import { captainKey, cultivationFromXp, memberKey } from './cultivation.ts'
@@ -805,6 +806,9 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
       <section className={css.team} data-team-id={team.teamId} data-workspace-team={workspace || undefined} data-hall-fill={fill || undefined}>
         <header className={css.teamHead}>
           <span className={css.teamName} title={team.name}>{team.name}</span>
+          {team.planSummary?.mode !== undefined && isTeamMode(team.planSummary.mode) && (
+            <span className={css.modePill} title={t('home.mode')}>{getModeSpec(team.planSummary.mode).name}</span>
+          )}
           {!historic && team.phase === 'running' && !stopped && !teamSettled(team) && (
             <span className={css.statePill} data-state={allCompleted ? 'completed' : allSettled ? 'settled' : 'running'}>
               {t(allCompleted ? 'team.state.completed' : allSettled ? 'team.state.settled' : 'team.state.running')}
