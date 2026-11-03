@@ -4,7 +4,7 @@
 // created from the conversation header (issue: "没有生效" after 生成草案).
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { TEAM_CREATED_EVENT, shouldRevealTeam } from '../lib/client/team-reveal.js'
+import { TEAM_CREATED_EVENT, shouldRevealTeam, teamHasStarted } from '../lib/client/team-reveal.js'
 
 const base = { sessionId: 'session-a', onScreenSessionId: 'session-a', teamId: 'sect-1' }
 
@@ -29,6 +29,19 @@ test('a missing session or team id is nothing to reveal', () => {
   assert.equal(shouldRevealTeam({ ...base, source: 'created', sessionId: '', expanded: true }), false)
   assert.equal(shouldRevealTeam({ ...base, source: 'created', teamId: undefined, expanded: true }), false)
   assert.equal(shouldRevealTeam({ ...base, source: 'created', teamId: '', expanded: true }), false)
+})
+
+test('a staged plan is not "started"; running or claimed work is', () => {
+  assert.equal(teamHasStarted({ phase: 'staged', tasks: [] }), false)
+  assert.equal(teamHasStarted({ phase: 'staged', tasks: [{ status: 'pending' }, { status: 'completed' }] }), false)
+  assert.equal(teamHasStarted({ phase: 'running', tasks: [] }), true)
+  assert.equal(teamHasStarted({ phase: 'staged', tasks: [{ status: 'claimed' }] }), true)
+  assert.equal(teamHasStarted({ phase: 'staged', tasks: [{ status: 'in_progress' }] }), true)
+})
+
+test('a halted team never counts as started work', () => {
+  assert.equal(teamHasStarted({ phase: 'running', halted: true }), false)
+  assert.equal(teamHasStarted({ phase: 'running', halted: true, tasks: [{ status: 'in_progress' }] }), false)
 })
 
 test('the dialog, both listeners and the reveal rule share one event name', () => {

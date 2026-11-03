@@ -27,7 +27,7 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { OPEN_PANEL_EVENT } from './AgentTeamsCard.tsx'
 import type { AgentTeamsCardData } from './agent-teams-card-definition.ts'
 import { currentSessionId } from './session-navigation.ts'
-import { TEAM_CREATED_EVENT, shouldRevealTeam } from './team-reveal.ts'
+import { TEAM_CREATED_EVENT, shouldRevealTeam, teamHasStarted } from './team-reveal.ts'
 import { getActivityMonitorTargetsSnapshot, getActivitySnapshotsSnapshot, startActivityPolling, subscribeActivityMonitorTargets, subscribeActivitySnapshots, updateActivitySnapshots, type ActivityTeam } from './activity-monitor.ts'
 import { createTeamDiscovery, type WorkspaceActivityState } from './workspace-state.ts'
 import { ingestCultivation } from './cultivation-store.ts'
@@ -127,6 +127,35 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
   const currentTargets = useMemo(() => targets.filter(target => target.sessionId === current), [targets, current])
   // One discovery tracker per visit, outside polling effects restarted by card registration.
   const discover = useMemo(() => createTeamDiscovery(), [current])
+  // 任务真正开始后切到洪荒视图：记录本会话上一轮「已在执行」的队伍，只有新开始的
+  // 队伍才切过去；刷新/切会话时先在跑的队伍只建立基线，不抢当前页面。
+  const startedTeamsRef = useRef<{ session: string; ids: Set<string> } | null>(null)
+  const startedTeamIds = useMemo(
+    () => (current === undefined
+      ? []
+      : snapshots.teams
+          .filter(team => team.captainSessionId === current && teamHasStarted(team))
+          .map(team => team.teamId)),
+    [snapshots, current],
+  )
+  useEffect(() => {
+    if (current === undefined) return
+    const next = new Set(startedTeamIds)
+    const baseline = startedTeamsRef.current
+    if (baseline === null || baseline.session !== current) {
+      startedTeamsRef.current = { session: current, ids: next }
+      return
+    }
+    const fresh = [...next].filter(teamId => !baseline.ids.has(teamId))
+    startedTeamsRef.current = { session: current, ids: next }
+    if (fresh.length === 0 || sidebar === undefined) return
+    // Only switch the surface that is bound to this session.
+    if (sidebar.mounted.getSnapshot() !== current) return
+    try {
+      if (sidebar.isExpanded() !== true) sidebar.toggleExpanded()
+      sidebar.openTab(TEAM_TAB_KIND)
+    } catch { /* column unavailable */ }
+  }, [startedTeamIds, current, sidebar])
   useEffect(() => {
     if (current === undefined) return
     state.status(current, 'loading')

@@ -31,4 +31,20 @@ export interface TeamRevealInput {
  *   column's current expansion.
  * @returns `true` when the tab should be opened/focused.
  */
+/** Minimal team shape needed to tell planning apart from executing work. */
+export interface TeamStartInput {
+    readonly phase?: string;
+    readonly halted?: boolean;
+    readonly tasks?: readonly {
+        readonly status?: string;
+    }[];
+}
+/**
+ * Whether a team has actually started executing: it left the planning stage or
+ * any task is claimed / in progress. A halted team is not "started" — its work
+ * is stopped, so the view must not be pulled away from the user.
+ * @param team - the activity team (or any snapshot with phase/tasks).
+ * @returns `true` when real work has begun.
+ */
+export declare function teamHasStarted(team: TeamStartInput): boolean;
 export declare function shouldRevealTeam(input: TeamRevealInput): boolean;
