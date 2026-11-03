@@ -1250,6 +1250,13 @@
 .acceptChip[data-status='pending'] { color: var(--dsw-alias-label-tertiary); }
 .requirementBar { height: 4px; margin: 6px 0 4px; border-radius: 2px; background: color-mix(in srgb, var(--dsw-alias-label-tertiary) 25%, transparent); overflow: hidden; }
 .requirementBar span { display: block; height: 100%; background: #7ad08a; }
+.reqTable { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 9.5px; }
+.reqTable th { padding: 3px 5px; text-align: left; font-weight: 500; color: var(--dsw-alias-label-tertiary); border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.reqTable td { padding: 3px 5px; vertical-align: top; border-bottom: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1) 60%, transparent); }
+.reqTable tr[data-status='pass'] td:first-child { border-left: 2px solid #7ad08a; }
+.reqTable tr[data-status='fail'] td:first-child { border-left: 2px solid #e08080; }
+.reqTable tr[data-status='running'] td:first-child { border-left: 2px solid #f2c14e; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .sheetBody {
   flex: 1 1 auto;

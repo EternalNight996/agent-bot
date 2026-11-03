@@ -337,6 +337,9 @@ export declare const zh: {
     'office.archiveRestore': string;
     'home.memberTasks': string;
     'home.memberRequirements': string;
+    'home.colStatus': string;
+    'home.colTask': string;
+    'home.colAssignee': string;
     'home.noMemberTasks': string;
     'home.memberBack': string;
     'office.floorDoctrine': string;
@@ -1444,6 +1447,9 @@ export declare const en: {
     'office.archiveRestore': string;
     'home.memberTasks': string;
     'home.memberRequirements': string;
+    'home.colStatus': string;
+    'home.colTask': string;
+    'home.colAssignee': string;
     'home.noMemberTasks': string;
     'home.memberBack': string;
     'office.floorDoctrine': string;

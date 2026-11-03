@@ -1086,39 +1086,46 @@ export function SectHallOverlay({
                             <strong>{selectedMember} · {t('home.memberRequirements')}</strong>
                             <button type="button" className={css.historyStartSmall} onClick={() => { setSelectedMember(undefined) }}>{t('home.memberBack')}</button>
                           </div>
-                          <ul className={css.acceptList}>
-                            {shownTeam.tasks.filter(task => task.assignee === selectedMember).flatMap(task => {
-                              const items = (task.acceptance ?? []).length > 0 ? (task.acceptance ?? []) : [task.subject]
-                              const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
-                              const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
-                              return items.map((criterion, index) => (
-                                <li key={task.id + '-' + index} data-status={state}>
-                                  <span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span>
-                                  {criterion}
-                                </li>
-                              ))
-                            })}
-                            {shownTeam.tasks.filter(task => task.assignee === selectedMember).length === 0 && <li>{t('home.noMemberTasks')}</li>}
-                          </ul>
+                          <table className={css.reqTable}>
+                            <thead><tr><th>{t('home.colStatus')}</th><th>{t('home.memberRequirements')}</th><th>{t('home.colTask')}</th></tr></thead>
+                            <tbody>
+                              {shownTeam.tasks.filter(task => task.assignee === selectedMember).flatMap(task => {
+                                const items = (task.acceptance ?? []).length > 0 ? (task.acceptance ?? []) : [task.subject]
+                                const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
+                                const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
+                                return items.map((criterion, index) => (
+                                  <tr key={task.id + '-' + index} data-status={state}>
+                                    <td><span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span></td>
+                                    <td>{criterion}</td>
+                                    <td className={css.mono}>{task.id}</td>
+                                  </tr>
+                                ))
+                              })}
+                              {shownTeam.tasks.filter(task => task.assignee === selectedMember).length === 0 && <tr><td colSpan={3}>{t('home.noMemberTasks')}</td></tr>}
+                            </tbody>
+                          </table>
                         </div>
                       ) : (
                       <details className={css.homeRequirements} open>
                         <summary>{t('home.requirements')} · {passedCount}/{shownTeam.tasks.length} PASS</summary>
                         <div className={css.requirementBar}><span style={{ width: (shownTeam.tasks.length === 0 ? 0 : Math.round((passedCount / shownTeam.tasks.length) * 100)) + '%' }} /></div>
-                        <ul className={css.acceptList}>
-                          {shownTeam.tasks.map(task => {
-                            const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
-                            const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
-                            return (
-                              <li key={task.id} data-status={state}>
-                                <span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span>
-                                <b>{task.subject}</b>
-                                {task.assignee !== '' ? ' · ' + task.assignee : ''}
-                              </li>
-                            )
-                          })}
-                          {shownTeam.tasks.length === 0 && <li>{t('home.noRequirements')}</li>}
-                        </ul>
+                        <table className={css.reqTable}>
+                          <thead><tr><th>{t('home.colStatus')}</th><th>{t('home.colTask')}</th><th>{t('home.colAssignee')}</th></tr></thead>
+                          <tbody>
+                            {shownTeam.tasks.map(task => {
+                              const state = task.status === 'completed' ? 'pass' : task.status === 'failed' || task.status === 'cancelled' ? 'fail' : 'running'
+                              const glyph = state === 'pass' ? '✓' : state === 'fail' ? '✕' : '▶'
+                              return (
+                                <tr key={task.id} data-status={state}>
+                                  <td><span className={css.acceptChip} data-status={state}>{glyph} {state === 'pass' ? 'PASS' : state === 'fail' ? 'FAIL' : 'RUN'}</span></td>
+                                  <td>{task.subject}</td>
+                                  <td>{task.assignee !== '' ? task.assignee : '—'}</td>
+                                </tr>
+                              )
+                            })}
+                            {shownTeam.tasks.length === 0 && <tr><td colSpan={3}>{t('home.noRequirements')}</td></tr>}
+                          </tbody>
+                        </table>
                       </details>
                       )}
                     </section>
@@ -1128,7 +1135,11 @@ export function SectHallOverlay({
                     t={t}
                     workspace
                   fill
-                  onOpenCaptain={() => { setSheet(undefined) }}
+                  onOpenCaptain={() => {
+                    const target = sessionId ?? shownTeam.captainSessionId
+                    if (openCaptain !== undefined && target !== '') openCaptain(target as SessionId)
+                    setSheet(undefined)
+                  }}
                   onSelectMember={(name) => { setSelectedMember(current => current === name ? undefined : name) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
