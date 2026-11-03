@@ -1762,6 +1762,80 @@ export function apply(ctx: Context, config: Config): void {
       },
     }), 'agent-teams: resume route')
 
+    // 重新：把失败任务重新派发（reassign），无需用户再发任何消息。
+    ctx.effect(() => webServer.register({
+      kind: 'exact',
+      path: '/plugins/dsh-super-agent/retry',
+      handler: async (req, res) => {
+        if (req.method !== 'POST') {
+          res.writeHead(405, { allow: 'POST', 'cache-control': 'no-store' })
+          res.end()
+          return
+        }
+        let payload: Record<string, unknown>
+        try {
+          payload = await readJsonRequest(req)
+        } catch (error: unknown) {
+          res.writeHead(error instanceof RequestBodyError ? error.status : 400, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : 'invalid request body' }))
+          return
+        }
+        const sessionId = typeof payload.sessionId === 'string' ? payload.sessionId.trim() : ''
+        const teamId = typeof payload.teamId === 'string' ? payload.teamId.trim() : ''
+        if (sessionId === '') {
+          res.writeHead(400, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ error: 'sessionId is required' }))
+          return
+        }
+        const captain = ctx.agents.get(sessionId as import('@deepseek-ai/dsh-session').SessionId)
+        if (captain === undefined) {
+          res.writeHead(409, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ error: 'session is not attached' }))
+          return
+        }
+        const registry = ctx.get('tools') as { get?: (name: string) => { execute?: (args: unknown, exec: unknown) => Promise<unknown> } | undefined } | undefined
+        const statusTool = registry?.get?.('agent_teams_status')
+        const reassignTool = registry?.get?.('agent_teams_reassign_task')
+        if (statusTool?.execute === undefined || reassignTool?.execute === undefined) {
+          res.writeHead(503, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ error: 'team tools are unavailable' }))
+          return
+        }
+        const run = { agent: captain, signal: new AbortController().signal, deferContext() {}, concludeTurn() {} }
+        try {
+          const status = await statusTool.execute({}, run) as {
+            team_id?: string
+            members?: Array<{ name?: string }>
+            tasks?: Array<{ id?: string; status?: string; assignee?: string }>
+          }
+          if (teamId !== '' && status.team_id !== undefined && status.team_id !== teamId) {
+            res.writeHead(409, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+            res.end(JSON.stringify({ error: 'team mismatch' }))
+            return
+          }
+          const fallback = (status.members ?? []).map(member => member.name ?? '').find(name => name !== '') ?? ''
+          const failed = (status.tasks ?? []).filter(task => task.status === 'failed' && task.id !== undefined && task.id !== '')
+          const retried: string[] = []
+          const errors: string[] = []
+          for (const task of failed) {
+            const assignee = task.assignee !== undefined && task.assignee !== '' ? task.assignee : fallback
+            if (assignee === '') continue
+            try {
+              await reassignTool.execute({ task_id: task.id, assignee, reason: '重新：Web 面板重派失败任务' }, run)
+              retried.push(task.id as string)
+            } catch (error: unknown) {
+              errors.push((error instanceof Error ? error.message : String(error)).slice(0, 160))
+            }
+          }
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ ok: true, retried, errors }))
+        } catch (error: unknown) {
+          res.writeHead(422, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }))
+        }
+      },
+    }), 'agent-teams: retry route')
+
     // Click-to-dispatch: the Web "开团" dialog asks the host to stage exactly
     // what the captain tool would stage, so the user never has to type a
     // command. Approval stays required; this route never spawns members.

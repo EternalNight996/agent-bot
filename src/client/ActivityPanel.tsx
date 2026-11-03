@@ -613,6 +613,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
   const [resumingLast, setResumingLast] = useState(false)
   const [resumeLastError, setResumeLastError] = useState('')
   const [retryNote, setRetryNote] = useState('')
+  const [retrying, setRetrying] = useState(false)
   const discarded = historic && team.phase === 'staged'
   const stopped = !historic && team.halted === true
   const busyCount = team.members.filter((member) => member.activity === 'working').length
@@ -658,6 +659,31 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
       setResumeError(t('team.resumeFailed', { message: error instanceof Error ? error.message : String(error) }))
     } finally {
       setResuming(false)
+    }
+  }
+  const retryFailed = async (): Promise<void> => {
+    if (retrying) return
+    setRetrying(true)
+    setRetryNote('正在重新派发失败任务…')
+    try {
+      const response = await fetch('/plugins/dsh-super-agent/retry', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId: team.captainSessionId, teamId: team.teamId }),
+      })
+      const body = await response.json().catch(() => null) as { retried?: string[]; errors?: string[]; error?: string } | null
+      if (!response.ok || body === null) {
+        setRetryNote('重新失败：' + (body?.error ?? String(response.status)))
+      } else if ((body.retried ?? []).length === 0) {
+        setRetryNote(body.errors?.[0] !== undefined ? '重新失败：' + body.errors[0] : '没有可重新派发的失败任务')
+      } else {
+        setRetryNote('已重新派发 ' + (body.retried ?? []).length + ' 条失败任务')
+      }
+    } catch (error: unknown) {
+      setRetryNote('重新失败：' + (error instanceof Error ? error.message : String(error)))
+    } finally {
+      setRetrying(false)
+      window.setTimeout(() => { setRetryNote('') }, 8000)
     }
   }
   const interruptedTask = team.tasks.find(isInterruptedTask)
@@ -799,14 +825,11 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
                       className={css.teamResumeButton}
                       data-control="team-action"
                       data-action="restart"
-                      onClick={() => {
-                        setRetryNote(t('team.retryNote'))
-                        window.setTimeout(() => { setRetryNote('') }, 8000)
-                        onOpenCaptain?.()
-                      }}
-                      title={t('team.retryNote')}
+                      disabled={retrying}
+                      onClick={() => { void retryFailed() }}
+                      title={t('team.action.restart')}
                     >
-                      {'🔄 ' + t('team.action.restart')}
+                      {retrying ? '重新中…' : '🔄 ' + t('team.action.restart')}
                     </button>
                   )
                   : null
