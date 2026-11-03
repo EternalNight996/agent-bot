@@ -1072,6 +1072,74 @@ export function SectHallOverlay({
                   onContinuePlanning={() => { setSheet(undefined) }}
                   onDiscarded={() => { setSheet(undefined) }}
                 />
+                <section className={css.ranksInline} data-inline-ranks>
+  <div className={css.ranks}>  
+                <p className={css.settingsHint}>{t('office.ascensionIntro')}</p>  
+                {viewerCultivation !== undefined && viewerName !== undefined && (  
+                  <div className={css.rankHero}>  
+                    <span className={css.rankHeroName}>  
+                      {viewerName} · <span style={{ color: realmPaletteForLevel(viewerCultivation.level).border }}>Lv.{viewerCultivation.level} {t(viewerCultivation.rankKey)}</span>  
+                    </span>  
+                    <div className={css.xpTrack}><span style={{ width: `${Math.round(viewerCultivation.ratio * 100)}%`, background: realmPaletteForLevel(viewerCultivation.level).bar }} /></div>  
+                    <span className={css.settingsMeta}>{viewerCultivation.xp} / {viewerCultivation.next} XP · {t('office.ascensionCurrent')}</span>  
+                  </div>  
+                )}  
+                {roster.length > 0 && (  
+                  <>  
+                    <span className={css.historyTitle}>{t('office.ascensionSect')}</span>  
+                    <ol className={css.rosterList}>  
+                      {roster.map((entry, index) => (  
+                        <li key={entry.key} className={css.rosterRow}>  
+                          <span className={css.rosterIndex}>{index + 1}</span>  
+                          <span className={css.rosterName}>{entry.name}</span>  
+                          <span className={css.rosterLevel} style={{ color: realmPaletteForLevel(entry.cultivation.level).border }}>  
+                            Lv.{entry.cultivation.level} · {t(entry.cultivation.rankKey)}  
+                          </span>  
+                        </li>  
+                      ))}  
+                    </ol>  
+                  </>  
+                )}  
+                <span className={css.historyTitle}>{t('office.ascensionRealmList')}</span>  
+                <p className={css.settingsHint}>{t('office.ascensionTiers')}</p>  
+                <ol className={css.rankList}>  
+                  {ASCENSION_RANKS.map((rank, index) => {  
+                    const current = viewerRank?.realm === rank.realm  
+                    const previous = ASCENSION_RANKS[index - 1]  
+                    const showTier = previous?.tier !== rank.tier  
+                    return (  
+                      <Fragment key={rank.realm}>  
+                        {showTier && (  
+                          <li className={css.rankTierRow}>  
+                            <span>{t(ASCENSION_TIER_KEYS[rank.tier])}</span>  
+                            <small>{t(rank.tier === 'heaven' ? 'office.ascensionSublevelsHeaven' : 'office.ascensionSublevelsMortal')}</small>  
+                          </li>  
+                        )}  
+                        <li className={css.rankRow} data-current={current || undefined}>  
+                          <div className={css.rankTop}>  
+                            <span className={css.rankName}>{t(rank.realm)}</span>  
+                            <span className={css.rankRange} style={{ color: realmPaletteForLevel(rank.levelMin).border }}>  
+                              Lv.{rank.levelMin}–{rank.levelMax}  
+                            </span>  
+                            {current && <span className={css.rankCurrent}>{t('office.ascensionYouAre')}</span>}  
+                          </div>  
+                          <p className={css.rankDesc}>{t(rank.descKey)}</p>  
+                          <p className={css.rankExample}>{t('office.ascensionExample')}{rank.example}</p>  
+                        </li>  
+                      </Fragment>  
+                    )  
+                  })}  
+                </ol>  
+                <span className={css.historyTitle}>{t('office.ascensionFast')}</span>  
+                <ul className={css.tips}>  
+                  {ASCENSION_TIPS.map(key => <li key={key} className={css.tip}>{t(key)}</li>)}  
+                </ul>  
+                <span className={css.historyTitle}>{t('office.ascensionStory')}</span>  
+                <div className={css.story}>  
+                  {ASCENSION_STORY.map(key => <p key={key}>{t(key)}</p>)}  
+                </div>  
+              </div>
+                </section>
                 {sessionId !== undefined && (
                   <section className={css.libraryInline} data-inline-library>
                     <LibraryPanel sessionId={sessionId} t={t} onStartTeam={startSect} />

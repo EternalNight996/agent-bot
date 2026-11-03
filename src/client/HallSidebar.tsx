@@ -16,7 +16,6 @@ const NAV: ReadonlyArray<{ readonly page: HallPage; readonly glyph: string; read
   { page: 'home', glyph: '⌂', label: 'hall.home' },
   // 名册固定第二；法脉与总进度互换位置（内容仍随标签）。
   { page: 'teams', glyph: '山', label: 'office.bill' },
-  { page: 'ranks', glyph: '榜', label: 'office.floorRanks' },
   { page: 'about', glyph: '志', label: 'office.floorAbout' },
   { page: 'settings', glyph: '⚙', label: 'office.floorSettings' },
 ]
