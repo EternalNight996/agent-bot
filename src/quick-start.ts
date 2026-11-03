@@ -11,6 +11,7 @@ import type { TaskKind, TeamClarification, TeamRequirement, TeamState } from './
 import { agencyRole, agencyRoleForExecutor } from './agency-roles.ts'
 import { verifierOutputContract, verifierStrategyText } from './verifier-script.ts'
 import { getModeSpec, modeAddsAcceptanceBaseline, type TeamMode } from './modes.ts'
+import { inScopeOverlap } from './quality-gates.ts'
 import type { PlanTaskSpec } from './plan-generator.ts'
 
 /** One built-in template: default roles and a small task DAG. */
@@ -298,6 +299,40 @@ export function quickStartAcceptance(criteria: readonly string[], mode: TeamMode
 }
 
 /** Build the staged plan a quick-start request turns into. */
+/**
+ * Two open write tasks may not share `inScope`: `create_task` rejects the
+ * second one with "inScope overlaps tN; serialize these tasks or split the
+ * paths". Generated plans hand every implementation task the same workspace-wide
+ * scope, so chain them in plan order instead of staging a DAG the host refuses.
+ * @param tasks - the plan tasks to mutate (dependency edges only).
+ */
+export function serializeOverlappingWriteTasks(tasks: QuickStartPlan['tasks']): void {
+  const write = tasks.filter(task => task.kind === 'implementation' || task.kind === 'repair')
+  const byId = new Map(tasks.map(task => [task.id, task]))
+  const dependsOn = (from: string, target: string): boolean => {
+    const pending = [...(byId.get(from)?.dependencies ?? [])]
+    const seen = new Set<string>()
+    while (pending.length > 0) {
+      const id = pending.pop()
+      if (id === undefined || seen.has(id)) continue
+      if (id === target) return true
+      seen.add(id)
+      pending.push(...(byId.get(id)?.dependencies ?? []))
+    }
+    return false
+  }
+  for (let i = 0; i < write.length; i += 1) {
+    for (let j = i + 1; j < write.length; j += 1) {
+      const earlier = write[i]!
+      const later = write[j]!
+      if (inScopeOverlap(earlier.inScope, later.inScope).length === 0) continue
+      // Already serialized in either direction: nothing to add.
+      if (dependsOn(later.id, earlier.id) || dependsOn(earlier.id, later.id)) continue
+      later.dependencies = [...later.dependencies, earlier.id]
+    }
+  }
+}
+
 export function buildQuickStartPlan(
   goal: string,
   templateId: string,
@@ -356,7 +391,9 @@ export function buildQuickStartPlan(
       ...kind === undefined ? {} : { coverageOf: [...(task.coverageOf ?? [goal])] },
     }
   })
-  return { teamName: `${delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队'}·${stamp.slice(8)}`, template: template.id, members, tasks }
+  const plan: QuickStartPlan = { teamName: `${delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队'}·${stamp.slice(8)}`, template: template.id, members, tasks }
+  serializeOverlappingWriteTasks(plan.tasks)
+  return plan
 }
 /** Order tasks so every dependency is staged before its dependents (stable). */
 export function orderQuickStartTasks(tasks: QuickStartPlan['tasks']): QuickStartPlan['tasks'] {
@@ -574,7 +611,9 @@ export function buildPlanFromSpecs(
       ...kind === undefined ? {} : { coverageOf: spec.coverageOf !== undefined && spec.coverageOf.length > 0 ? [goal, ...spec.coverageOf] : [goal] },
     }
   })
-  return { teamName: (delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队') + '·' + stamp.slice(8), template: template.id, members, tasks }
+  const plan: QuickStartPlan = { teamName: (delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队') + '·' + stamp.slice(8), template: template.id, members, tasks }
+  serializeOverlappingWriteTasks(plan.tasks)
+  return plan
 }
 
 /**

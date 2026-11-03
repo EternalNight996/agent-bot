@@ -91,6 +91,14 @@ export declare function quickStartDeliveryDefaults(workspace: string): QuickStar
  */
 export declare function quickStartAcceptance(criteria: readonly string[], mode: TeamMode | undefined): string[];
 /** Build the staged plan a quick-start request turns into. */
+/**
+ * Two open write tasks may not share `inScope`: `create_task` rejects the
+ * second one with "inScope overlaps tN; serialize these tasks or split the
+ * paths". Generated plans hand every implementation task the same workspace-wide
+ * scope, so chain them in plan order instead of staging a DAG the host refuses.
+ * @param tasks - the plan tasks to mutate (dependency edges only).
+ */
+export declare function serializeOverlappingWriteTasks(tasks: QuickStartPlan['tasks']): void;
 export declare function buildQuickStartPlan(goal: string, templateId: string, requestedRoles?: readonly string[], delivery?: QuickStartDelivery): QuickStartPlan;
 /** Order tasks so every dependency is staged before its dependents (stable). */
 export declare function orderQuickStartTasks(tasks: QuickStartPlan['tasks']): QuickStartPlan['tasks'];
