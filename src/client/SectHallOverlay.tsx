@@ -535,15 +535,17 @@ export function SectHallOverlay({
     const selectedHistory = visibleHistory.find(team => team.teamId === historyTeamId)
     const selectedTeamId = viewingCurrent ? hall.teamId : selectedHistory?.teamId
   const selectedTeam = viewingCurrent ? hall : selectedHistory
+  // 切历史时，首页统计/需求清单/队伍卡都必须跟随所选历史队伍，而不是当前队。
+  const shownTeam = selectedTeam ?? hall
   const selectedTeamUpdatedAt = selectedTeam === undefined ? undefined : Math.max(selectedTeam.createdAt ?? 0, ...selectedTeam.tasks.map(task => task.updatedAt ?? 0))
     const selectedState = viewingCurrent ? teamVisualState(hall) : selectedHistory === undefined ? 'waiting' : teamVisualState(selectedHistory)
     const costByTeam = new Map((costReport?.by_team ?? []).map(item => [item.teamId, item.usd]))
-    const activeCost = costReport?.by_team.find(item => item.teamId === hall.teamId)
-    const passedCount = hall.tasks.filter(task => task.state === 'completed').length
-    const runningCount = hall.tasks.filter(task => task.state === 'running' || task.state === 'claimed' || task.state === 'open').length
-    const blockedCount = hall.tasks.filter(task => task.state === 'blocked' || task.state === 'failed' || task.state === 'cancelled').length
+    const activeCost = costReport?.by_team.find(item => item.teamId === shownTeam.teamId)
+    const passedCount = shownTeam.tasks.filter(task => task.state === 'completed').length
+    const runningCount = shownTeam.tasks.filter(task => task.state === 'running' || task.state === 'claimed' || task.state === 'open').length
+    const blockedCount = shownTeam.tasks.filter(task => task.state === 'blocked' || task.state === 'failed' || task.state === 'cancelled').length
     // 已结束/有失败/被停止的队伍必须停表：沿用 teamElapsedMs 的冻结语义。
-    const elapsedText = formatDuration(teamElapsedMs({ ...hall, updatedAt: selectedTeamUpdatedAt }, Date.now()))
+    const elapsedText = formatDuration(teamElapsedMs({ ...shownTeam, updatedAt: selectedTeamUpdatedAt }, Date.now()))
     const historyTasks = hall.tasks.filter(task => task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled')
     const taskStatusLabel = (status: string): string => status === 'completed'
       ? t('task.status.completed')
@@ -1036,7 +1038,7 @@ export function SectHallOverlay({
                   {sheet === 'home' && (
                     <section className={css.homeDashboard}>
                       <div className={css.homeStats}>
-                        <span className={css.homeStat} data-tone="pass"><strong>{passedCount}/{hall.tasks.length}</strong><small>{t('home.passed')}</small></span>
+                        <span className={css.homeStat} data-tone="pass"><strong>{passedCount}/{shownTeam.tasks.length}</strong><small>{t('home.passed')}</small></span>
                         <span className={css.homeStat}><strong>{runningCount}</strong><small>{t('home.running')}</small></span>
                         <span className={css.homeStat} data-tone="blocked"><strong>{blockedCount}</strong><small>{t('home.blocked')}</small></span>
                         <span className={css.homeStat}><strong>{elapsedText}</strong><small>{t('home.elapsed')}</small></span>
@@ -1045,31 +1047,31 @@ export function SectHallOverlay({
                       </div>
                       <details className={css.homeRequirements} open>
                         <summary>{t('home.requirements')} · {[
-                          hall.description !== undefined && hall.description !== '' ? 1 : 0,
-                          hall.planSummary?.mode === undefined ? 0 : 1,
-                          hall.planSummary?.scale === undefined ? 0 : 1,
-                          hall.planSummary?.platforms?.length ?? 0,
-                          hall.planSummary?.constraints?.length ?? 0,
-                          hall.acceptance?.length ?? 0,
+                          shownTeam.description !== undefined && shownTeam.description !== '' ? 1 : 0,
+                          shownTeam.planSummary?.mode === undefined ? 0 : 1,
+                          shownTeam.planSummary?.scale === undefined ? 0 : 1,
+                          shownTeam.planSummary?.platforms?.length ?? 0,
+                          shownTeam.planSummary?.constraints?.length ?? 0,
+                          shownTeam.acceptance?.length ?? 0,
                         ].reduce((sum, value) => sum + value, 0)}</summary>
                         <ul>
-                          {hall.description !== undefined && hall.description !== '' && <li><b>{t('home.goal')}</b>{hall.description}</li>}
-                          {hall.planSummary?.mode !== undefined && <li><b>{t('home.mode')}</b>{hall.planSummary.mode}</li>}
-                          {hall.planSummary?.scale !== undefined && <li><b>{t('home.scale')}</b>{hall.planSummary.scale}</li>}
-                          {hall.planSummary?.platforms !== undefined && hall.planSummary.platforms.length > 0 && <li><b>{t('home.platforms')}</b>{hall.planSummary.platforms.join(' / ')}</li>}
-                          {(hall.acceptance ?? []).map((item, index) => <li key={'acceptance-' + index}><b>{t('home.acceptance')}</b>{item}</li>)}
-                          {(hall.planSummary?.constraints ?? []).map((item, index) => <li key={'constraint-' + index}><b>{t('home.constraint')}</b>{item}</li>)}
-                          {hall.description === undefined && hall.planSummary === undefined && (hall.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
+                          {shownTeam.description !== undefined && shownTeam.description !== '' && <li><b>{t('home.goal')}</b>{shownTeam.description}</li>}
+                          {shownTeam.planSummary?.mode !== undefined && <li><b>{t('home.mode')}</b>{shownTeam.planSummary.mode}</li>}
+                          {shownTeam.planSummary?.scale !== undefined && <li><b>{t('home.scale')}</b>{shownTeam.planSummary.scale}</li>}
+                          {shownTeam.planSummary?.platforms !== undefined && shownTeam.planSummary.platforms.length > 0 && <li><b>{t('home.platforms')}</b>{shownTeam.planSummary.platforms.join(' / ')}</li>}
+                          {(shownTeam.acceptance ?? []).map((item, index) => <li key={'acceptance-' + index}><b>{t('home.acceptance')}</b>{item}</li>)}
+                          {(shownTeam.planSummary?.constraints ?? []).map((item, index) => <li key={'constraint-' + index}><b>{t('home.constraint')}</b>{item}</li>)}
+                          {shownTeam.description === undefined && shownTeam.planSummary === undefined && (shownTeam.acceptance ?? []).length === 0 && <li>{t('home.noRequirements')}</li>}
                         </ul>
                       </details>
                     </section>
                   )}
                   <TeamSection
-                    team={hall}
+                    team={shownTeam}
                     t={t}
                     workspace
                   fill
-                  onOpenCaptain={() => { goHome(); setSheet(undefined) }}
+                  onOpenCaptain={openCaptain === undefined || shownTeam.captainSessionId === '' ? undefined : () => { openCaptain(shownTeam.captainSessionId as SessionId); setSheet(undefined) }}
                   viewingSessionId={sessionId}
                   onNavigate={(_parent, child) => { if (ownerSessionId !== undefined) openMember(ownerSessionId, child) }}
                   onContinuePlanning={() => { setSheet(undefined) }}
