@@ -92,6 +92,10 @@ export declare const zh: {
     'team.state.completed': string;
     'team.state.settled': string;
     'team.resume': string;
+    'team.action.stop': string;
+    'team.action.restart': string;
+    'team.action.resume': string;
+    'team.action.end': string;
     'team.resumeLast': string;
     'team.resumeLastHint': string;
     'team.resumeLastFailed': string;
@@ -1203,6 +1207,10 @@ export declare const en: {
     'team.state.completed': string;
     'team.state.settled': string;
     'team.resume': string;
+    'team.action.stop': string;
+    'team.action.restart': string;
+    'team.action.resume': string;
+    'team.action.end': string;
     'team.resumeLast': string;
     'team.resumeLastHint': string;
     'team.resumeLastFailed': string;

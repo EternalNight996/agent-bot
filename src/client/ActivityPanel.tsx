@@ -774,14 +774,15 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {historic && <span className={css.historicPill}>{t(discarded ? 'team.discarded' : 'team.ended')}</span>}
           {stopped && <span className={css.historicPill}>{t('team.stopped')}</span>}
-          {!historic && teamSettled(team) && onOpenCaptain !== undefined && (
+          {!historic && !stopped && teamSettled(team) && onOpenCaptain !== undefined && (
             <button
               type="button"
               className={css.teamResumeButton}
-              data-control="team-continue"
+              data-control="team-action"
+              data-action={team.tasks.some(task => task.status === 'failed' || task.status === 'cancelled') ? 'restart' : 'end'}
               onClick={onOpenCaptain}
             >
-              {t('config.continueTask')}
+              {team.tasks.some(task => task.status === 'failed' || task.status === 'cancelled') ? '🔄 ' + t('team.action.restart') : '🔚 ' + t('team.action.end')}
             </button>
           )}
           {!historic && interruptedTask !== undefined && (
@@ -807,7 +808,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
               title={t('team.resume')}
             >
               <span aria-hidden>▶</span>
-              {resuming ? t('team.resuming') : t('team.resume')}
+              {resuming ? t('team.resuming') : t('team.action.resume')}
             </button>
           )}
           <span className={css.teamStats}>
