@@ -1208,7 +1208,7 @@ export function SectHallOverlay({
   // F2：展开但福地不可见（宿主未挂载/右栏收起）时留 200ms 宽限再退回令牌，
   // 避免首帧或收起动画里「令牌 + 展开态」并存。
   const hallVisible = sidebarHost !== null && sidebarVisible
-  const showToken = collapsed || (!hallVisible && hostGraceOver)
+  const showToken = true
   // 展开后宿主迟迟没挂载（无会话态/宿主降级）才退回令牌兜底，首帧不再与展开态并存（F2）。
   // 同时按 t24-R2-1③：300ms 重试一次 openTab，800ms 仍未挂载就把 collapsed 落盘为 true，
   // 保证「存储说展开」和「界面是令牌」不矛盾。
@@ -1261,27 +1261,45 @@ export function SectHallOverlay({
   return (
     <>
       {showToken && createPortal((
-        // 收起：福地缩成一枚可拖动的令牌，点一下在右侧栏展开（唯一入口）。
-        <button
-          type="button"
-          className={css.token}
-          data-hall-token
+        // 令牌常驻：悬浮显示隐藏/显示开关；隐藏态压暗，显示态恢复。
+        <div
+          className={css.tokenWrap}
+          data-hidden={collapsed ? 'true' : undefined}
           style={{ left: tokenAt.x, top: tokenAt.y, width: tokenSize.w, height: tokenSize.h }}
-          onPointerDown={beginTokenDrag}
-          onClick={(event) => { if (event.detail === 0) toggleCollapsed() }}
-          aria-label={t('office.expand')}
-          aria-expanded={false}
-          title={`${t('office.expand')} · ${tokenTitle}`}
         >
-          <span className={css.tokenInner} aria-hidden>
-            <span className={css.tokenBody}>
-              {APP_ICON === ''
-                ? <span className={css.tokenGlyph} aria-hidden>⛩</span>
-                : <img className={css.tokenIcon} src={APP_ICON} alt="" />}
+          <button
+            type="button"
+            className={css.token}
+            data-hall-token
+            onPointerDown={beginTokenDrag}
+            onClick={(event) => { if (event.detail === 0) toggleCollapsed() }}
+            aria-label={collapsed ? t('office.expand') : t('office.collapse')}
+            aria-expanded={!collapsed}
+            title={(collapsed ? t('office.expand') : t('office.collapse')) + ' · ' + tokenTitle}
+          >
+            <span className={css.tokenInner} aria-hidden>
+              <span className={css.tokenBody}>
+                {APP_ICON === ''
+                  ? <span className={css.tokenGlyph} aria-hidden>⛩</span>
+                  : <img className={css.tokenIcon} src={APP_ICON} alt="" />}
+              </span>
+              <span className={css.tokenTassel} aria-hidden />
             </span>
-            <span className={css.tokenTassel} aria-hidden />
-          </span>
-        </button>
+          </button>
+          <button
+            type="button"
+            className={css.tokenToggle}
+            onClick={(event) => {
+              event.stopPropagation()
+              if (collapsed) { bringHallBack(); return }
+              setCollapsed(true)
+              writeHallCollapsed(true)
+              onCollapseSidebar?.()
+            }}
+          >
+            {collapsed ? t('office.tokenShow') : t('office.tokenHide')}
+          </button>
+        </div>
       ), document.body)}
       {!collapsed && sidebarHost !== null && createPortal((
         <HallSidebar

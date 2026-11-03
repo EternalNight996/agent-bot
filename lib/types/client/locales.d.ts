@@ -339,6 +339,8 @@ export declare const zh: {
     'office.roster': string;
     'office.bill': string;
     'office.archive': string;
+    'office.tokenShow': string;
+    'office.tokenHide': string;
     'office.archiveHint': string;
     'office.archiveEmpty': string;
     'office.archiveRestore': string;
@@ -1457,6 +1459,8 @@ export declare const en: {
     'office.roster': string;
     'office.bill': string;
     'office.archive': string;
+    'office.tokenShow': string;
+    'office.tokenHide': string;
     'office.archiveHint': string;
     'office.archiveEmpty': string;
     'office.archiveRestore': string;

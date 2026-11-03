@@ -5,6 +5,11 @@
 
 
 /* 收起：整座洞府缩成一枚可拖动的令牌，点一下展开。 */
+.tokenWrap { position: fixed; z-index: 11000; }
+.tokenWrap .token { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tokenWrap[data-hidden='true'] .token { opacity: 0.45; filter: saturate(0.55); }
+.tokenToggle { position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 1px 6px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 4px; background: var(--dsw-alias-bg-l2); color: var(--dsw-alias-label-secondary); font-size: 8.5px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.15s ease; white-space: nowrap; }
+.tokenWrap:hover .tokenToggle, .tokenWrap:focus-within .tokenToggle { opacity: 1; pointer-events: auto; }
 .token {
   position: fixed;
   z-index: 11000;
