@@ -613,6 +613,14 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
   const [resumingLast, setResumingLast] = useState(false)
   const [resumeLastError, setResumeLastError] = useState('')
   const [retryNote, setRetryNote] = useState('')
+  const [retryCountdown, setRetryCountdown] = useState(2)
+  useEffect(() => {
+    if (retryNote === '') { setRetryCountdown(2); return }
+    setRetryCountdown(2)
+    const timer = window.setInterval(() => { setRetryCountdown(current => Math.max(0, current - 1)) }, 1000)
+    const hide = window.setTimeout(() => { setRetryNote(''); setRetryCountdown(2) }, 2000)
+    return () => { window.clearInterval(timer); window.clearTimeout(hide) }
+  }, [retryNote])
   const [retrying, setRetrying] = useState(false)
   const discarded = historic && team.phase === 'staged'
   const stopped = !historic && team.halted === true
@@ -684,7 +692,6 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
       setRetryNote('重新失败：' + (error instanceof Error ? error.message : String(error)))
     } finally {
       setRetrying(false)
-      window.setTimeout(() => { setRetryNote('') }, 8000)
     }
   }
   const interruptedTask = team.tasks.find(isInterruptedTask)
@@ -850,11 +857,11 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
           )}
           {retryNote !== '' && (
             <span
-              className={css.cleanupMessage}
+              className={css.actionToast}
+              data-error={retryNote.startsWith('重新失败') || retryNote.startsWith('没有可') ? 'true' : undefined}
               role={retryNote.startsWith('重新失败') || retryNote.startsWith('没有可') ? 'alert' : 'status'}
-              style={retryNote.startsWith('重新失败') ? { color: '#e08080' } : undefined}
             >
-              {retryNote}
+              {retryNote} · {retryCountdown}s
             </span>
           )}
           <span className={css.teamStats}>

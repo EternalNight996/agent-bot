@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/EternalNight996/dsh-super-agents/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/dsh-super-agents?style=flat" alt="GitHub stars" /></a>
   <a href="https://www.npmjs.com/package/dsh-super-agents"><img src="https://img.shields.io/npm/v/dsh-super-agents?color=CB3837" alt="npm version" /></a>
-  <a href="https://github.com/EternalNight996/dsh-super-agents/releases"><img src="https://img.shields.io/badge/release-v0.1.174-FF7A45" alt="release" /></a>
+  <a href="https://github.com/EternalNight996/dsh-super-agents/releases"><img src="https://img.shields.io/badge/release-v0.1.175-FF7A45" alt="release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license" /></a>
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/DSH-Web%20%2B%20Headless-5B4CF0" alt="DSH" /></a>
 </p>
@@ -120,7 +120,7 @@ Do not use bare `pnpm add <github-url>` for this plugin: a DSH plugin must be in
     dsh --profile desktop
     # ask: 用 AgentTeams 开一个团队做 …
 
-Package version **0.1.174**. Recommended host: DeepSeek Harness **0.2.1-rc.5** (web + headless). Exact matrix: [compatibility.json](compatibility.json).
+Package version **0.1.175**. Recommended host: DeepSeek Harness **0.2.1-rc.5** (web + headless). Exact matrix: [compatibility.json](compatibility.json).
 
 Prefer to look first? **[Open the live product page](http://180.76.144.48/en/dsh-super-agent)** on the Mengyou website.
 

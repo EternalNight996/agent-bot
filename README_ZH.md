@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/EternalNight996/dsh-super-agents/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/dsh-super-agents?style=flat" alt="GitHub stars" /></a>
   <a href="https://www.npmjs.com/package/dsh-super-agents"><img src="https://img.shields.io/npm/v/dsh-super-agents?color=CB3837" alt="npm version" /></a>
-  <a href="https://github.com/EternalNight996/dsh-super-agents/releases"><img src="https://img.shields.io/badge/release-v0.1.174-FF7A45" alt="release" /></a>
+  <a href="https://github.com/EternalNight996/dsh-super-agents/releases"><img src="https://img.shields.io/badge/release-v0.1.175-FF7A45" alt="release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license" /></a>
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/DSH-Web%20%2B%20Headless-5B4CF0" alt="DSH" /></a>
 </p>
@@ -120,7 +120,7 @@ git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `
     dsh --profile desktop
     # 直接说：用 AgentTeams 开一个团队做 …
 
-当前版本 **0.1.174**。推荐宿主：DeepSeek Harness **0.2.1-rc.5**（Web + Headless）。精确矩阵见 [compatibility.json](compatibility.json)。
+当前版本 **0.1.175**。推荐宿主：DeepSeek Harness **0.2.1-rc.5**（Web + Headless）。精确矩阵见 [compatibility.json](compatibility.json)。
 
 想先看效果？**[打开梦游官网的在线展示页](http://180.76.144.48/dsh-super-agent)**。
 
