@@ -152,8 +152,8 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
     // Only switch the surface that is bound to this session.
     if (sidebar.mounted.getSnapshot() !== current) return
     try {
-      if (sidebar.isExpanded() !== true) sidebar.toggleExpanded()
-      sidebar.openTab(TEAM_TAB_KIND)
+      // 用户关掉的右栏保持关闭：只在原本展开时切到队伍页，绝不强制重开。
+      if (sidebar.isExpanded() === true) sidebar.openTab(TEAM_TAB_KIND)
     } catch { /* column unavailable */ }
   }, [startedTeamIds, current, sidebar])
   useEffect(() => {
@@ -234,8 +234,7 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
       if (sidebar === undefined) return
       if (sidebar.mounted.getSnapshot() !== detail.sessionId) return
       try {
-        if (sidebar.isExpanded() !== true) sidebar.toggleExpanded()
-        sidebar.openTab(TEAM_TAB_KIND)
+        if (sidebar.isExpanded() === true) sidebar.openTab(TEAM_TAB_KIND)
       } catch { /* column unavailable */ }
     }
     window.addEventListener(PLAN_APPROVED_EVENT, approved)
