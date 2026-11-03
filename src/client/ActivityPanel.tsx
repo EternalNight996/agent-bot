@@ -1030,7 +1030,7 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
                   className={css.memberRow}
                   data-activity={member.activity}
                   onClick={() => {
-                    if (onSelectMember !== undefined) { onSelectMember(member.name); return }
+                    if (onSelectMember !== undefined) onSelectMember(member.name)
                     if (member.id !== '') {
                       onNavigate(team.captainSessionId as SessionId, member.id as SessionId)
                     }
