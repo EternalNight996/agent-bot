@@ -191,14 +191,14 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
             <p className={css.hint}>{t('office.roleCatalogHint')}</p>
             <button type="button" className={css.button} onClick={() => { setRoleCreating(true) }}>{t('office.roleNew')}</button>
           </div>
-          {allRoles.map(role => {
+          {allRoles.map((role, index) => {
             const open = expandedRole === role.id
             const agent = agents[role.id] ?? role.agent
             const prompt = promptDrafts[role.id] ?? prompts[role.id] ?? catalogPrompts[role.id] ?? rolePromptText(role, agent)
             return (
               <section key={role.id} className={css.row}>
                 <button type="button" className={css.rowToggle} aria-expanded={open} onClick={() => { setExpandedRole(open ? undefined : role.id) }}>
-                  <span><strong>{role.name}</strong><small className={css.badge}>{role.category}</small></span>
+                  <span><span className={css.rowNo} aria-hidden>{String(index + 1).padStart(2, '0')}</span><strong>{role.name}</strong><small className={css.badge}>{role.category}</small></span>
                   <span className={css.rowChevron}>{open ? '▾' : '▸'}</span>
                 </button>
                 {open && (
@@ -257,12 +257,12 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
             <p className={css.hint}>{t('office.lineupConfigHint')}</p>
             <button type="button" className={css.button} onClick={() => { setCreatingLineup(true) }}>{t('office.lineupNew')}</button>
           </div>
-          {visibleLineups.map((lineup: LineupDefinition) => {
+          {visibleLineups.map((lineup: LineupDefinition, index: number) => {
             const open = expandedLineup === lineup.id
             return (
               <section key={lineup.id} className={css.row}>
                 <button type="button" className={css.rowToggle} aria-expanded={open} onClick={() => { setExpandedLineup(open ? undefined : lineup.id) }}>
-                  <span><strong>{lineup.name}</strong><small className={css.badge}>{lineup.entries.length}</small></span>
+                  <span><span className={css.rowNo} aria-hidden>{String(index + 1).padStart(2, '0')}</span><strong>{lineup.name}</strong><small className={css.badge}>{lineup.entries.length}</small></span>
                   <span className={css.rowChevron}>{open ? '▾' : '▸'}</span>
                 </button>
                 {open && (
@@ -273,6 +273,7 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
                         const skin = skinMap.get(entry.skin)
                         return (
                           <span key={entry.role + ':' + index} className={css.entry}>
+                            <span className={css.rowNo} aria-hidden>{index + 1}</span>
                             {skin !== undefined && <img src={skin.art} alt="" aria-hidden />}
                             {skin?.name ?? entry.skin}
                             <small>{agencyRole(entry.role)?.name ?? entry.role}</small>

@@ -142,6 +142,15 @@
 .hiddenBlock { display: flex; flex-direction: column; gap: 4px; }
 .rowToggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; padding: 0; border: 0; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; font-size: 10.5px; text-align: left; cursor: pointer; }
 .rowToggle span { display: inline-flex; align-items: center; gap: 5px; }
+/* Ordinal for the role / lineup lists and each lineup seat. */
+.rowToggle .rowNo, .entry .rowNo {
+  min-width: 1.6em;
+  color: var(--dsw-alias-label-tertiary);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
 .rowChevron { color: var(--dsw-alias-label-tertiary); font-size: 9px; }
 .expanded { display: flex; flex-direction: column; gap: 5px; padding-top: 6px; border-top: 1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 55%, transparent); }
 .promptLabel { margin: 2px 0 0; color: #f2c14e; font-size: 9px; }
