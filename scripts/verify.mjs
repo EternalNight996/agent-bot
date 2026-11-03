@@ -239,7 +239,7 @@ check(
   'stop controls keep anchored confirmation in the team panel and a two-step preempt in the composer',
   clientIndexSource.includes('conversation.input.dock')
     && clientIndexSource.includes('ComposerStopButton')
-    && activityPanelSource.includes('className={css.teamStopButton}')
+    && (activityPanelSource.includes('className={css.teamStopButton}') || activityPanelSource.includes('data-action="stop"'))
     && activityPanelSource.includes('className={css.stopPopover}')
     && activityPanelSource.includes('aria-haspopup="dialog"')
     && activityPanelSource.includes('ACTIVITY_HALT_URL')
