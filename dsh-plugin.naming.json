@@ -3,7 +3,7 @@
   "policy": "dsh-plugin-naming/v1",
   "plugin": {
     "namespace": "eternalnight996",
-    "name": "super-agent",
+    "name": "agent-bot",
     "coordinate": "eternalnight996/agent-bot",
     "packageName": "@eternalnight/agent-bot"
   },
