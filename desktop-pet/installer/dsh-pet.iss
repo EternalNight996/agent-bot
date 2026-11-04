@@ -1,7 +1,7 @@
 ; 小肥鱼桌面宠物：Inno Setup 安装脚本
 ; 先用 build-installer.ps1 生成 artifacts/installer/dist/DSH-Pet，再编译本脚本。
 #define MyAppName "小肥鱼桌面宠物"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.1.3"
 #define MyAppPublisher "EternalNight"
 #define MyAppExeName "DSH-Pet.exe"
 

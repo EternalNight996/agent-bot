@@ -15,7 +15,7 @@
 powershell -ExecutionPolicy Bypass -File desktop-pet\build-installer.ps1
 ```
 
-产物：`artifacts/installer/DSH-Pet-Setup-0.1.0.exe`
+产物：`artifacts/installer/DSH-Pet-Setup-0.1.3.exe`
 
 - 按用户安装到 `%LOCALAPPDATA%\Programs\DSH Pet`，不需要管理员权限
 - 默认创建**桌面快捷方式**
