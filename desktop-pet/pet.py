@@ -47,6 +47,11 @@ STAGE_NAMES = {
 }
 STAGE_SCALE = {"fry": 0.86, "small": 0.92, "fat": 1.0, "whale": 1.0}
 
+CLICK_ANIMS = ("click-wave", "click-happy", "click-shy", "click-pout", "click-tickle")
+WORK_ANIMS = ("work-pace", "work-sigh", "work-busy", "work-think", "work-sort", "work-cheer")
+IDLE_VARIANTS = ("idle-look", "idle-stretch", "idle-yawn", "idle-breathe")
+EXTRA_ANIMS = CLICK_ANIMS + WORK_ANIMS + IDLE_VARIANTS + ("sleep-start", "sleep-loop", "sleep-end", "drag")
+
 
 def _font(size: int) -> ImageFont.FreeTypeFont:
     for name in ("msyh.ttc", "msyhbd.ttc", "simhei.ttf", "arial.ttf"):
@@ -412,7 +417,7 @@ class PetApp:
         self.frames = render_frames()
         self.frame_index = 0
         self.animations: dict[str, list[Image.Image]] = {}
-        for name in ("idle", "feed", "play", "sleep", "work", "pet"):
+        for name in ("idle", "feed", "play", "sleep", "work", "pet") + EXTRA_ANIMS:
             loaded = load_animation(name)
             if loaded:
                 self.animations[name] = loaded
@@ -422,6 +427,9 @@ class PetApp:
         self.anim_name = "idle"
         self.anim_index = 0
         self.anim_until = 0.0
+        self.anim_next: str | None = None
+        self.sleeping = False
+        self.next_idle_at = time.time() + random.randint(25, 45)
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
@@ -513,14 +521,23 @@ if ($h -ne 0) {
     def frame_loop(self) -> None:
         now = time.time()
         if self.anim_until and now >= self.anim_until:
-            self.anim_name = "idle"
+            nxt = self.anim_next
+            self.anim_next = None
             self.anim_index = 0
-            self.anim_until = 0.0
+            if nxt:
+                self.play_animation(nxt, once=False)
+            else:
+                self.anim_name = "sleep-loop" if self.sleeping else "idle"
+                self.anim_until = 0.0
         if not self.anim_until and self.anim_name in ("idle", "sleep"):
             desired = "sleep" if (self.state["satiety"] < 25 or self.state["energy"] < 20) else "idle"
             if desired != self.anim_name:
                 self.anim_name = desired
                 self.anim_index = 0
+        if (not self.anim_until and not self.sleeping and self.anim_name == "idle"
+                and now >= self.next_idle_at):
+            self.play_animation(random.choice(IDLE_VARIANTS), once=True)
+            self.next_idle_at = now + random.randint(30, 55)
         frames = self.animations.get(self.anim_name) or self.animations["idle"]
         level = level_of(int(self.state["xp"]))[0]
         stage = stage_of(level)
@@ -534,12 +551,13 @@ if ($h -ne 0) {
         self.anim_index += 1
         self.root.after(FRAME_MS, self.frame_loop)
 
-    def play_animation(self, name: str, once: bool = True) -> None:
+    def play_animation(self, name: str, once: bool = True, then: str | None = None) -> None:
         frames = self.animations.get(name)
         if not frames:
             return
         self.anim_name = name
         self.anim_index = 0
+        self.anim_next = then
         self.anim_until = time.time() + len(frames) * FRAME_MS / 1000 if once else 0.0
 
     def spark(self, glyph: str, color: str = "#ffd1e6") -> None:
@@ -570,6 +588,8 @@ if ($h -ne 0) {
         if abs(dx) > 4 or abs(dy) > 4:
             self.dragged = True
         self.root.geometry("+%d+%d" % (wx + dx, wy + dy))
+        if self.dragged and self.anim_name != "drag":
+            self.play_animation("drag", once=False)
 
     def on_release(self, event) -> None:
         if self.drag_origin is None:
@@ -583,12 +603,9 @@ if ($h -ne 0) {
             self.state["x"] = x
             self.state["y"] = y
             save_state(self.state)
+            self.play_animation("sleep-loop" if self.sleeping else "idle", once=False)
         else:
-            ok, _reason = pat(self.state, time.time())
-            if ok:
-                self.spark("❤")
-                self.play_animation("pet")
-            save_state(self.state)
+            self.action("pat")
         self.drag_origin = None
 
     def on_menu(self, event) -> None:
@@ -598,6 +615,13 @@ if ($h -ne 0) {
             self.menu.grab_release()
 
     def action(self, kind: str) -> None:
+        if kind == "pat" and self.sleeping:
+            self.sleeping = False
+            self.play_animation("sleep-end", then="idle")
+            save_state(self.state)
+            return
+        if kind != "rest" and self.sleeping:
+            self.sleeping = False
         now = time.time()
         before = level_of(int(self.state["xp"]))[0]
         handlers = {"feed": feed, "play": play, "pat": pat, "rest": rest}
@@ -605,7 +629,13 @@ if ($h -ne 0) {
         after = level_of(int(self.state["xp"]))[0]
         if ok:
             self.spark({"feed": "🍚", "play": "✨", "pat": "❤", "rest": "💤"}[kind])
-            self.play_animation({"feed": "feed", "play": "play", "pat": "pet", "rest": "sleep"}[kind])
+            if kind == "rest":
+                self.sleeping = True
+                self.play_animation("sleep-start", then="sleep-loop")
+            elif kind == "pat":
+                self.play_animation(random.choice(CLICK_ANIMS))
+            else:
+                self.play_animation({"feed": "feed", "play": "play"}[kind])
         if after > before:
             self.spark("⭐", "#ffe28a")
             self.play_animation("play")
@@ -632,7 +662,7 @@ if ($h -ne 0) {
                 self.state["last_task_count"] = total
                 save_state(self.state)
                 self.spark("✨", "#9fe0ff")
-                self.play_animation("work")
+                self.play_animation(random.choice(WORK_ANIMS))
             elif delta < 0:
                 self.state["last_task_count"] = total
                 save_state(self.state)
@@ -659,6 +689,9 @@ def run_check(workspace: Path | None) -> int:
     assert len(frames) == FRAME_COUNT and frames[0].size == (260, 260)
     idle = load_animation("idle")
     assert len(idle) >= 10 and idle[0].height >= 180, (len(idle), idle[0].size if idle else None)
+    for name in EXTRA_ANIMS:
+        loaded = load_animation(name)
+        assert len(loaded) >= 8, (name, len(loaded))
     total = count_completed_tasks(workspace) if workspace is not None else 0
     print(json.dumps({
         "ok": True,
