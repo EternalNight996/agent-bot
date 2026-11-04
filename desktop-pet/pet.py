@@ -417,7 +417,7 @@ class PetApp:
         self.frames = render_frames()
         self.frame_index = 0
         self.animations: dict[str, list[Image.Image]] = {}
-        for name in ("idle", "feed", "play", "sleep", "work", "pet") + EXTRA_ANIMS:
+        for name in ("idle", "feed", "play", "sleep", "work", "pet", "run") + EXTRA_ANIMS:
             loaded = load_animation(name)
             if loaded:
                 self.animations[name] = loaded
@@ -433,6 +433,9 @@ class PetApp:
         self.last_work: str | None = None
         self.last_idle_variant: str | None = None
         self.next_idle_at = time.time() + random.uniform(15, 30)
+        self.roaming = False
+        self.roam_target_x: int | None = None
+        self.next_roam_at = time.time() + random.uniform(8, 14)
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
@@ -453,6 +456,7 @@ class PetApp:
         self.root.bind("<KeyPress-s>", lambda _event: self.show_status())
         self.root.bind("<KeyPress-S>", lambda _event: self.show_status())
         self.root.after(60, self.frame_loop)
+        self.root.after(200, self.roam_loop)
         self.root.after(200, self.tick_loop)
         self.root.after(1000, self.sync_loop)
         # Tk 在部分高 DPI/旋转屏上的屏幕尺寸不可靠；先用一个稳定的可见位置，
@@ -579,6 +583,52 @@ if ($h -ne 0) {
         self.last_idle_variant = choice
         return choice
 
+    def roam_loop(self) -> None:
+        now = time.time()
+        if (not self.roaming and not self.sleeping and self.drag_origin is None
+                and not self.anim_until and self.anim_name == "idle"
+                and now >= self.next_roam_at):
+            self.start_roam()
+        if self.roaming:
+            self.step_roam()
+        self.root.after(50, self.roam_loop)
+
+    def start_roam(self) -> None:
+        x = self.root.winfo_x()
+        screen_w = self.root.winfo_screenwidth()
+        distance = random.randint(80, 220) * random.choice((-1, 1))
+        target = max(0, min(x + distance, screen_w - WINDOW_W))
+        if target == x:
+            target = max(0, min(x - distance, screen_w - WINDOW_W))
+        self.roam_target_x = target
+        self.roaming = True
+        self.play_animation("run", once=False)
+
+    def step_roam(self) -> None:
+        if self.roam_target_x is None:
+            self.roaming = False
+            return
+        x = self.root.winfo_x()
+        target = self.roam_target_x
+        if abs(target - x) <= 3:
+            self.root.geometry("+%d+%d" % (target, self.root.winfo_y()))
+            self.state["x"] = target
+            self.state["y"] = self.root.winfo_y()
+            save_state(self.state)
+            self.roaming = False
+            self.roam_target_x = None
+            self.play_animation("idle", once=False)
+            self.next_roam_at = time.time() + random.uniform(18, 28)
+            return
+        step = 4 if target > x else -4
+        self.root.geometry("+%d+%d" % (x + step, self.root.winfo_y()))
+
+    def stop_roam(self) -> None:
+        if self.roaming:
+            self.roaming = False
+            self.roam_target_x = None
+            self.play_animation("idle", once=False)
+
     def pick_click(self) -> str:
         pool = [name for name in CLICK_ANIMS if name != self.last_click]
         choice = random.choice(pool)
@@ -621,6 +671,7 @@ if ($h -ne 0) {
         self.menu.add_cascade(label="动作预览", menu=preview)
 
     def preview_animation(self, name: str) -> None:
+        self.stop_roam()
         if name == "sleep-start":
             self.sleeping = True
             self.play_animation(name, then="sleep-loop")
@@ -654,6 +705,7 @@ if ($h -ne 0) {
 
     # ------------------------------------------------------------ 交互
     def on_press(self, event) -> None:
+        self.stop_roam()
         self.root.focus_force()
         self.drag_origin = (event.x_root, event.y_root, self.root.winfo_x(), self.root.winfo_y())
         self.dragged = False
@@ -693,6 +745,7 @@ if ($h -ne 0) {
             self.menu.grab_release()
 
     def action(self, kind: str) -> None:
+        self.stop_roam()
         if kind == "pat" and self.sleeping:
             self.sleeping = False
             self.play_animation("sleep-end", then="idle")
@@ -768,7 +821,7 @@ def run_check(workspace: Path | None) -> int:
     assert len(frames) == FRAME_COUNT and frames[0].size == (260, 260)
     idle = load_animation("idle")
     assert len(idle) >= 10 and idle[0].height >= 180, (len(idle), idle[0].size if idle else None)
-    for name in EXTRA_ANIMS:
+    for name in EXTRA_ANIMS + ("run",):
         loaded = load_animation(name)
         assert len(loaded) >= 8, (name, len(loaded))
     total = count_completed_tasks(workspace) if workspace is not None else 0
