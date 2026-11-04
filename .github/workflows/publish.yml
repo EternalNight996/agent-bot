@@ -1,0 +1,42 @@
+name: Publish to npm
+
+# Trusted publishing (OIDC): no npm token / OTP is stored in the repo.
+# One-time setup on npmjs.com: package @eternalnight/agent-bot -> Settings ->
+# Trusted Publisher -> GitHub Actions:
+#   owner: EternalNight996
+#   repo: agent-bot
+#   workflow: publish.yml
+# After that, pushing a v* tag (or running this workflow manually) publishes.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.28.5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+      - name: Use npm with trusted publishing support
+        run: npm install -g npm@11
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm verify:release
+      - run: pnpm verify:readme
+      - run: pnpm verify:founding
+      # No NODE_AUTH_TOKEN: npm exchanges the GitHub OIDC token for a
+      # short-lived publish credential. Provenance is attached automatically.
+      - run: npm publish --access public --provenance
