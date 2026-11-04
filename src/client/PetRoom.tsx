@@ -1,7 +1,7 @@
 /** 养成宠物页：小肥鱼的状态、互动和成长。 */
 import { useEffect, useState } from 'react'
 import type { AgentTeamsTranslate } from './locales.ts'
-import { PET_ART, PET_SLEEP_ART } from './pet-art.ts'
+import { PET_IDLE_ART, PET_SLEEP_ART } from './pet-art.ts'
 import { levelOf, petSpeech, stageOf, type PetStage } from '../pet-model.ts'
 import { feed, pat, play, rest, syncTasks, tickPetNow, usePet, wake } from './pet-store.ts'
 import css from './PetRoom.module.css'
@@ -103,7 +103,7 @@ export function PetRoom({ t, completedTasks }: { readonly t: AgentTeamsTranslate
         <div className={css.speech} data-speech={speech}>
           {sleeping ? t('pet.speech.sleeping') + ' · ' + t('pet.sleepTimer', { minutes: sleepMinutes }) : t(SPEECH_KEY[speech])}
         </div>
-        <img className={css.fish} data-sleeping={sleeping ? 'true' : undefined} src={sleeping ? PET_SLEEP_ART : PET_ART} alt="" draggable={false} />
+        <img className={css.fish} data-sleeping={sleeping ? 'true' : undefined} src={sleeping ? PET_SLEEP_ART : PET_IDLE_ART} alt="" draggable={false} />
         <span className={css.shadow} aria-hidden />
       </div>
 

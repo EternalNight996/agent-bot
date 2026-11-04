@@ -24,7 +24,8 @@ import { QuickStartWizard } from './QuickStartDialog.tsx'
 import { ConfigCenter } from './ConfigCenter.tsx'
 import { CULTIVATION_ITEMS, captainKey, cultivationFromXp, idleXpPer10s, memberKey } from './cultivation.ts'
 import { SKIN_OPTIONS } from './artwork.ts'
-import { PET_TOKEN_ART, PET_TOKEN_SLEEP_ART } from './pet-token-art.ts'
+import { PET_TOKEN_SLEEP_ART } from './pet-token-art.ts'
+import { PET_IDLE_ART } from './pet-art.ts'
 import { tickPetNow, usePet, wake } from './pet-store.ts'
 import { ingestCultivation, useCultivationVersion, xpOf } from './cultivation-store.ts'
 import { COLLAPSE_HALL_EVENT, OPEN_HALL_SHEET_EVENT, OPEN_HALL_START_EVENT, type HallSheetAction } from './hall-events.ts'
@@ -1327,7 +1328,7 @@ export function SectHallOverlay({
               <img
                 className={css.petTokenImage}
                 data-sleeping={pet.sleeping ? 'true' : undefined}
-                src={pet.sleeping ? PET_TOKEN_SLEEP_ART : PET_TOKEN_ART}
+                src={pet.sleeping ? PET_TOKEN_SLEEP_ART : PET_IDLE_ART}
                 alt=""
                 draggable={false}
               />
