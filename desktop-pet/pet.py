@@ -319,6 +319,7 @@ def load_animation(name: str, limit: int = 24) -> list[Image.Image]:
     """加载从上游 webm 抽出的逐帧动画（已去黑底、裁切、缩放到 240 高）。"""
     folder = ASSET_DIR / ("anim-" + name)
     if not folder.exists():
+        print("[pet] animation folder missing: %s" % name, file=sys.stderr)
         return []
     frames: list[Image.Image] = []
     for path in sorted(folder.glob("*.png"))[:limit]:
