@@ -22,6 +22,7 @@ test('the pet lives in settings, not as a hall tab, and keeps four interactions'
   assert.match(room, /PET_SLEEP_ART/, 'the room shows the real sleep pose')
   assert.match(room, /wake\(/, 'clicking the sleeping pet wakes it')
   assert.match(hall, /PET_TOKEN_SLEEP_ART/, 'the token mirrors the sleep state')
+  assert.match(hall, /event\.key\.toLowerCase\(\) !== 'h'/, 'Ctrl+Shift+H opens the hall for the desktop pet')
 })
 
 test('sleep is a real ten-minute state, not an instant energy refill', () => {

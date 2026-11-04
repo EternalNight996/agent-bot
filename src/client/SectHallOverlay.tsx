@@ -508,6 +508,22 @@ export function SectHallOverlay({
     return () => { window.removeEventListener(OPEN_HALL_START_EVENT, openStart) }
   }, [collapsed, onOpenSidebar])
 
+  // 桌面宠物双击后会把 DSH 拉到前台并发送 Ctrl+Alt+H；这里只负责展开福地首页。
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (!(event.altKey || event.shiftKey)) return
+      if (event.key.toLowerCase() !== 'h') return
+      event.preventDefault()
+      setReviewing(false)
+      setSheet('home')
+      if (collapsed) { setCollapsed(false); writeHallCollapsed(false) }
+      onOpenSidebar?.()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey) }
+  }, [collapsed, onOpenSidebar])
+
   if (typeof document === 'undefined') return null
 
   // 组队：和功德碑/进度一样在面板左侧的内容气泡里展示，不弹独立窗口。

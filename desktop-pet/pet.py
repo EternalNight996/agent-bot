@@ -2,7 +2,7 @@
 r"""小肥鱼桌面宠物（Windows / tkinter）。
 
 一个真正浮在桌面上的透明宠物窗口：蓝色大肥鱼会呼吸、摆尾、眨眼，
-可以拖动换位置，左键摸摸、双击陪玩、右键喂食/玩耍/休息/退出。
+可以拖动换位置，左键摸摸、双击唤醒 DSH 并展开右侧福地、右键喂食/玩耍/休息/退出。
 
 养成数据保存在 %APPDATA%\dsh-pet\state.json；默认读取当前工作区的
 .agent-teams/**/team.json，团队每完成一个任务，宠物获得一次成长经验。
@@ -10,13 +10,16 @@ r"""小肥鱼桌面宠物（Windows / tkinter）。
 from __future__ import annotations
 
 import argparse
+import ctypes
 import json
 import math
 import os
 import random
 import subprocess
 import sys
+import threading
 import time
+from ctypes import wintypes
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont, ImageTk
@@ -466,6 +469,8 @@ class PetApp:
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
+        self.last_click_at = 0.0
+        self.double_clicked = False
         self.menu = tk.Menu(root, tearoff=0)
         for label, command in (("喂食 🍚", lambda: self.action("feed")), ("陪玩 🎾", lambda: self.action("play")),
                                ("摸摸 🤚", lambda: self.action("pat")), ("休息 😴", lambda: self.action("rest"))):
@@ -473,6 +478,7 @@ class PetApp:
         self.menu.add_separator()
         self.build_preview_menu()
         self.menu.add_separator()
+        self.menu.add_command(label="打开 DSH", command=self.open_dsh)
         self.menu.add_command(label="查看状态", command=self.show_status)
         self.menu.add_command(label="退出", command=self.quit)
         self.setup_window()
@@ -480,10 +486,12 @@ class PetApp:
         for key, kind in (("f", "feed"), ("p", "play"), ("m", "pat"), ("r", "rest")):
             self.root.bind("<KeyPress-%s>" % key, lambda _event, k=kind: self.action(k))
             self.root.bind("<KeyPress-%s>" % key.upper(), lambda _event, k=kind: self.action(k))
+        self.root.bind("<KeyPress-d>", lambda _event: self.open_dsh())
         self.root.bind("<KeyPress-s>", lambda _event: self.show_status())
         self.root.bind("<KeyPress-S>", lambda _event: self.show_status())
         self.root.after(60, self.frame_loop)
         self.root.after(200, self.roam_loop)
+        self.root.after(900, self.topmost_loop)
         self.root.after(200, self.tick_loop)
         self.root.after(1000, self.sync_loop)
         # Tk 在部分高 DPI/旋转屏上的屏幕尺寸不可靠；先用一个稳定的可见位置，
@@ -513,13 +521,25 @@ class PetApp:
         self.canvas.tag_bind(self.pet_item, "<ButtonPress-1>", self.on_press)
         self.canvas.tag_bind(self.pet_item, "<B1-Motion>", self.on_drag)
         self.canvas.tag_bind(self.pet_item, "<ButtonRelease-1>", self.on_release)
-        self.canvas.tag_bind(self.pet_item, "<Double-Button-1>", lambda _e: self.action("play"))
+
         self.canvas.tag_bind(self.pet_item, "<Button-3>", self.on_menu)
         self.canvas.bind("<ButtonPress-1>", self.on_press)
         self.canvas.bind("<B1-Motion>", self.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
-        self.canvas.bind("<Double-Button-1>", lambda _e: self.action("play"))
+
         self.canvas.bind("<Button-3>", self.on_menu)
+
+    def topmost_loop(self) -> None:
+        # Electron 窗口激活后会盖住 Tk 的 topmost；周期性重新置顶，保证宠物可点。
+        if os.name == "nt":
+            try:
+                user32 = ctypes.windll.user32
+                hwnd = user32.GetAncestor(self.root.winfo_id(), 2)
+                if hwnd:
+                    user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)
+            except Exception:
+                pass
+        self.root.after(3000, self.topmost_loop)
 
     def place_bottom_right(self) -> None:
         script = r'''
@@ -734,6 +754,13 @@ if ($h -ne 0) {
     def on_press(self, event) -> None:
         self.stop_roam()
         self.root.focus_force()
+        now = time.time()
+        self.double_clicked = now - self.last_click_at <= 0.45
+        if self.double_clicked:
+            self.last_click_at = 0.0
+            self.open_dsh()
+        else:
+            self.last_click_at = now
         self.drag_origin = (event.x_root, event.y_root, self.root.winfo_x(), self.root.winfo_y())
         self.dragged = False
 
@@ -761,9 +788,86 @@ if ($h -ne 0) {
             self.state["y"] = y
             save_state(self.state)
             self.play_animation("sleep-loop" if self.sleeping else "idle", once=False)
-        else:
+        elif not self.double_clicked:
             self.action("pat")
+        self.double_clicked = False
         self.drag_origin = None
+
+    def _find_dsh_window(self) -> int | None:
+        if os.name != "nt":
+            return None
+        user32 = ctypes.windll.user32
+        found: list[int] = []
+        callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+
+        def callback(hwnd, _lparam):
+            length = user32.GetWindowTextLengthW(hwnd)
+            if length > 0:
+                buffer = ctypes.create_unicode_buffer(length + 1)
+                user32.GetWindowTextW(hwnd, buffer, length + 1)
+                title = buffer.value
+                if "DeepSeek Harness" in title and user32.IsWindowVisible(hwnd):
+                    found.append(hwnd)
+            return True
+
+        user32.EnumWindows(callback_type(callback), 0)
+        return found[0] if found else None
+
+    def _notify(self, message: str) -> None:
+        self.root.after(0, lambda: messagebox.showinfo("小肥鱼", message))
+
+    def _open_dsh_worker(self) -> None:
+        if os.name != "nt":
+            self._notify("DSH 唤醒目前只支持 Windows。")
+            return
+        user32 = ctypes.windll.user32
+        hwnd = self._find_dsh_window()
+        launched = False
+        if hwnd is None:
+            launched = True
+            local = os.environ.get("LOCALAPPDATA", "")
+            exe = Path(local) / "Programs" / "DeepSeek Harness" / "DeepSeek Harness.exe"
+            if not exe.exists():
+                self._notify("没找到 DeepSeek Harness，请先安装 DSH。")
+                return
+            try:
+                subprocess.Popen([str(exe)], cwd=str(exe.parent))
+            except Exception as exc:
+                self._notify("启动 DSH 失败：%s" % exc)
+                return
+            for _ in range(60):
+                time.sleep(0.5)
+                hwnd = self._find_dsh_window()
+                if hwnd is not None:
+                    break
+        if hwnd is None:
+            self._notify("DSH 启动超时，请手动打开后再试。")
+            return
+        try:
+            # SetForegroundWindow 在 Windows 前台锁下会失败；短暂 attach 输入线程再抢焦点。
+            foreground = user32.GetForegroundWindow()
+            foreground_thread = user32.GetWindowThreadProcessId(foreground, None)
+            target_thread = user32.GetWindowThreadProcessId(hwnd, None)
+            user32.AttachThreadInput(foreground_thread, target_thread, True)
+            user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+            user32.BringWindowToTop(hwnd)
+            user32.SetForegroundWindow(hwnd)
+            user32.SetFocus(hwnd)
+            user32.AttachThreadInput(foreground_thread, target_thread, False)
+            time.sleep(3.0 if launched else 1.2)
+            # 客户端注册了 Ctrl+Shift+H（也兼容 Ctrl+Alt+H）：展开右侧福地首页。
+            subprocess.run(
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command",
+                 "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^+h')"],
+                creationflags=0x08000000,
+                timeout=8,
+            )
+        except Exception as exc:
+            self._notify("唤醒 DSH 失败：%s" % exc)
+
+    def open_dsh(self) -> None:
+        self.spark("🚀", "#9fe0ff")
+        threading.Thread(target=self._open_dsh_worker, daemon=True).start()
 
     def on_menu(self, event) -> None:
         try:
