@@ -38,3 +38,7 @@ projects/
 stats-teams.json
 pelican-bicycle.html
 pelican-bicycle.png
+
+# Python bytecode from local pet checks
+__pycache__/
+*.pyc
