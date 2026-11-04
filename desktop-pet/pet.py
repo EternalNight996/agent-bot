@@ -324,8 +324,11 @@ def load_animation(name: str, limit: int = 24) -> list[Image.Image]:
     for path in sorted(folder.glob("*.png"))[:limit]:
         try:
             frames.append(Image.open(path).convert("RGBA"))
-        except Exception:
+        except Exception as exc:
+            print("[pet] failed to load animation frame %s: %s" % (path, exc), file=sys.stderr)
             continue
+    if not frames:
+        print("[pet] no frames loaded for animation '%s'" % name, file=sys.stderr)
     return frames
 
 
@@ -412,7 +415,9 @@ class PetApp:
             loaded = load_animation(name)
             if loaded:
                 self.animations[name] = loaded
-        self.animations.setdefault("idle", self.frames)
+        if "idle" not in self.animations:
+            print("[pet] dsh-pet idle frames unavailable; falling back to generated frames", file=sys.stderr)
+            self.animations["idle"] = self.frames
         self.anim_name = "idle"
         self.anim_index = 0
         self.anim_until = 0.0
