@@ -28,6 +28,8 @@ test('功能直交 is the shipped default doctrine, without a doctrine picker', 
 test('视觉爆炸 and 复刻项目 live in the 目标 step, with no separate 志向 step', () => {
   assert.match(dialog, /const STEPS = \['vow', 'board'\]/)
   assert.match(dialog, /data-control="quickstart-mode-slider"/, 'the mode and lineup are one slider')
+  assert.match(dialog, /interviewState !== 'loading'/, 'the board waits until interview questions are ready')
+  assert.match(locales, /'quickstart\.boardSubmit': '拍板'/, 'the final action is just 拍板')
   assert.match(dialog, /data-control="quickstart-crew-team"/, 'team mode shows a lineup')
   assert.match(dialog, /data-control="quickstart-crew-solo"/, 'solo mode runs a single character')
   assert.match(dialog, /quickstart-solo-role-/, 'solo mode picks exactly one role')

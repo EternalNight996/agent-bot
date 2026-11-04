@@ -703,11 +703,11 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     if (busy || polishBusy) return false
     switch (currentStep) {
       case 'vow': return goalTrimmed.length >= 2
-      // 拍板步不再被访谈阻塞：问题没回来也能直接提交，用模式默认值兜底。
-      case 'board': return true
+      // 访谈还在生成时不允许拍板：否则会用空答案生成草案。
+      case 'board': return superFast || interviewState !== 'loading'
       default: return true
     }
-  }, [busy, polishBusy, currentStep, goalTrimmed])
+  }, [busy, polishBusy, currentStep, goalTrimmed, superFast, interviewState])
 
   const submit = async (replace: boolean): Promise<void> => {
     if (goalTrimmed === '') { setError(t('quickstart.goalRequired')); setStep(0); return }
@@ -1231,7 +1231,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
           </button>
         ) : (
           <button type="button" data-primary data-control="quickstart-submit" disabled={busy || !canAdvance} onClick={() => { void submit(existingTeam === true) }}>
-            {busy ? t('quickstart.busy') : t('quickstart.boardSubmit')}
+            {busy || (!superFast && interviewState === 'loading') ? t('quickstart.busy') : t('quickstart.boardSubmit')}
           </button>
         )}
       </div>
