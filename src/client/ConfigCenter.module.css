@@ -35,6 +35,61 @@
 .list { display: flex; flex-direction: column; gap: 7px; min-height: 0; }
 .hint, .meta { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 9.5px; line-height: 1.55; }
 
+.sectionTitle { font-size: 11px; color: var(--dsw-alias-label-primary); }
+
+/* 通用配置：令牌皮肤选择（保留原令牌 + 蓝色大肥鱼）。 */
+.tokenSkinGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+
+.tokenSkinCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 70%, transparent);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tokenSkinCard:hover { border-color: color-mix(in srgb, #f2c14e 45%, var(--dsw-alias-border-l2)); }
+.tokenSkinCard[data-active='true'] { border-color: #f2c14e; background: color-mix(in srgb, #f2c14e 8%, var(--dsw-alias-bg-layer-1)); }
+
+.tokenPreview { position: relative; flex: none; width: 38px; height: 68px; display: block; }
+
+.tokenPreviewBody {
+  position: absolute;
+  inset: 0 0 12px;
+  overflow: hidden;
+  border: 1px solid rgb(201 164 95 / 85%);
+  border-radius: 9px 9px 6px 6px;
+  background: linear-gradient(158deg, rgb(76 110 106 / 96%), rgb(24 45 49 / 98%) 45%, rgb(10 22 24 / 100%));
+  box-shadow: inset 0 0 0 2px rgb(232 195 120 / 16%), inset 0 -7px 10px rgb(0 0 0 / 45%);
+}
+
+.tokenPreview[data-skin='fish'] .tokenPreviewBody {
+  border-color: rgb(143 212 255 / 90%);
+  background: linear-gradient(158deg, rgb(47 119 208 / 96%), rgb(16 62 138 / 98%) 45%, rgb(6 24 52 / 100%));
+  box-shadow: inset 0 0 0 2px rgb(159 224 255 / 20%), inset 0 -7px 10px rgb(0 10 30 / 50%);
+}
+
+.tokenPreviewGlyph { position: absolute; inset: 14px 0 0; display: grid; place-items: center; color: #f2d9a0; font-family: "STKaiti", "KaiTi", serif; font-size: 17px; font-weight: 700; line-height: 1; }
+.tokenPreviewIcon { position: absolute; inset: 8px 5px 16px; width: calc(100% - 10px); height: calc(100% - 24px); object-fit: contain; }
+.tokenPreviewFish { position: absolute; inset: 11px 2px 17px; width: calc(100% - 4px); height: calc(100% - 28px); object-fit: contain; filter: drop-shadow(0 0 7px rgb(95 184 255 / 85%)); }
+
+.tokenPreviewTassel { position: absolute; left: 50%; bottom: 0; width: 2px; height: 12px; translate: -50% 0; background: linear-gradient(rgb(201 164 95), rgb(122 47 42)); }
+.tokenPreviewTassel::after { content: ''; position: absolute; left: 50%; bottom: -7px; width: 9px; height: 8px; translate: -50% 0; border-radius: 0 0 50% 50%; background: radial-gradient(circle at 50% 20%, #cf5a4e, #7d211d 72%); }
+.tokenPreview[data-skin='fish'] .tokenPreviewTassel { background: linear-gradient(rgb(143 212 255), rgb(43 99 217)); }
+.tokenPreview[data-skin='fish'] .tokenPreviewTassel::after { background: radial-gradient(circle at 50% 20%, #8fd4ff, #2b63d9 72%); }
+
+.tokenSkinText { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.tokenSkinText strong { font-size: 11px; }
+.tokenSkinText small { font-size: 9px; line-height: 1.4; color: var(--dsw-alias-label-secondary); }
+.tokenSkinCheck { position: absolute; right: 8px; top: 7px; color: #f2c14e; font-size: 11px; }
+
 .skinGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));

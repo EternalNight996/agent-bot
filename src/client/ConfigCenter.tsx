@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type ReactElement } from 'react'
 import { createPortal } from 'react-dom'
 import type { AgentTeamsTranslate } from './locales.ts'
 import { CAPTAIN_SKIN_OPTIONS, setCaptainSkin, useCaptainSkin } from './captain-skin.ts'
+import { PetRoom } from './PetRoom.tsx'
 import { ALL_SKINS, type SkinDefinition } from './skins.ts'
 import { AGENCY_ROLES, agencyRole, type AgencyRole } from '../agency-roles-lite.ts'
 import { setRoleSkills as saveRoleSkills, useRoleSkills } from './role-skills.ts'
@@ -19,7 +20,7 @@ import { addCustomSkin, removeCustomSkin, useCustomSkins, type CustomSkin } from
 import { hideSkin, showSkin, useHiddenSkins } from './hidden-skins.ts'
 import css from './ConfigCenter.module.css'
 
-type Tab = 'skins' | 'roles' | 'lineups'
+type Tab = 'pet' | 'skins' | 'roles' | 'lineups'
 type Confirm = { readonly kind: 'lineup' | 'skin'; readonly id: string; readonly name: string; readonly x: number; readonly y: number }
 
 function readImageFile(file: File): Promise<string> {
@@ -41,8 +42,8 @@ function rolePromptText(role: { name: string; category: string; skills: readonly
   ].join('\n')
 }
 
-export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTeamsTranslate; readonly sessionId?: string; readonly onFeedback?: () => void }): ReactElement {
-  const [tab, setTab] = useState<Tab>('skins')
+export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: { readonly t: AgentTeamsTranslate; readonly sessionId?: string; readonly completedTasks?: number; readonly onFeedback?: () => void }): ReactElement {
+  const [tab, setTab] = useState<Tab>('pet')
   const captainSkin = useCaptainSkin()
   const lineups = useLineups()
   const hiddenLineups = useHiddenLineups()
@@ -151,7 +152,7 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
   return (
     <div className={css.root}>
       <div className={css.tabs} role="tablist">
-        {([['skins', 'office.settingsTabSkin'], ['roles', 'office.settingsTabRoles'], ['lineups', 'office.settingsTabLineups']] as const).map(([id, key]) => (
+        {([['pet', 'office.settingsTabPet'], ['skins', 'office.settingsTabSkin'], ['roles', 'office.settingsTabRoles'], ['lineups', 'office.settingsTabLineups']] as const).map(([id, key]) => (
           <button key={id} type="button" role="tab" aria-selected={tab === id} className={css.tab} data-active={tab === id || undefined} onClick={() => { setTab(id); setConfirm(undefined) }}>
             {t(key)}
           </button>
@@ -160,6 +161,12 @@ export function ConfigCenter({ t, sessionId, onFeedback }: { readonly t: AgentTe
           <button type="button" className={css.feedbackButton} onClick={onFeedback}>{t('office.exceptionFeedback')}</button>
         )}
       </div>
+
+      {tab === 'pet' && (
+        <div className={css.list}>
+          <PetRoom t={t} completedTasks={completedTasks} />
+        </div>
+      )}
 
       {tab === 'skins' && (
         <div className={css.list}>

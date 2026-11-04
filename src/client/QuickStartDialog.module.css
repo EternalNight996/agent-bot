@@ -656,6 +656,96 @@
 .modeLine { font-size: 10px; line-height: 1.4; color: #9aa4b2; overflow-wrap: anywhere; }
 .modeCard[data-active='true'] .modeLine { color: #c9b27a; }
 
+/* 开发模式 + 阵容：滚动条把两者合成一个控件，单人/团队决定队伍形态。 */
+.crewBlock { display: flex; flex-direction: column; gap: 5px; }
+
+.crewHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+.crewToggle {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #2c3442;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.crewToggle button {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #9aa4b2;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.crewToggle button[data-active='true'] { background: rgba(242, 193, 78, 0.16); color: #f2c14e; }
+.crewToggle button:disabled { opacity: 0.55; cursor: default; }
+
+.modeSlider {
+  width: 100%;
+  margin: 1px 0 0;
+  accent-color: #f2c14e;
+  cursor: pointer;
+}
+
+.modeSlider:disabled { cursor: default; opacity: 0.6; }
+
+.modeTicks { display: flex; justify-content: space-between; gap: 2px; }
+
+.modeTick {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 1px 0;
+  border: 0;
+  background: transparent;
+  color: #7f8896;
+  font: inherit;
+  font-size: 9px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.modeTick[data-active='true'] { color: #f2c14e; font-weight: 700; }
+.modeTick:disabled { cursor: default; opacity: 0.55; }
+
+.crewPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 9px;
+  border: 1px solid #2c3442;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent);
+}
+
+.crewPreviewHead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 12px; }
+.crewPreviewHead strong { font-size: 12px; }
+.crewCount { color: #c9b27a; font-size: 10px; white-space: nowrap; }
+.crewLine { color: #9aa4b2; font-size: 10px; line-height: 1.5; }
+
+/* 单人角色单选：沿用当前模式阵容里的岗位。 */
+.soloRoles { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 1px; }
+
+.soloRoleChip {
+  padding: 3px 8px;
+  border: 1px solid #2c3442;
+  border-radius: 999px;
+  background: transparent;
+  color: #9aa4b2;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.soloRoleChip[data-active='true'] { border-color: #f2c14e; color: #f2c14e; background: rgba(242, 193, 78, 0.12); }
+.soloRoleChip:disabled { opacity: 0.55; cursor: default; }
+
 /* 模式自带阵容：模式卡下方常驻一行，说明当前模式默认会拉起几张席位。 */
 .modeLineupHint {
   margin: 0;

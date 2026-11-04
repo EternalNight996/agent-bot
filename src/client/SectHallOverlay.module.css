@@ -1532,6 +1532,35 @@
 .version { color: #9aa4b2; font-size: 11px; }
 .token { animation: hall-token-fade 160ms ease-out, hall-token-pulse 2.4s ease-in-out infinite; }
 .tokenIcon { position: absolute; inset: 8px 5px 16px; width: calc(100% - 10px); height: calc(100% - 24px); object-fit: contain; filter: drop-shadow(0 0 8px rgb(242 193 78 / 75%)); }
+/* 蓝色大肥鱼皮肤：同一枚令牌，换成蓝光边框和大肥鱼挂件。 */
+.token[data-skin='fish'] .tokenBody {
+  border-color: rgb(143 212 255 / 90%);
+  background: linear-gradient(158deg, rgb(47 119 208 / 96%), rgb(16 62 138 / 98%) 45%, rgb(6 24 52 / 100%));
+  box-shadow:
+    inset 0 0 0 2px rgb(159 224 255 / 20%),
+    inset 0 7px 10px rgb(224 246 255 / 12%),
+    inset 0 -7px 10px rgb(0 10 30 / 50%),
+    0 7px 18px rgb(0 0 0 / 42%),
+    0 0 20px rgb(95 184 255 / 28%);
+}
+.token[data-skin='fish'] .tokenBody::before { box-shadow: inset 0 0 0 1px rgb(159 224 255 / 80%); }
+.token[data-skin='fish'] .tokenBody::after { box-shadow: inset 0 0 0 1px rgb(159 224 255 / 22%); }
+.token[data-skin='fish'] .tokenIcon[data-fish-token] {
+  inset: 11px 2px 17px;
+  width: calc(100% - 4px);
+  height: calc(100% - 28px);
+  filter: drop-shadow(0 0 9px rgb(95 184 255 / 85%));
+}
+.token[data-skin='fish'] .tokenTassel { background: linear-gradient(rgb(143 212 255), rgb(43 99 217)); }
+.token[data-skin='fish'] .tokenTassel::after {
+  background: radial-gradient(circle at 50% 20%, #8fd4ff, #2b63d9 72%);
+  box-shadow: 0 0 8px rgb(95 184 255 / 50%);
+}
+.token[data-skin='fish'] { animation: hall-token-fade 160ms ease-out, hall-token-fish-pulse 2.4s ease-in-out infinite; }
+@keyframes hall-token-fish-pulse {
+  0%, 100% { filter: drop-shadow(0 0 7px rgb(95 184 255 / 35%)); }
+  50% { filter: drop-shadow(0 0 18px rgb(95 184 255 / 85%)); }
+}
 .tokenBadge { position: absolute; right: 2px; bottom: 16px; padding: 0 4px; border-radius: 999px; background: #f2c14e; color: #16241b; font-size: 9px; font-weight: 700; line-height: 14px; }
 @keyframes hall-token-pulse { 0%, 100% { filter: drop-shadow(0 0 7px rgb(242 193 78 / 35%)); } 50% { filter: drop-shadow(0 0 18px rgb(242 193 78 / 80%)); } }
 .historySelect { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--dsw-alias-border-l2); background: #151a21; color: inherit; font: inherit; font-size: 13px; }

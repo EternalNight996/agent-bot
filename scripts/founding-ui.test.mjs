@@ -26,8 +26,15 @@ test('功能直交 is the shipped default doctrine, without a doctrine picker', 
 })
 
 test('视觉爆炸 and 复刻项目 live in the 目标 step, with no separate 志向 step', () => {
-  assert.match(dialog, /const STEPS = \['vow', 'interview', 'sect', 'oath'\]/)
-  assert.match(dialog, /const SOLO_STEPS = \['vow', 'interview', 'oath'\]/)
+  assert.match(dialog, /const STEPS = \['vow', 'board'\]/)
+  assert.match(dialog, /data-control="quickstart-mode-slider"/, 'the mode and lineup are one slider')
+  assert.match(dialog, /data-control="quickstart-crew-team"/, 'team mode shows a lineup')
+  assert.match(dialog, /data-control="quickstart-crew-solo"/, 'solo mode runs a single character')
+  assert.match(dialog, /quickstart-solo-role-/, 'solo mode picks exactly one role')
+  assert.match(dialog, /setSoloRole/, 'the solo role is part of the founding payload')
+  assert.match(dialog, /roles: solo \? \[soloRole\] : roles/, 'a solo team is one real member, not a captain-only plan')
+  assert.ok(!dialog.includes("currentStep === 'sect'"), 'the lineup step is gone')
+  assert.ok(!dialog.includes("currentStep === 'oath'"), 'the oath step is gone')
   assert.ok(!dialog.includes('data-step="ambition"'), 'the ambition step is merged into the goal step')
   assert.match(dialog, /quickstart\.ambitionLabel/)
   // 视觉爆炸 is an optional, off-by-default toggle in the 开发模式 block.
@@ -96,6 +103,19 @@ test('goal attachments and plan agent executors are wired', () => {
   assert.match(plan, /\/plugins\/dsh-super-agent\/agents/, 'the plan review must list execution agents')
   assert.match(plan, /plan\.member\.agent/)
   assert.match(plan, /syncModel/, 'the captain model can be synced per member')
+})
+
+test('the token stays plain while the pet lives in settings', () => {
+  const config = readFileSync(new URL('../src/client/ConfigCenter.tsx', import.meta.url), 'utf8')
+  const hall = readFileSync(new URL('../src/client/SectHallOverlay.tsx', import.meta.url), 'utf8')
+  assert.match(config, /'pet', 'office\.settingsTabPet'/)
+  assert.match(config, /<PetRoom/)
+  assert.ok(!config.includes('data-control="token-skins"'), 'the 通用 token replacement is gone')
+  assert.ok(!hall.includes('data-skin={tokenSkin}'), 'the hall token is back to the default token')
+  const keys = ['office.settingsTabPet', 'pet.level', 'pet.feed', 'pet.stage.whale']
+  for (const key of keys) {
+    assert.ok(locales.split("'" + key + "'").length - 1 >= 2, key + ' must exist in zh and en')
+  }
 })
 
 test('the create/clarify tool schemas accept the new durable fields', () => {

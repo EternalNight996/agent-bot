@@ -4,14 +4,11 @@ import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import css from './QuickStartDialog.module.css'
 import { memberArtUrl } from './artwork.ts'
-import { roleLabel } from './role-catalog.ts'
 import { useCustomRoles } from './custom-roles.ts'
 import { useHiddenLineups } from './hidden-lineups.ts'
 import { OPEN_HALL_START_EVENT } from './hall-events.ts'
 import type { AgentTeamsTranslate } from './locales.ts'
 import { TEAM_CREATED_EVENT } from './team-reveal.ts'
-import { ROLE_META } from './role-labels.ts'
-import { SECT_PRESETS, randomSect, sectPreset } from './sects.ts'
 import { useLineups, lineupById } from './lineup-store.ts'
 import { modeLineupId } from './mode-lineups.ts'
 import { ALL_SKINS } from './skins.ts'
@@ -58,6 +55,32 @@ const TEMPLATES: readonly QuickTemplate[] = [
   { id: 'audit', labelKey: 'quickstart.tplAudit', descKey: 'quickstart.desc.audit', roles: ['auditor', 'reviewer'] },
 ]
 
+/** 单人角色的默认优先级：优先能独立执行实现的角色，再退到该模式阵容的其它角色。 */
+const SOLO_ROLE_PREFERENCE = [
+  'engineering-senior-developer',
+  'engineering-frontend-developer',
+  'engineering-backend-architect',
+  'security-appsec-engineer',
+  'design-ux-researcher',
+  'product-manager',
+  'engineering-software-architect',
+]
+
+/** 单人可选角色：沿用当前模式阵容里的岗位，保证模式和角色不脱节。 */
+function soloCandidatesFor(mode: TeamMode): string[] {
+  const preset = lineupById(modeLineupId(mode))
+  return [...new Set((preset?.entries ?? []).map(entry => entry.role))]
+}
+
+function preferredSoloRole(candidates: readonly string[]): string {
+  return SOLO_ROLE_PREFERENCE.find(role => candidates.includes(role)) ?? candidates[0] ?? 'implementer'
+}
+
+function normalizedSoloRole(value: string | undefined, mode: TeamMode): string {
+  const candidates = soloCandidatesFor(mode)
+  return value !== undefined && candidates.includes(value) ? value : preferredSoloRole(candidates)
+}
+
 type GoalAttachment = { readonly name: string; readonly path: string; readonly mime: string; readonly kind: 'image' | 'video'; readonly size: number }
 
 type QuickStartDraft = {
@@ -68,12 +91,12 @@ type QuickStartDraft = {
   /** 视觉爆炸 is fixed in the 目标 step; kept for draft compatibility. */
   ambition: string
   roles: string[]
-  /** 阵营构造系统；未选时回退旧佛道势力预设。 */
+  /** 当前阵容（开发模式的预设）；单人时不使用。 */
   faction?: string
-  sectMode: string
-  rolledSect: string
   projectKind: 'engineering' | 'drama'
   solo: boolean
+  /** 单人模式执行的单个角色 id。 */
+  soloRole?: string
   superFast: boolean
   questions: InterviewQuestionView[]
   answers: Record<string, string[]>
@@ -94,22 +117,6 @@ function readSelection(value: unknown): ReferenceSelection | undefined {
 }
 
 const QUICK_START_DRAFT_PREFIX = 'dsh-super-agent.quickstart.'
-/** 阵营是全局偏好：新会话默认沿用上一次选择，而不是只记在当前草稿。 */
-const LAST_FACTION_KEY = 'dsh-super-agent.lastFaction'
-
-function readLastFaction(): string | undefined {
-  try {
-    const raw = window.localStorage.getItem(LAST_FACTION_KEY)
-    return raw === null || raw.trim() === '' ? undefined : raw
-  } catch { return undefined }
-}
-
-function writeLastFaction(id: string | undefined): void {
-  try {
-    if (id === undefined) window.localStorage.removeItem(LAST_FACTION_KEY)
-    else window.localStorage.setItem(LAST_FACTION_KEY, id)
-  } catch { /* private mode */ }
-}
 
 function readQuickStartDraft(sessionId: string): QuickStartDraft | undefined {
   try {
@@ -130,11 +137,10 @@ function readQuickStartDraft(sessionId: string): QuickStartDraft | undefined {
       ambition: value.ambition === 'visual' ? 'visual' : '',
       roles: Array.isArray(value.roles) ? value.roles.filter((role): role is string => typeof role === 'string') : [...(TEMPLATES[0]?.roles ?? [])],
       faction: typeof value.faction === 'string' && value.faction.trim() !== '' ? value.faction : undefined,
-      sectMode: typeof value.sectMode === 'string' ? value.sectMode : 'random',
-      rolledSect: typeof value.rolledSect === 'string' ? value.rolledSect : randomSect().id,
       // Legacy 'drama' drafts still load, but founding is engineering-only now.
       projectKind: 'engineering',
       solo: value.solo === true,
+      soloRole: typeof value.soloRole === 'string' && value.soloRole.trim() !== '' ? value.soloRole : undefined,
       superFast: value.superFast === true,
       questions: Array.isArray(value.questions) ? value.questions as InterviewQuestionView[] : [],
       answers: typeof value.answers === 'object' && value.answers !== null ? value.answers as Record<string, string[]> : {},
@@ -199,16 +205,14 @@ async function findRecentStagedTeam(sessionId: string, since: number, signal?: A
     return undefined
   }
 }
-/** 组队步骤：目标（视觉爆炸 + 复刻项目） → 需求 → 阵营 → 立誓。
- * 法脉（任务模板）不再让用户选：它和模式/阵容重复，功能直交作为固定默认值。 */
-const STEPS = ['vow', 'interview', 'sect', 'oath'] as const
-const SOLO_STEPS = ['vow', 'interview', 'oath'] as const
+/** 组队步骤：目标（开发模式 + 单人/团队 + 视觉爆炸 + 复刻项目） → 拍板（需求 + 摘要）。
+ * 阵容不再单独成步：它由目标里的开发模式派生，滚动条同时切换模式与队伍。
+ * 法脉（任务模板）同样不再让用户选：功能直交是固定默认值。 */
+const STEPS = ['vow', 'board'] as const
 type Step = typeof STEPS[number]
-const STEP_LABEL: Record<Step, 'quickstart.stepGoal' | 'quickstart.stepInterview' | 'quickstart.stepSect' | 'quickstart.stepOath'> = {
+const STEP_LABEL: Record<Step, 'quickstart.stepGoal' | 'quickstart.stepBoard'> = {
   vow: 'quickstart.stepGoal',
-  interview: 'quickstart.stepInterview',
-  sect: 'quickstart.stepSect',
-  oath: 'quickstart.stepOath',
+  board: 'quickstart.stepBoard',
 }
 
 /** Template questions used only when the host/model cannot answer. */
@@ -236,10 +240,6 @@ function fallbackClarification(mode: TeamMode): Record<string, unknown> {
     acceptance: [...spec.acceptanceDefaults],
     memoryHints: [],
   }
-}
-
-function templateOf(id: string): QuickTemplate {
-  return TEMPLATES.find(entry => entry.id === id) ?? TEMPLATES[0] as QuickTemplate
 }
 
 export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded }: {
@@ -277,35 +277,28 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   const [goal, setGoal] = useState(() => draft?.goal ?? '')
   // 玄门道统（法脉）选项已移除：固定功能直交，只保留 draft/bag 的兼容字段。
   const [template, setTemplate] = useState<string>('ship')
-  // 每个开发模式都自带一张阵容预设（人数/职责随模式变化）：新会话默认选它，
-  // 只有该预设被隐藏时才回退到全局上次阵营。
+  // 每个开发模式都自带一张阵容预设（人数/职责随模式变化）。阵容不再是独立步骤：
+  // 滚动条切模式时同步切到该模式预设；单人模式则清空阵容，由师父一个角色执行。
   const modeLineupFor = (value: TeamMode): string | undefined => {
     const id = modeLineupId(value)
     return visibleFactions.some(lineup => lineup.id === id) ? id : undefined
   }
-  const lastFaction = draft === undefined ? readLastFaction() : undefined
-  const fallbackFaction = lastFaction !== undefined && visibleFactions.some(lineup => lineup.id === lastFaction)
-    ? lastFaction
-    : visibleFactions[0]?.id
   const initialFaction: string | undefined = (() => {
-    if (draft?.faction !== undefined && visibleFactions.some(lineup => lineup.id === draft.faction)) return draft.faction
-    const preset = modeLineupFor(mode)
-    if (preset !== undefined) return preset
-    return draft === undefined ? fallbackFaction : undefined
+    const saved = draft?.faction
+    if (saved !== undefined && visibleFactions.some(lineup => lineup.id === saved)) return saved
+    return modeLineupFor(mode) ?? visibleFactions[0]?.id
   })()
   const initialFactionRoles = initialFaction === undefined
     ? undefined
     : lineupById(initialFaction)?.entries.map(entry => entry.role)
-  const [roles, setRoles] = useState<string[]>(() => draft?.roles ?? initialFactionRoles ?? [...(TEMPLATES[0]?.roles ?? [])])
-  // 阵容：把角色和皮肤绑定到一起；选中后角色来自阵容条目。
-  const [faction, setFaction] = useState<string | undefined>(initialFaction)
-  // 佛道势力有两种玩法：用户选一个预设，或让系统随机动态分配（再点一次重抽）。
-  const [sectMode, setSectMode] = useState<'random' | 'custom' | string>(() => draft?.sectMode ?? (initialFaction === undefined ? 'random' : 'custom'))
-  const [rolledSect, setRolledSect] = useState<string>(() => draft?.rolledSect ?? randomSect().id)
-  const [customRole, setCustomRole] = useState('')
-  const [rolesOpen, setRolesOpen] = useState(false)
   // Solo run: no members are spawned; the captain executes every task itself.
   const [solo, setSolo] = useState(() => draft?.solo ?? false)
+  const [soloRole, setSoloRole] = useState<string>(() => normalizedSoloRole(draft?.soloRole, draft?.mode ?? DEFAULT_MODE))
+  const [roles, setRoles] = useState<string[]>(() => draft?.solo === true
+    ? []
+    : (draft?.roles ?? initialFactionRoles ?? [...(TEMPLATES[0]?.roles ?? [])]))
+  // 阵容：把角色和皮肤绑定到一起；单人时为空，切回团队时按当前模式恢复。
+  const [faction, setFaction] = useState<string | undefined>(draft?.solo === true ? undefined : initialFaction)
   const [superFast, setSuperFast] = useState(() => draft?.superFast ?? false)
   const [submitting, setSubmitting] = useState(() => draft?.submitting ?? false)
   const [submittedAt, setSubmittedAt] = useState(() => draft?.submittedAt ?? 0)
@@ -328,7 +321,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   const [rememberedHint, setRememberedHint] = useState(false)
   const bagLoaded = useRef(false)
 
-  const steps: readonly Step[] = solo ? SOLO_STEPS : STEPS
+  const steps: readonly Step[] = STEPS
   const submitActive = useRef(false)
 
   useEffect(() => {
@@ -350,7 +343,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   const [interviewState, setInterviewState] = useState<'loading' | 'ready' | 'fallback'>(() => draft?.questions?.length ? 'ready' : 'loading')
   const [interviewError, setInterviewError] = useState('')
   const [interviewNonce, setInterviewNonce] = useState(0)
-  const multiRef = useRef<HTMLDivElement | null>(null)
   const goalRef = useRef<HTMLTextAreaElement | null>(null)
   const sessionRef = useRef(sessionId)
   const hydratingDraft = useRef(false)
@@ -377,10 +369,10 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     setMode(next?.mode ?? DEFAULT_MODE)
     setGoal(next?.goal ?? '')
     setTemplate('ship')
-    setRoles(next?.roles ?? [...(TEMPLATES[0]?.roles ?? [])])
-    setSectMode(next?.sectMode ?? 'random')
-    setRolledSect(next?.rolledSect ?? randomSect().id)
     setSolo(next?.solo ?? false)
+    setSoloRole(normalizedSoloRole(next?.soloRole, next?.mode ?? DEFAULT_MODE))
+    setFaction(next?.solo === true ? undefined : next?.faction)
+    setRoles(next?.solo === true ? [] : (next?.roles ?? [...(TEMPLATES[0]?.roles ?? [])]))
     setSuperFast(next?.superFast ?? false)
     setSubmitting(next?.submitting ?? false)
     setSubmittedAt(next?.submittedAt ?? 0)
@@ -435,12 +427,12 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     if (sessionRef.current !== sessionId) return
     if (hydratingDraft.current) { hydratingDraft.current = false; return }
     saveQuickStartDraft(sessionId, {
-      step, mode, goal, template, ambition: visualEnabled ? 'visual' : '', roles, faction, sectMode, rolledSect, projectKind, solo, superFast,
+      step, mode, goal, template, ambition: visualEnabled ? 'visual' : '', roles, faction, projectKind, solo, soloRole, superFast,
       questions: interviewQuestions, answers: interviewAnswers,
       referenceInput, attachments, ...referenceProfile === undefined ? {} : { referenceProfile }, referenceSelection,
       submitting, submittedAt,
     })
-  }, [sessionId, step, mode, goal, template, visualEnabled, roles, faction, sectMode, rolledSect, projectKind, solo, superFast, interviewQuestions, interviewAnswers, referenceInput, attachments, referenceProfile, referenceSelection, submitting, submittedAt])
+  }, [sessionId, step, mode, goal, template, visualEnabled, roles, faction, projectKind, solo, soloRole, superFast, interviewQuestions, interviewAnswers, referenceInput, attachments, referenceProfile, referenceSelection, submitting, submittedAt])
 
   // If the wizard unmounts while 立誓 is in flight (window/session switch), the
   // request may finish without its React callback. Recover the new staged team
@@ -471,7 +463,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
           setBusy(false)
           setCreated(t('quickstart.created', {
             team: found.teamName ?? found.name ?? found.teamId,
-            sect: activeSect === undefined ? t('quickstart.sectCustomPicked') : t(activeSect.nameKey),
+            sect: crewName,
           }))
           window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: found.teamId, sessionId } }))
           onFounded?.()
@@ -493,72 +485,54 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   }, [submitting, submittedAt, sessionId])
 
 
-  useEffect(() => {
-    if (!rolesOpen) return
-    const onPointerDown = (event: PointerEvent): void => {
-      if (multiRef.current === null) return
-      if (!multiRef.current.contains(event.target as Node)) setRolesOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => { document.removeEventListener('pointerdown', onPointerDown) }
-  }, [rolesOpen])
 
   const close = (): void => {
     if (busy) return
     onDone?.()
   }
-  const activeSect = sectMode === 'custom' ? undefined : sectPreset(sectMode === 'random' ? rolledSect : sectMode)
-  const sectRoles = activeSect?.roles ?? roles
-  const selectFaction = (id: string, remember = true): void => {
+  const activeLineup = lineupById(faction)
+  const selectFaction = (id: string): void => {
     const def = lineupById(id)
     if (def === undefined) return
     setFaction(id)
-    if (remember) writeLastFaction(id)
-    setSectMode('custom')
     setRoles([...new Set(def.entries.map(entry => entry.role))])
   }
-  // 选模式即选阵容：模式卡点击后默认切到该模式的阵容预设（用户仍可换）。
+  // 选模式即选阵容：滚动条切模式后同步切到该模式的阵容预设。
   const chooseMode = (next: TeamMode): void => {
     setMode(next)
     setSuperFast(false)
     setInterviewQuestions([])
     setInterviewAnswers({})
     setInterviewState('loading')
-    const preset = modeLineupFor(next)
-    if (preset !== undefined) selectFaction(preset, false)
+    if (solo) {
+      // 单人角色必须留在新模式的阵容里；不在时回退到首选角色。
+      setSoloRole(current => {
+        const candidates = soloCandidatesFor(next)
+        return candidates.includes(current) ? current : preferredSoloRole(candidates)
+      })
+      return
+    }
+    const preset = modeLineupFor(next) ?? visibleFactions[0]?.id
+    if (preset !== undefined) selectFaction(preset)
   }
-  const chooseSect = (id: string): void => {
-    setFaction(undefined)
-    writeLastFaction(undefined)
-    setSectMode(id)
-    const preset = sectPreset(id)
-    if (preset !== undefined) setRoles([...preset.roles])
-  }
-  const rollSect = (): void => {
-    const next = randomSect(rolledSect)
-    setFaction(undefined)
-    writeLastFaction(undefined)
-    setRolledSect(next.id)
-    setSectMode('random')
-    setRoles([...next.roles])
-  }
-  const chooseCustom = (): void => {
-    setFaction(undefined)
-    writeLastFaction(undefined)
-    setSectMode('custom')
-    if (roles.length === 0) setRoles([...templateOf(template).roles])
-  }
-  const toggleRole = (role: string): void => {
-    setRoles((current) => current.includes(role) ? current.filter(entry => entry !== role) : [...current, role])
+  // 单人 / 团队：团队恢复当前模式的阵容，单人清空成员交给师父执行。
+  const chooseCrew = (nextSolo: boolean): void => {
+    if (nextSolo === solo) return
+    setSolo(nextSolo)
+    if (nextSolo) {
+      setFaction(undefined)
+      setRoles([])
+      const candidates = soloCandidatesFor(mode)
+      setSoloRole(current => candidates.includes(current) ? current : preferredSoloRole(candidates))
+      return
+    }
+    const preset = modeLineupFor(mode) ?? visibleFactions[0]?.id
+    if (preset !== undefined) selectFaction(preset)
   }
   const roleName = (id: string): string => {
-    const lineup = lineupById(faction)
-    const entry = lineup?.entries.find(item => item.role === id)
+    const entry = activeLineup?.entries.find(item => item.role === id)
     if (entry !== undefined) return skinLookup.get(entry.skin)?.name ?? entry.skin
-    const role = roleDef(id)
-    if (role !== undefined) return role.name
-    const meta = ROLE_META.find(item => item.id === id)
-    return meta === undefined ? id : t(meta.nameKey)
+    return roleDef(id)?.name ?? id
   }
   /** 一枚行者 chip：优先用像素人立绘，找不到对应法门时退回首字徽记。 */
   const personChip = (role: string) => {
@@ -572,12 +546,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         {label}
       </span>
     )
-  }
-  const addCustomRole = (): void => {
-    const trimmed = customRole.trim()
-    if (trimmed === '') return
-    setRoles((current) => current.includes(trimmed) ? current : [...current, trimmed])
-    setCustomRole('')
   }
 
   const goalTrimmed = goal.trim()
@@ -665,7 +633,9 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
 
   // Ask the model for template-like questions when the interview step opens.
   useEffect(() => {
-    if (steps[step] !== 'interview' || goalTrimmed === '' || interviewQuestions.length > 0) return
+    if (steps[step] !== 'board' || goalTrimmed === '' || interviewQuestions.length > 0) return
+    // 超级快速：跳过 AI 访谈，直接拍板。
+    if (superFast) return
     const controller = new AbortController()
     setInterviewState('loading')
     setInterviewError('')
@@ -725,7 +695,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
       }
     })()
     return () => { controller.abort() }
-  }, [step, goalTrimmed, sessionId, mode, ambition, interviewNonce])
+  }, [step, goalTrimmed, sessionId, mode, ambition, interviewNonce, superFast])
   const currentStep: Step = steps[step] ?? steps[0] as Step
   const canAdvance = useMemo(() => {
     // Never advance while polish is still running: the result is about to land
@@ -733,11 +703,11 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     if (busy || polishBusy) return false
     switch (currentStep) {
       case 'vow': return goalTrimmed.length >= 2
-      case 'interview': return interviewState !== 'loading' && interviewQuestions.length > 0
-      case 'sect': return solo || sectMode !== 'custom' || sectRoles.length > 0
+      // 拍板步不再被访谈阻塞：问题没回来也能直接提交，用模式默认值兜底。
+      case 'board': return true
       default: return true
     }
-  }, [busy, polishBusy, currentStep, goalTrimmed, interviewState, interviewQuestions.length, sectMode, sectRoles.length, solo])
+  }, [busy, polishBusy, currentStep, goalTrimmed])
 
   const submit = async (replace: boolean): Promise<void> => {
     if (goalTrimmed === '') { setError(t('quickstart.goalRequired')); setStep(0); return }
@@ -752,7 +722,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
     setSubmitting(true)
     setSubmittedAt(startedAt)
     saveQuickStartDraft(sessionId, {
-      step, mode, goal, template, ambition: visualEnabled ? 'visual' : '', roles, faction, sectMode, rolledSect, projectKind, solo, superFast,
+      step, mode, goal, template, ambition: visualEnabled ? 'visual' : '', roles, faction, projectKind, solo, soloRole, superFast,
       questions: interviewQuestions, answers: interviewAnswers,
       referenceInput, attachments, ...referenceProfile === undefined ? {} : { referenceProfile }, referenceSelection,
       submitting: true, submittedAt: startedAt,
@@ -778,7 +748,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
       // 法脉/宏愿/参考项目 ride into the durable clarification; the reference's
       // inferred defaults are merged beneath the user's own interview choices.
       const clarification = mergeClarification({
-        base: { ...base, ...faction === undefined ? {} : { faction }, acceptance: [...new Set([...baselineAcceptance, ...acceptanceAnswers])] },
+        base: { ...base, ...faction === undefined || solo ? {} : { faction }, acceptance: [...new Set([...baselineAcceptance, ...acceptanceAnswers])] },
         doctrine: template,
         ambition,
         referenceInput: referenceInput.trim(),
@@ -796,18 +766,24 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         template,
         ambition,
         doctrine: template,
-        roles: solo ? [] : sectMode === 'custom' ? roles : [...(activeSect?.roles ?? roles)],
+        // 单人不是“无成员”：只创建一个行者，由它执行全部任务。
+        roles: solo ? [soloRole] : roles,
         ...(() => {
           const lineupNames = Object.fromEntries((activeLineup?.entries ?? []).map(entry => [entry.role, skinLookup.get(entry.skin)?.name ?? entry.skin]))
-          const customNames = Object.fromEntries(customRoles.filter(entry => roles.includes(entry.role)).map(entry => [entry.role, entry.name]))
-          const names = { ...lineupNames, ...customNames }
+          const customNames = Object.fromEntries(customRoles.filter(entry => (solo ? [soloRole] : roles).includes(entry.role)).map(entry => [entry.role, entry.name]))
+          const names = { ...lineupNames, ...customNames, ...solo ? { [soloRole]: soloRoleLabel } : {} }
           return Object.keys(names).length === 0 ? {} : { roleNames: names }
         })(),
-        ...activeLineup === undefined ? {} : { teamName: activeLineup.name },
-        ...activeLineup === undefined ? {} : {
-          roleAgents: Object.fromEntries([...new Set(activeLineup.entries.map(entry => entry.role))].map(role => [role, agents[role] ?? roleDef(role)?.agent ?? 'dsh'])),
-          roleExecutors: Object.fromEntries([...new Set(activeLineup.entries.map(entry => entry.role))].map(role => [role, roleDef(role)?.executor ?? 'implementer'])),
-        },
+        teamName: solo ? soloRoleLabel + ' · 单人' : activeLineup?.name,
+        ...(solo
+          ? {
+            roleAgents: { [soloRole]: agents[soloRole] ?? roleDef(soloRole)?.agent ?? 'dsh' },
+            roleExecutors: { [soloRole]: roleDef(soloRole)?.executor ?? 'implementer' },
+          }
+          : activeLineup === undefined ? {} : {
+            roleAgents: Object.fromEntries([...new Set(activeLineup.entries.map(entry => entry.role))].map(role => [role, agents[role] ?? roleDef(role)?.agent ?? 'dsh'])),
+            roleExecutors: Object.fromEntries([...new Set(activeLineup.entries.map(entry => entry.role))].map(role => [role, roleDef(role)?.executor ?? 'implementer'])),
+          }),
         ...(() => {
           // Only user overrides travel: the host re-attaches each expert prompt
           // body from its own catalog, so the browser never ships ~1 MB of them.
@@ -815,15 +791,16 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
           // expert body from its own catalog, while user overrides and the
           // prompts of user-created roles (which exist only in this browser) are
           // still sent verbatim.
-          const selected = [...new Set([...roles, ...(activeLineup?.entries ?? []).map(entry => entry.role)])]
+          const selected = solo ? [soloRole] : [...new Set(roles)]
           const customPrompt = (role: string): string | undefined => customAgencyRoles.find(entry => entry.id === role)?.prompt
           const overrides = Object.fromEntries(selected
             .map(role => [role, rolePrompts[role] ?? customPrompt(role) ?? ''] as const)
             .filter(([, prompt]) => prompt !== ''))
           return Object.keys(overrides).length === 0 ? {} : { rolePrompts: overrides }
         })(),
-        ...faction === undefined ? {} : { faction },
-        solo,
+        ...faction === undefined || solo ? {} : { faction },
+        // 单人也走真实的单成员编制（solo=true 会被服务端改成“师父全包”）。
+        solo: false,
         projectKind,
         replace: replace || existingTeam === true,
         fast: superFast,
@@ -853,7 +830,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         response = await fetch('/plugins/dsh-super-agent/quick-start', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ sessionId, mode, goal: goalTrimmed, template: 'ship', solo, replace: true, fast: true, minimal: true }),
+          body: JSON.stringify({ sessionId, mode, goal: goalTrimmed, template: 'ship', roles: solo ? [soloRole] : roles, solo: false, replace: true, fast: true, minimal: true }),
           signal: requestController.signal,
         })
         text = await response.text()
@@ -865,7 +842,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         clearQuickStartDraft(sessionId)
         setCreated(t('quickstart.created', {
           team: body.teamName ?? body.teamId,
-          sect: solo ? t('quickstart.soloSectName') : (activeSect === undefined ? t('quickstart.sectCustomPicked') : t(activeSect.nameKey)),
+          sect: crewName,
         }))
         window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: body.teamId, sessionId, team: body.team } }))
         setGoal('')
@@ -878,7 +855,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
       }
       setCreated(t('quickstart.created', {
         team: body.teamName ?? body.teamId ?? '',
-        sect: activeSect === undefined ? t('quickstart.sectCustomPicked') : t(activeSect.nameKey),
+        sect: crewName,
       }))
       if (body.teamId !== undefined) window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: body.teamId, sessionId, team: body.team } }))
       setSubmitting(false)
@@ -897,7 +874,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         clearQuickStartDraft(sessionId)
         setCreated(t('quickstart.created', {
           team: found.name,
-          sect: activeSect === undefined ? t('quickstart.sectCustomPicked') : t(activeSect.nameKey),
+          sect: crewName,
         }))
         window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: found.teamId, sessionId } }))
         setGoal('')
@@ -925,19 +902,20 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
   const next = (): void => {
     if (step === steps.length - 1) { void submit(false); return }
     if (!canAdvance) return
-    // 超级快速跳过 AI 访谈；单师父模式由 active steps 直接跳到立誓。
-    if (currentStep === 'vow' && superFast) { goTo(steps.indexOf('oath')); return }
+    // 超级快速跳过 AI 访谈，直接进入拍板。
+    if (currentStep === 'vow' && superFast) { goTo(steps.length - 1); return }
     goTo(step + 1)
   }
-  const activeLineup = lineupById(faction)
-  const sectName = solo
-    ? t('quickstart.soloSectName')
-    : (activeLineup?.name ?? (activeSect === undefined ? t('quickstart.sectCustom') : t(activeSect.nameKey)))
-  const rosterPool = sectMode === 'custom' ? roles : [...sectRoles]
-  const templateRoles = new Set(templateOf(template).roles)
-  const activeRoster = rosterPool.filter(role => templateRoles.has(role))
-  // 摘要只展示计划实际会启用的角色；空集合时回退到用户选择。
-  const roster = activeRoster.length > 0 ? activeRoster : rosterPool
+  const modeSpec = getModeSpec(mode)
+  const modeIndex = Math.max(0, (PRIMARY_MODES as readonly TeamMode[]).indexOf(mode))
+  const modeFitKey = ('mode.fit.' + mode) as Parameters<typeof t>[0]
+  const roster = solo ? [] : roles
+  const soloCandidates = soloCandidatesFor(mode)
+  const soloRoleLabel = customRoles.find(entry => entry.role === soloRole)?.name ?? roleName(soloRole)
+  const soloRoster = solo ? [soloRole] : []
+  const crewName = solo
+    ? t('quickstart.crewSoloName') + ' · ' + soloRoleLabel
+    : (activeLineup?.name ?? modeSpec.name)
 
   return (
     <div className={css.wizard}>
@@ -967,20 +945,6 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
             <section className={css.stepPane} data-step="vow">
               {/* 一行工具条：单师父 / AI 润色 / 超级快速，替掉原来的三行按钮区。 */}
               <div className={css.vowTools}>
-                <button
-                  type="button"
-                  className={css.soloButton}
-                  data-active={solo || undefined}
-                  disabled={busy}
-                  title={solo ? t('quickstart.soloCleared') : t('quickstart.soloHint')}
-                  onClick={() => {
-                    const next = !solo
-                    setSolo(next)
-                    if (next) setRoles([])
-                  }}
-                >
-                  {solo ? t('quickstart.soloActive') : t('quickstart.solo')}
-                </button>
                 <button
                   type="button"
                   className={css.polishButton}
@@ -1058,42 +1022,97 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                 )}
                 {attachmentError !== '' && <span className={css.polishError} role="alert">{attachmentError}</span>}
               </div>
-              <div className={css.modeBlock}>
-                <span className={css.modeLabel}>{t('mode.select')}</span>
-                <div className={css.modeCards} role="radiogroup" aria-label={t('mode.select')}>
-                  {PRIMARY_MODES.map(item => {
-                    const spec = getModeSpec(item)
-                    const active = mode === item && !superFast
-                    // 第三行「不会自动加」收进 title：信息源保留，屏幕上只留两行差异说明。
-                    const neverAdded = t(('mode.never.' + item) as Parameters<typeof t>[0])
-                    return (
-                      <button
-                        key={item}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        className={css.modeCard}
-                        data-control={'quickstart-mode-' + item}
-                        data-active={active || undefined}
-                        disabled={busy}
-                        title={t(('mode.desc.' + item) as Parameters<typeof t>[0]) + ' · ' + neverAdded}
-                        onClick={() => { chooseMode(item) }}
-                      >
-                        <span className={css.modeName}>{spec.emoji} {t(spec.labelKey as Parameters<typeof t>[0])}</span>
-                        <span className={css.modeLine}>{t(('mode.fit.' + item) as Parameters<typeof t>[0])}</span>
-                        <span className={css.modeLine}>{t(('mode.accept.' + item) as Parameters<typeof t>[0])}</span>
-                      </button>
-                    )
-                  })}
+              <div className={css.crewBlock}>
+                <div className={css.crewHead}>
+                  <span className={css.modeLabel}>{t('quickstart.crewSlider')}</span>
+                  <div className={css.crewToggle} role="radiogroup" aria-label={t('quickstart.crewSlider')}>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!solo}
+                      data-control="quickstart-crew-team"
+                      data-active={!solo || undefined}
+                      disabled={busy}
+                      onClick={() => { chooseCrew(false) }}
+                    >👥 {t('quickstart.crewTeam')}</button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={solo}
+                      data-control="quickstart-crew-solo"
+                      data-active={solo || undefined}
+                      disabled={busy}
+                      onClick={() => { chooseCrew(true) }}
+                    >👤 {t('quickstart.crewSolo')}</button>
+                  </div>
                 </div>
-                {(() => {
-                  const preset = lineupById(modeLineupId(mode))
-                  return preset === undefined ? null : (
-                    <p className={css.modeLineupHint} data-control="quickstart-mode-lineup">
-                      {t('quickstart.modeLineupHint', { lineup: preset.name, count: preset.entries.length })}
-                    </p>
-                  )
-                })()}
+                <input
+                  className={css.modeSlider}
+                  data-control="quickstart-mode-slider"
+                  type="range"
+                  min={0}
+                  max={PRIMARY_MODES.length - 1}
+                  step={1}
+                  value={modeIndex}
+                  disabled={busy}
+                  aria-label={t('quickstart.crewSlider')}
+                  aria-valuetext={t(modeSpec.labelKey as Parameters<typeof t>[0])}
+                  onChange={(event) => {
+                    const picked = PRIMARY_MODES[Number(event.target.value)]
+                    if (picked !== undefined) chooseMode(picked)
+                  }}
+                />
+                <div className={css.modeTicks}>
+                  {PRIMARY_MODES.map(item => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={css.modeTick}
+                      data-active={mode === item || undefined}
+                      disabled={busy}
+                      onClick={() => { chooseMode(item) }}
+                    >
+                      <span aria-hidden>{getModeSpec(item).emoji}</span>
+                      <span>{t(getModeSpec(item).labelKey as Parameters<typeof t>[0])}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className={css.crewPreview}>
+                  <div className={css.crewPreviewHead}>
+                    <strong>{modeSpec.emoji} {t(modeSpec.labelKey as Parameters<typeof t>[0])}</strong>
+                    <span className={css.crewCount}>
+                      {solo ? soloRoleLabel : (activeLineup?.name ?? modeSpec.name) + ' · ' + roster.length + ' 人'}
+                    </span>
+                  </div>
+                  <span className={css.crewLine}>{t(modeFitKey)}</span>
+                  {solo ? (
+                    <>
+                      <span className={css.crewLine}>{t('quickstart.crewSoloHint')}</span>
+                      <span className={css.soloRoles} role="radiogroup" aria-label={t('quickstart.soloRole')}>
+                        {soloCandidates.map(role => (
+                          <button
+                            key={role}
+                            type="button"
+                            role="radio"
+                            aria-checked={soloRole === role}
+                            className={css.soloRoleChip}
+                            data-control={'quickstart-solo-role-' + role}
+                            data-active={soloRole === role || undefined}
+                            disabled={busy}
+                            onClick={() => { setSoloRole(role) }}
+                          >
+                            {roleName(role)}
+                          </button>
+                        ))}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={css.crewLine}>{t('quickstart.crewTeamHint')}</span>
+                      <span className={css.chips}>{roster.map(personChip)}</span>
+                    </>
+                  )}
+                </div>
                 <div className={css.modeDivider} role="separator">
                   <span>{t('quickstart.visualSeparator')}</span>
                 </div>
@@ -1150,8 +1169,9 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
             </section>
           )}
 
-          {currentStep === 'interview' && (
-            <section className={css.stepPane} data-step="interview">
+          {currentStep === 'board' && (
+            <section className={css.stepPane} data-step="board">
+              <p className={css.hint}>{t('quickstart.boardHint')}</p>
               {referenceInput.trim() !== '' && (
                 <div className={css.referencePanel} data-state={referenceState}>
                   <span className={css.referenceReady}>
@@ -1167,182 +1187,33 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
                   {referenceError !== '' && <span className={css.polishError} role="alert">{referenceError}</span>}
                 </div>
               )}
-              <InterviewSheet
-                questions={interviewQuestions}
-                answers={interviewAnswers}
-                onChange={setInterviewAnswers}
-                state={interviewState}
-                error={interviewError}
-                mode={mode}
-                disabled={busy}
-                onRetry={() => { setInterviewQuestions([]); setInterviewState('loading'); setInterviewNonce((value) => value + 1) }}
-                t={t}
-              />
-            </section>
-          )}
-
-          {currentStep === 'sect' && (
-            <section className={css.stepPane} data-step="sect">
-              <p className={css.hint}>{t('quickstart.sectHint')}</p>
-              {!solo && (
-                <div className={css.field}>
-                  <span>阵营</span>
-                  <div className={css.factionGrid} data-control="quickstart-factions">
-                    {visibleFactions.map(def => (
-                      <div key={def.id} className={css.factionItem} data-expanded={faction === def.id || undefined} data-mode-default={def.id === modeLineupId(mode) || undefined}>
-                        <button
-                          type="button"
-                          className={css.factionCard}
-                          data-active={faction === def.id || undefined}
-                          disabled={busy}
-                          onClick={() => { selectFaction(def.id) }}
-                        >
-                          <span className={css.factionTop}>
-                            <strong>{def.name}</strong>
-                            <em data-mode-default={def.id === modeLineupId(mode) || undefined}>
-                              {def.id === modeLineupId(mode) ? t('quickstart.factionModeDefault') : '阵容'}
-                            </em>
-                          </span>
-                          <span className={css.factionTagline}>{def.theme}</span>
-                          <span className={css.factionMeta}>{def.entries.length} 个角色 · {new Set(def.entries.map(entry => entry.role)).size} 个职责</span>
-                          <span className={css.factionRoster}>{def.entries.slice(0, 5).map(entry => skinLookup.get(entry.skin)?.name ?? entry.skin).join(' · ')}{def.entries.length > 5 ? ' …' : ''}</span>
-                          <span className={css.factionPalette} aria-hidden>
-                            <i style={{ background: skinLookup.get(def.entries[0]?.skin ?? '')?.background ?? '#333' }} />
-                          </span>
-                        </button>
-                        {faction === def.id && (
-                          <div className={css.lineupExpand}>
-                            <div className={css.lineupExpandHead}>
-                              <strong>{def.name}</strong>
-                              <span>{def.theme}</span>
-                            </div>
-                            {def.entries.map(entry => {
-                              const skin = skinLookup.get(entry.skin)
-                              const role = roleDef(entry.role)
-                              return (
-                                <div key={entry.role + ':' + entry.skin} className={css.lineupExpandRow}>
-                                  {skin !== undefined && <img src={skin.art} alt="" aria-hidden />}
-                                  <span className={css.lineupExpandIdentity}>
-                                    <strong>{skin?.name ?? entry.skin}</strong>
-                                    <small>{role?.name ?? roleLabel(entry.role, t)}</small>
-                                  </span>
-                                  <span className={css.lineupExpandSkills}>{role?.skills.join(' · ') ?? ''}</span>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <small className={css.templateDesc}>{t('quickstart.factionCostHint')}</small>
-                </div>
+              {superFast ? (
+                <p className={css.crewLine}>{t('quickstart.skipInterview')}</p>
+              ) : (
+                <InterviewSheet
+                  questions={interviewQuestions}
+                  answers={interviewAnswers}
+                  onChange={setInterviewAnswers}
+                  state={interviewState}
+                  error={interviewError}
+                  mode={mode}
+                  disabled={busy}
+                  onRetry={() => { setInterviewQuestions([]); setInterviewState('loading'); setInterviewNonce((value) => value + 1) }}
+                  t={t}
+                />
               )}
-              {solo ? (
-                <p className={css.hint}>{t('quickstart.soloSectHidden')}</p>
-              ) : faction !== undefined ? null : (
-              <div className={css.field}>
-                <span>{t('quickstart.sect')}</span>
-                <div className={css.sectRow}>
-                  <button type="button" className={css.sectChip} data-active={sectMode === 'random' || undefined} disabled={busy} onClick={rollSect}>
-                    <span aria-hidden>🎲</span>{t('quickstart.sectRandom')}
-                  </button>
-                  {SECT_PRESETS.map(preset => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className={css.sectChip}
-                      data-active={sectMode === preset.id || undefined}
-                      disabled={busy}
-                      onClick={() => { chooseSect(preset.id) }}
-                    >
-                      {t(preset.nameKey)}
-                    </button>
-                  ))}
-                  <button type="button" className={css.sectChip} data-active={sectMode === 'custom' || undefined} disabled={busy} onClick={chooseCustom}>
-                    {t('quickstart.sectCustom')}
-                  </button>
-                </div>
-                <small className={css.templateDesc}>
-                  {sectMode === 'custom'
-                    ? t('quickstart.sectCustomHint')
-                    : sectMode === 'random'
-                      ? t('quickstart.sectRolled', { sect: activeSect === undefined ? '' : t(activeSect.nameKey) })
-                      : activeSect === undefined ? '' : t(activeSect.descKey)}
-                </small>
-                {sectMode !== 'custom' && (
-                  <span className={css.sectRoster}>
-                    {sectRoles.map(personChip)}
-                  </span>
-                )}
-              </div>
-              )}
-              {!solo && (
-                <div className={css.field}>
-                  <span>{t('quickstart.roles')}</span>
-                  <div className={css.multi} ref={multiRef}>
-                    <button
-                      type="button"
-                      className={css.multiTrigger}
-                      data-control="quickstart-roles"
-                      aria-expanded={rolesOpen}
-                      aria-haspopup="listbox"
-                      disabled={busy}
-                      onClick={() => { setRolesOpen((current) => !current) }}
-                    >
-                      <span className={css.chips}>
-                        {roles.length === 0
-                          ? <span className={css.placeholder}>{t('quickstart.rolesEmpty')}</span>
-                          : roles.map(personChip)}
-                      </span>
-                      <span className={css.caret} aria-hidden>▾</span>
-                    </button>
-                    {rolesOpen && (
-                      <div className={css.multiPanel} role="listbox" aria-multiselectable="true" aria-label={t('quickstart.roles')}>
-                        {ROLE_META.map(meta => (
-                          <label key={meta.id} className={css.option}>
-                            <input type="checkbox" checked={roles.includes(meta.id)} onChange={() => { toggleRole(meta.id) }} />
-                            {(() => {
-                              const art = memberArtUrl(t(meta.nameKey), meta.id)
-                              return art === null ? null : <img className={css.optionAvatar} src={art} alt="" />
-                            })()}
-                            <span className={css.optionName}>{t(meta.nameKey)}</span>
-                            <span className={css.optionId}>{meta.id}</span>
-                            <span className={css.optionAbility}>{t(meta.abilityKey)}</span>
-                          </label>
-                        ))}
-                        <div className={css.customRow}>
-                          <input
-                            value={customRole}
-                            placeholder={t('quickstart.customRole')}
-                            onChange={(event) => { setCustomRole(event.target.value) }}
-                            onKeyDown={(event) => {
-                              if (event.key === 'Enter') { event.preventDefault(); addCustomRole() }
-                            }}
-                          />
-                          <button type="button" disabled={customRole.trim() === ''} onClick={addCustomRole}>{t('quickstart.addRole')}</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-
-          {currentStep === 'oath' && (
-            <section className={css.stepPane} data-step="oath">
-              {submitting && <p className={css.busyNote} role="status">{t('quickstart.generating')}</p>}
               <dl className={css.summary}>
-                <div className={css.summaryRow}><dt>{t('mode.select')}</dt><dd>{getModeSpec(mode).emoji} {t(getModeSpec(mode).labelKey as Parameters<typeof t>[0])}</dd></div>
-                    <div className={css.summaryRow}><dt>{t('quickstart.summaryAmbition')}</dt><dd>{visualEnabled ? '💥 ' + t('quickstart.ambitionLabel') : t('quickstart.ambitionOff')}</dd></div>
-                <div className={css.summaryRow}><dt>{t('quickstart.summarySect')}</dt><dd>{sectName}</dd></div>
-                <div className={css.summaryRow}><dt>{t('quickstart.summaryRoster')}</dt><dd><span className={css.chips}>{roster.map(personChip)}</span></dd></div>
+                <div className={css.summaryRow}><dt>{t('mode.select')}</dt><dd>{modeSpec.emoji} {t(modeSpec.labelKey as Parameters<typeof t>[0])}</dd></div>
+                <div className={css.summaryRow}><dt>{t('quickstart.summaryAmbition')}</dt><dd>{visualEnabled ? '💥 ' + t('quickstart.ambitionLabel') : t('quickstart.ambitionOff')}</dd></div>
+                <div className={css.summaryRow}><dt>{t('quickstart.summaryCrew')}</dt><dd>{crewName}</dd></div>
+                <div className={css.summaryRow}><dt>{t(solo ? 'quickstart.summarySoloRole' : 'quickstart.summaryRoster')}</dt><dd><span className={css.chips}>{(solo ? soloRoster : roster).map(personChip)}</span></dd></div>
                 {referenceInput.trim() !== '' && (
                   <div className={css.summaryRow}><dt>{t('quickstart.summaryReference')}</dt><dd>{referenceProfile?.label ?? referenceInput.trim()}</dd></div>
                 )}
                 <div className={css.summaryRow}><dt>{t('quickstart.summaryVow')}</dt><dd>{goalTrimmed}</dd></div>
               </dl>
+              <p className={css.hint}>{t('quickstart.oathNotice')}</p>
+              {submitting && <p className={css.busyNote} role="status">{t('quickstart.generating')}</p>}
             </section>
           )}
 
@@ -1360,7 +1231,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
           </button>
         ) : (
           <button type="button" data-primary data-control="quickstart-submit" disabled={busy || !canAdvance} onClick={() => { void submit(existingTeam === true) }}>
-            {busy ? t('quickstart.busy') : t('quickstart.found')}
+            {busy ? t('quickstart.busy') : t('quickstart.boardSubmit')}
           </button>
         )}
       </div>

@@ -858,7 +858,7 @@ export function SectHallOverlay({
               )}
             </div>
           ) : sheet === 'settings' ? (
-            <ConfigCenter t={t} sessionId={sessionId} onFeedback={() => { setSheet('about'); setAboutTab('feedback') }} />
+            <ConfigCenter t={t} sessionId={sessionId} completedTasks={shownTeam.tasks.filter(task => task.status === 'completed').length} onFeedback={() => { setSheet('about'); setAboutTab('feedback') }} />
           ) : sheet === 'start' ? (
             sessionId === undefined
               ? <p className={css.settingsHint}>{t('workspace.emptyTitle')}</p>

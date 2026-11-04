@@ -57,17 +57,14 @@ test('the captain skin defaults to Tang Monk and is switchable in settings', () 
   assert.match(hall, /setCaptainSkin\(option\.id\)/)
 })
 
-test('the faction preference is global; the mode owns runtime strategy', () => {
+test('the mode owns both the runtime strategy and the default lineup', () => {
   const dialog = readFileSync(new URL('../src/client/QuickStartDialog.tsx', import.meta.url), 'utf8')
   const scheduler = readFileSync(new URL('../src/scheduler.ts', import.meta.url), 'utf8')
-  assert.match(dialog, /dsh-super-agent\.lastFaction/)
-  assert.match(dialog, /readLastFaction\(\)/)
-  assert.match(dialog, /writeLastFaction\(id\)/)
-  // 每个开发模式自带阵容预设：新会话先默认该模式的阵容，预设被隐藏时才回退上次阵容。
+  // 阵容不再单独记忆：默认永远跟随当前开发模式的预设，避免两套选择互相打架。
   assert.match(dialog, /const modeLineupFor = \(value: TeamMode\)/, 'the mode owns a lineup preset')
-  assert.match(dialog, /const fallbackFaction = lastFaction/, 'a hidden mode preset falls back to the last visible lineup')
-  assert.match(dialog, /const preset = modeLineupFor\(mode\)/, 'the first render defaults to the mode lineup')
-  assert.match(dialog, /chooseMode\(item\)/, 'picking a mode default-selects its lineup')
+  assert.match(dialog, /const preset = modeLineupFor\(mode\)/, 'team mode restores the mode lineup')
+  assert.match(dialog, /const preset = modeLineupFor\(next\)/, 'moving the mode slider selects its lineup')
+  assert.match(dialog, /chooseMode\(item\)/, 'clicking a slider tick selects its mode')
   assert.match(scheduler, /modeStrategy\(fresh\.clarification\?\.mode\)\.maxParallel/)
   assert.match(scheduler, /openCount >= modeStrategy/)
   assert.equal(modeStrategy('draft').maxParallel, 4)
@@ -116,13 +113,15 @@ test('the clarification carries a valid faction and drops unknown ids', () => {
   assert.equal(fallback.faction, undefined)
 })
 
-test('the founding UI exposes the faction cards and sends the chosen id', () => {
+test('the founding UI derives the lineup from the mode slider instead of faction cards', () => {
   const dialog = readFileSync(new URL('../src/client/QuickStartDialog.tsx', import.meta.url), 'utf8')
-  assert.match(dialog, /visibleFactions\.map/)
   assert.match(dialog, /useHiddenLineups/)
-  assert.match(dialog, /data-control="quickstart-factions"/)
+  assert.match(dialog, /data-control="quickstart-mode-slider"/)
+  assert.match(dialog, /data-control="quickstart-crew-team"/)
+  assert.match(dialog, /data-control="quickstart-crew-solo"/)
   assert.match(dialog, /selectFaction/)
-  assert.match(dialog, /faction === undefined \? \{\} : \{ faction \}/)
+  assert.match(dialog, /faction===undefined \|\| solo \? \{\} : \{ faction \}|faction === undefined \|\| solo \? \{\} : \{ faction \}/)
   assert.match(dialog, /activeLineup/)
   assert.match(dialog, /useLineups/)
+  assert.ok(!dialog.includes('data-control="quickstart-factions"'), 'the 12-card faction grid is gone')
 })
