@@ -31,7 +31,8 @@ except Exception as exc:  # pragma: no cover - 桌面环境缺失时给出可读
     tk = None  # type: ignore[assignment]
     print("tkinter is required: " + str(exc), file=sys.stderr)
 
-APP_DIR = Path(__file__).resolve().parent
+APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+_PET_MUTEX = None
 ASSET_DIR = APP_DIR / "assets"
 STATE_DIR = Path(os.environ.get("APPDATA", str(Path.home()))) / "dsh-pet"
 STATE_FILE = STATE_DIR / "state.json"
@@ -1007,6 +1008,12 @@ def main() -> int:
         return run_check(workspace)
     if tk is None:
         return 2
+    if os.name == "nt":
+        # 单实例：安装包可能同时有开机启动和桌面快捷方式，避免冒出两只宠物。
+        global _PET_MUTEX
+        _PET_MUTEX = ctypes.windll.kernel32.CreateMutexW(None, False, "DSH-Pet-SingleInstance-v1")
+        if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            return 0
     root = tk.Tk()
     root.title("小肥鱼")
     PetApp(root, workspace, not args.no_sync)

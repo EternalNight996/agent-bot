@@ -7,6 +7,24 @@
 - [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（DSH 桌面宠物插件：透明动画、多开、拖拽、自定义素材）
 - [MerZlin/dsh-pet-indesktop](https://github.com/MerZlin/dsh-pet-indesktop)（Python 桌面端版本）
 
+## 安装包（推荐给普通用户）
+
+构建：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File desktop-pet\build-installer.ps1
+```
+
+产物：`artifacts/installer/DSH-Pet-Setup-0.1.0.exe`
+
+- 按用户安装到 `%LOCALAPPDATA%\Programs\DSH Pet`，不需要管理员权限
+- 默认创建**桌面快捷方式**
+- 可选「开机自动启动」
+- 控制面板/设置里可正常卸载
+- 单实例：开机启动和桌面快捷方式同时存在也不会出现两只
+
+构建依赖：Python + Pillow + PyInstaller + Inno Setup 6（本机已装）。
+
 ## 启动
 
 双击 `start-pet.cmd`，或：

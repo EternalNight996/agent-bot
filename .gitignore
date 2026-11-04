@@ -42,3 +42,6 @@ pelican-bicycle.png
 # Python bytecode from local pet checks
 __pycache__/
 *.pyc
+
+# Built desktop-pet installer output
+artifacts/installer/
