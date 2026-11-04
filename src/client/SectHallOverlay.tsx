@@ -23,7 +23,8 @@ import { TeamConfigPanel } from './TeamConfigPanel.tsx'
 import { QuickStartWizard } from './QuickStartDialog.tsx'
 import { ConfigCenter } from './ConfigCenter.tsx'
 import { CULTIVATION_ITEMS, captainKey, cultivationFromXp, idleXpPer10s, memberKey } from './cultivation.ts'
-import { APP_ICON, SKIN_OPTIONS } from './artwork.ts'
+import { SKIN_OPTIONS } from './artwork.ts'
+import { PET_TOKEN_ART } from './pet-token-art.ts'
 import { ingestCultivation, useCultivationVersion, xpOf } from './cultivation-store.ts'
 import { COLLAPSE_HALL_EVENT, OPEN_HALL_SHEET_EVENT, OPEN_HALL_START_EVENT, type HallSheetAction } from './hall-events.ts'
 import { ASCENSION_RANKS, ASCENSION_STORY, ASCENSION_TIER_KEYS, ASCENSION_TIPS, rankAtLevel } from './immortals.ts'
@@ -88,7 +89,7 @@ const TOKEN_KEY = 'dsh-super-agent.hallToken'
 const CURRENT_TEAM_SENTINEL = '__current__'
 
 /** 收起后的令牌尺寸：固定 38×68（Q2：不再随面板高度缩放）。 */
-const TOKEN_SIZE = { w: 38, h: 68 } as const
+const TOKEN_SIZE = { w: 96, h: 120 } as const
 
 interface TokenPoint {
   readonly x: number
@@ -1296,12 +1297,7 @@ export function SectHallOverlay({
             title={(collapsed ? t('office.expand') : t('office.collapse')) + ' · ' + tokenTitle}
           >
             <span className={css.tokenInner} aria-hidden>
-              <span className={css.tokenBody}>
-                {APP_ICON === ''
-                  ? <span className={css.tokenGlyph} aria-hidden>⛩</span>
-                  : <img className={css.tokenIcon} src={APP_ICON} alt="" />}
-              </span>
-              <span className={css.tokenTassel} aria-hidden />
+              <img className={css.petTokenImage} src={PET_TOKEN_ART} alt="" draggable={false} />
             </span>
           </button>
           <button

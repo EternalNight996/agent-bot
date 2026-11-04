@@ -14,6 +14,7 @@ import json
 import math
 import os
 import random
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -32,7 +33,7 @@ ASSET_DIR = APP_DIR / "assets"
 STATE_DIR = Path(os.environ.get("APPDATA", str(Path.home()))) / "dsh-pet"
 STATE_FILE = STATE_DIR / "state.json"
 
-WINDOW_W, WINDOW_H = 260, 340
+WINDOW_W, WINDOW_H = 180, 240
 TRANSPARENT = "#010203"
 MAX_OFFLINE_SECONDS = 12 * 3600
 FRAME_COUNT = 16
@@ -44,7 +45,7 @@ STAGE_NAMES = {
     "fat": "鲸鱼娘",
     "whale": "大鲸娘",
 }
-STAGE_SCALE = {"fry": 0.9, "small": 0.95, "fat": 1.0, "whale": 1.05}
+STAGE_SCALE = {"fry": 0.86, "small": 0.92, "fat": 1.0, "whale": 1.0}
 
 
 def _font(size: int) -> ImageFont.FreeTypeFont:
@@ -314,6 +315,20 @@ def render_fish_frames(size: int = 256) -> list[Image.Image]:
     return frames
 
 
+def load_animation(name: str, limit: int = 24) -> list[Image.Image]:
+    """加载从上游 webm 抽出的逐帧动画（已去黑底、裁切、缩放到 240 高）。"""
+    folder = ASSET_DIR / ("anim-" + name)
+    if not folder.exists():
+        return []
+    frames: list[Image.Image] = []
+    for path in sorted(folder.glob("*.png"))[:limit]:
+        try:
+            frames.append(Image.open(path).convert("RGBA"))
+        except Exception:
+            continue
+    return frames
+
+
 def render_frames(size: int = 260) -> list[Image.Image]:
     """从参考立绘生成 16 帧：呼吸、摆身、上下浮动和投影。"""
     sprite_path = ASSET_DIR / "whale-girl.png"
@@ -392,6 +407,15 @@ class PetApp:
         self.state = load_state(workspace)
         self.frames = render_frames()
         self.frame_index = 0
+        self.animations: dict[str, list[Image.Image]] = {}
+        for name in ("idle", "feed", "play", "sleep", "work", "pet"):
+            loaded = load_animation(name)
+            if loaded:
+                self.animations[name] = loaded
+        self.animations.setdefault("idle", self.frames)
+        self.anim_name = "idle"
+        self.anim_index = 0
+        self.anim_until = 0.0
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
@@ -413,6 +437,8 @@ class PetApp:
         self.root.after(60, self.frame_loop)
         self.root.after(200, self.tick_loop)
         self.root.after(1000, self.sync_loop)
+        # Tk 在部分高 DPI/旋转屏上的屏幕尺寸不可靠；先用一个稳定的可见位置，
+        # 用户可以拖动到任意角落。
 
     # ------------------------------------------------------------ 窗口
     def setup_window(self) -> None:
@@ -423,15 +449,9 @@ class PetApp:
             self.root.wm_attributes("-transparentcolor", TRANSPARENT)
         except Exception:
             pass
-        screen_w = self.root.winfo_screenwidth()
-        screen_h = self.root.winfo_screenheight()
-        x = self.state.get("x")
-        y = self.state.get("y")
-        if not isinstance(x, int) or not isinstance(y, int):
-            x = screen_w - WINDOW_W - 32
-            y = screen_h - WINDOW_H - 80
-        x = max(0, min(x, screen_w - WINDOW_W))
-        y = max(0, min(y, screen_h - WINDOW_H))
+        # Tk 在多 DPI/旋转屏上拿不到可靠屏幕尺寸，先固定在一个可见位置。
+        x = 600
+        y = 200
         self.state["x"] = x
         self.state["y"] = y
         self.root.geometry("%dx%d+%d+%d" % (WINDOW_W, WINDOW_H, x, y))
@@ -452,18 +472,69 @@ class PetApp:
         self.canvas.bind("<Double-Button-1>", lambda _e: self.action("play"))
         self.canvas.bind("<Button-3>", self.on_menu)
 
+    def place_bottom_right(self) -> None:
+        script = r'''
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class PetWin {
+  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+  [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
+  [DllImport("user32.dll")] public static extern int GetSystemMetrics(int n);
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+}
+"@
+[PetWin]::SetProcessDPIAware() | Out-Null
+$h = (Get-Process -Id __PID__).MainWindowHandle
+if ($h -ne 0) {
+  $r = New-Object PetWin+RECT
+  [PetWin]::GetWindowRect($h, [ref]$r) | Out-Null
+  $w = $r.Right - $r.Left
+  $ht = $r.Bottom - $r.Top
+  Add-Type -AssemblyName System.Windows.Forms
+  $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+  [PetWin]::SetWindowPos($h, [IntPtr]::Zero, $bounds.Width - $w - 24, $bounds.Height - $ht - 70, 0, 0, 5) | Out-Null
+}
+'''.replace("__PID__", str(os.getpid()))
+        try:
+            subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+                           creationflags=0x08000000, timeout=8)
+        except Exception:
+            pass
+
     # ------------------------------------------------------------ 渲染
     def frame_loop(self) -> None:
+        now = time.time()
+        if self.anim_until and now >= self.anim_until:
+            self.anim_name = "idle"
+            self.anim_index = 0
+            self.anim_until = 0.0
+        if not self.anim_until and self.anim_name in ("idle", "sleep"):
+            desired = "sleep" if (self.state["satiety"] < 25 or self.state["energy"] < 20) else "idle"
+            if desired != self.anim_name:
+                self.anim_name = desired
+                self.anim_index = 0
+        frames = self.animations.get(self.anim_name) or self.animations["idle"]
         level = level_of(int(self.state["xp"]))[0]
         stage = stage_of(level)
-        frame = self.frames[self.frame_index % len(self.frames)]
         scale = STAGE_SCALE[stage]
-        size = int(260 * scale)
-        image = frame.resize((size, int(size * 260 / 260)), Image.Resampling.LANCZOS)
+        frame = frames[self.anim_index % len(frames)]
+        fit = min((WINDOW_W - 8) / frame.width, (WINDOW_H - 12) / frame.height)
+        resized = max(0.2, fit * scale)
+        image = frame.resize((max(1, int(frame.width * resized)), max(1, int(frame.height * resized))), Image.Resampling.LANCZOS)
         self.pet_photo = ImageTk.PhotoImage(image)
         self.canvas.itemconfigure(self.pet_item, image=self.pet_photo)
-        self.frame_index += 1
+        self.anim_index += 1
         self.root.after(FRAME_MS, self.frame_loop)
+
+    def play_animation(self, name: str, once: bool = True) -> None:
+        frames = self.animations.get(name)
+        if not frames:
+            return
+        self.anim_name = name
+        self.anim_index = 0
+        self.anim_until = time.time() + len(frames) * FRAME_MS / 1000 if once else 0.0
 
     def spark(self, glyph: str, color: str = "#ffd1e6") -> None:
         item = self.canvas.create_text(WINDOW_W // 2, 120, text=glyph, fill=color,
@@ -510,6 +581,7 @@ class PetApp:
             ok, _reason = pat(self.state, time.time())
             if ok:
                 self.spark("❤")
+                self.play_animation("pet")
             save_state(self.state)
         self.drag_origin = None
 
@@ -527,8 +599,10 @@ class PetApp:
         after = level_of(int(self.state["xp"]))[0]
         if ok:
             self.spark({"feed": "🍚", "play": "✨", "pat": "❤", "rest": "💤"}[kind])
+            self.play_animation({"feed": "feed", "play": "play", "pat": "pet", "rest": "sleep"}[kind])
         if after > before:
             self.spark("⭐", "#ffe28a")
+            self.play_animation("play")
         save_state(self.state)
 
     def show_status(self) -> None:
@@ -552,6 +626,7 @@ class PetApp:
                 self.state["last_task_count"] = total
                 save_state(self.state)
                 self.spark("✨", "#9fe0ff")
+                self.play_animation("work")
             elif delta < 0:
                 self.state["last_task_count"] = total
                 save_state(self.state)
@@ -576,6 +651,8 @@ def run_check(workspace: Path | None) -> int:
     assert ok, "feed should succeed"
     frames = render_frames()
     assert len(frames) == FRAME_COUNT and frames[0].size == (260, 260)
+    idle = load_animation("idle")
+    assert len(idle) >= 10 and idle[0].height >= 180, (len(idle), idle[0].size if idle else None)
     total = count_completed_tasks(workspace) if workspace is not None else 0
     print(json.dumps({
         "ok": True,
