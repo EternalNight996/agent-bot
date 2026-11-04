@@ -62,6 +62,13 @@
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 8px 16px rgb(0 0 0 / 42%)) drop-shadow(0 0 12px rgb(95 184 255 / 35%));
+  animation: petTokenFloat 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes petTokenFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 .tokenBody {
