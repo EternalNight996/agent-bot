@@ -1,10 +1,8 @@
 /** Lineups: themed groups that bind a prompt role to a pixel skin. */
 import { useSyncExternalStore } from 'react'
-import { FACTIONS } from '../factions.ts'
-import { agencyRoleForExecutor } from '../agency-roles-lite.ts'
 import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
 import { modeLineup, modeLineupId } from './mode-lineups.ts'
-import { SKINS, skinIdForName } from './skins.ts'
+import { SKINS } from './skins.ts'
 
 export interface LineupEntry {
   readonly role: string
@@ -23,6 +21,57 @@ const CUSTOM_LINEUPS_KEY = 'dsh-super-agent.customLineups'
 const LINEUP_OVERRIDES_KEY = 'dsh-super-agent.lineupOverrides.v2'
 const listeners = new Set<() => void>()
 
+/**
+ * 任务型阵容：按「接下来要干什么」组队，不再按阵营皮肤复制同一套 5 人名单。
+ *
+ * 旧版把 8 个洪荒阵营各自映射成同一条 5 人阵容（产品/高级开发/测试/审查/UI），
+ * 实质只有一套有效组合，其余都是换皮；这里改为互不重复、职责完整的任务模板，
+ * 席位上限仍是 5，空闲角色不消耗 token。
+ */
+const TASK_LINEUPS: ReadonlyArray<{
+  readonly id: string
+  readonly name: string
+  readonly theme: string
+  readonly roles: readonly string[]
+}> = [
+  {
+    id: 'lineup-feature',
+    name: '功能直交',
+    theme: '主流程跑通 · 关键交互可点',
+    roles: ['product-manager', 'engineering-senior-developer', 'testing-evidence-collector', 'engineering-code-reviewer'],
+  },
+  {
+    id: 'lineup-bugfix',
+    name: '缺陷修复',
+    theme: '先复现 · 再修复 · 最后回归',
+    roles: ['engineering-codebase-onboarding-engineer', 'engineering-senior-developer', 'testing-evidence-collector'],
+  },
+  {
+    id: 'lineup-fullstack',
+    name: '全栈功能',
+    theme: '前端 + 后端 + 联调 + 验收',
+    roles: ['product-manager', 'engineering-frontend-developer', 'engineering-backend-architect', 'testing-evidence-collector', 'engineering-code-reviewer'],
+  },
+  {
+    id: 'lineup-audit',
+    name: '只读审计',
+    theme: '只取证、只给结论，不改代码',
+    roles: ['engineering-codebase-onboarding-engineer', 'engineering-code-reviewer', 'testing-evidence-collector', 'engineering-technical-writer'],
+  },
+  {
+    id: 'lineup-perf',
+    name: '性能压测',
+    theme: '可重复压测 · 指标与瓶颈结论',
+    roles: ['product-manager', 'engineering-senior-developer', 'testing-performance-benchmarker', 'engineering-devops-automator'],
+  },
+  {
+    id: 'lineup-security',
+    name: '安全合规',
+    theme: '攻击面 / 依赖 / 密钥审计',
+    roles: ['security-appsec-engineer', 'security-cloud-security-architect', 'engineering-devops-automator', 'testing-evidence-collector'],
+  },
+]
+
 /** 真实落库的模式预设阵容：可编辑、可设为默认、可作为开队选择。 */
 function modePresetLineups(): LineupDefinition[] {
   return PRIMARY_MODES.map(mode => {
@@ -38,35 +87,18 @@ function modePresetLineups(): LineupDefinition[] {
 }
 
 function baseLineups(): LineupDefinition[] {
-  const factions = FACTIONS.filter(faction => faction.id !== 'pilgrim').map(faction => ({
-    id: faction.id,
-    name: faction.name,
-    theme: faction.motif,
+  const taskLineups = TASK_LINEUPS.map(lineup => ({
+    id: lineup.id,
+    name: lineup.name,
+    theme: lineup.theme,
     builtin: true,
-    entries: (() => {
-      const mapped = faction.members.flatMap(member => {
-        const role = agencyRoleForExecutor(member.role)?.id
-        const skin = skinIdForName(member.name)
-        return role === undefined ? [] : [{ role, skin }]
-      })
-      // Minimal founding roster: product + visual UI + build + test + review only.
-      // With eight cycling skins, two seats can hash to the same portrait: keep
-      // the faction's own mapping when it is free, otherwise hand the seat the
-      // next unused skin so the five founding seats stay visually distinct.
-      const essential = ['product-manager', 'engineering-senior-developer', 'testing-evidence-collector', 'engineering-code-reviewer', 'design-ui-designer']
-      const usedSkins = new Set<string>()
-      const pickSkin = (preferred: string | undefined, seat: number): string => {
-        if (preferred !== undefined && !usedSkins.has(preferred)) return preferred
-        return (SKINS.find(candidate => !usedSkins.has(candidate.id)) ?? SKINS[seat % SKINS.length]!).id
-      }
-      return essential.map((role, seat) => {
-        const skin = pickSkin(mapped.find(entry => entry.role === role)?.skin, seat)
-        usedSkins.add(skin)
-        return { role, skin }
-      })
-    })(),
+    entries: lineup.roles.map((role, seat) => ({
+      role,
+      // 席位不超过 8，循环取皮肤即可保证同一阵容内不重复。
+      skin: (SKINS[seat % SKINS.length] ?? SKINS[0]!).id,
+    })),
   }))
-  return [...factions, ...modePresetLineups()]
+  return [...taskLineups, ...modePresetLineups()]
 }
 
 function readCustom(): LineupDefinition[] {

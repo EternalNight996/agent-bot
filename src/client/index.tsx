@@ -1,4 +1,4 @@
-/** Browser plugin for the AgentTeams activity floater and conversation card. */
+﻿/** Browser plugin for the AgentTeams activity floater and conversation card. */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
@@ -20,7 +20,8 @@ import type { UsePanelInfo } from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-model-selection/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { ActivitySurface, TEAM_TAB_ID, TEAM_TAB_KIND, WorkspaceActivity, createWorkspaceBridge } from './WorkspaceActivity.tsx'
-import { getActivitySnapshotsSnapshot } from './activity-monitor.ts'
+import { DriverGateway } from './DriverGateway.tsx'
+import { GATEWAY_TAB_ID, GATEWAY_TAB_KIND, OPEN_GATEWAY_EVENT, type GatewayTarget } from './gateway.ts'
 import { TeamTurnCard } from './TeamChatEntry.tsx'
 import { ComposerStopButton } from './ComposerStopButton.tsx'
 import { TeamQuickStart } from './QuickStartDialog.tsx'
@@ -41,15 +42,6 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 /** Required services: conversation nodes, slots, sessions navigation, and locale. */
-/** t83：主视图标签被关掉后自动重开的延迟与次数上限（避免与宿主关闭操作打架）。 */
-const REOPEN_DELAY_MS = 300
-const REOPEN_BUDGET = 5
-/** 宿主可能还没暴露 openTabs（旧版本）：结构类型 + 可选，缺失时自愈整体跳过。 */
-type OpenTabsSource = {
-  getSnapshot(): readonly { readonly sessionId?: string; readonly kind: string; readonly tabId?: string }[]
-  subscribe(listener: () => void): () => void
-}
-
 export const inject = ['uiConversation', 'slots', 'sessions', 'locale', 'modelDirectories', 'layout']
 
 /** The host supplies this hook for the lifetime of a 0.1.5 root slot. */
@@ -73,6 +65,63 @@ export function apply(ctx: ClientContext): void {
   try { window.localStorage.removeItem('dsh-super-agent.customDuties') } catch { /* private mode */ }
   const bridge = createWorkspaceBridge()
   const state = createWorkspaceState()
+  // 宿主的 open/reveal 是 Session Remote 服务：必须用 ctx.inject 声明依赖后才能取到
+  // （直接 ctx.get('remote.session') 会被 cordis 拒绝）。服务缺失时保持 undefined，
+  // 由插件自己的服务端路由兜底。
+  let hostOpenWorkspacePath: ((request: { path: string; action: 'open' | 'reveal' }) => Promise<{ ok?: boolean; error?: { code?: string; message?: string } }>) | undefined
+  ctx.inject(['remote', 'remote.session'], (scoped) => {
+    const remote = (scoped as unknown as {
+      remote?: {
+        session?: {
+          openWorkspacePath?: (request: { path: string; action: 'open' | 'reveal' }) => Promise<{ ok?: boolean; error?: { code?: string; message?: string } }>
+        }
+      }
+    }).remote
+    const opener = remote?.session?.openWorkspacePath
+    if (typeof opener === 'function') {
+      hostOpenWorkspacePath = request => opener.call(remote!.session, request)
+    }
+    return () => { hostOpenWorkspacePath = undefined }
+  })
+  // 「打开目标文件夹」走宿主的 Session Remote（与文件标签里的 reveal 同一路径），
+  // 不自己起服务端路由：客户端热更新即可生效。
+  const revealWorkspacePath = async (sessionId: string, teamId: string, path: string): Promise<string> => {
+    // 首选宿主 Session Remote（与文件标签的 open/reveal 同一条链路）。
+    let reason = ''
+    try {
+      const summary = ctx.sessions.list.getSnapshot().byId[sessionId as SessionId]
+      const cwd = summary?.cwd
+      const absolute = cwd === undefined || cwd === ''
+        ? path
+        : cwd.includes('\\')
+          ? cwd.replace(/[\\/]+$/, '') + '\\' + path.replaceAll('/', '\\')
+          : cwd.replace(/\/+$/, '') + '/' + path
+      const opener = hostOpenWorkspacePath
+      if (opener === undefined) {
+        reason = 'host remote unavailable'
+      } else {
+        const result = await opener({ path: absolute, action: 'reveal' })
+        if (result?.ok === true) return ''
+        reason = 'remote rejected: ' + (result?.error?.code ?? result?.error?.message ?? 'unknown')
+      }
+    } catch (error) {
+      reason = 'remote error: ' + (error instanceof Error ? error.message : String(error))
+    }
+    // 宿主拒绝时用插件路由兜底：服务端校验产物路径后交给系统文件管理器。
+    try {
+      const response = await fetch('/plugins/dsh-super-agent/reveal-artifact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId, teamId, path }),
+      })
+      if (response.status === 404) return '需要重启一次应用，让新的服务端路由加载'
+      if (!response.ok) return reason + ' / plugin route HTTP ' + response.status
+      const body = await response.json() as { ok?: boolean }
+      return body.ok === true ? '' : reason + ' / plugin route rejected'
+    } catch (error) {
+      return reason + ' / plugin route error: ' + (error instanceof Error ? error.message : String(error))
+    }
+  }
   ctx.effect(
     () => ctx.locale.register(AGENT_TEAMS_LOCALE_NAMESPACE, { zh, en }),
     'agent-teams: dictionaries',
@@ -122,84 +171,20 @@ export function apply(ctx: ClientContext): void {
   ctx.inject(['sidebarRight', 'sidebarRightTabs'], (native) => {
     const t = native.locale.bind(AGENT_TEAMS_LOCALE_NAMESPACE)
     // t29：福地的设施页只在右栏内渲染，不再注册 keyed main 页、不调用 selectPanel。
+    // 洪荒协作可关闭，但保留一个 guide 入口，关掉后仍能从右栏「开始」页重新打开。
     native.effect(() => native.sidebarRightTabs.register({
       id: TEAM_TAB_ID,
       kind: TEAM_TAB_KIND,
       title: () => t('workspace.title'),
+      guide: [{
+        id: 'agent-teams-workspace',
+        order: 20,
+        title: () => t('workspace.title'),
+        description: () => t('workspace.guideHint'),
+      }],
     }))
-    // 洪荒协作页常驻：宿主恢复成空布局时把「取经队协作」标签补回来；关标签这条路
-    // 由下面的 close handler 直接拒绝，这里只兜底重建。只在「当前会话有队伍」时开。
-    native.effect(() => {
-      const source = (native.sidebarRight as unknown as { openTabs?: OpenTabsSource }).openTabs
-      // 旧宿主没有 openTabs 观察点：不启用自愈，返回空清理函数保持 effect 契约。
-      if (source === undefined) return () => {}
-      let timer: ReturnType<typeof window.setTimeout> | undefined
-      let budget = REOPEN_BUDGET
-      const attempt = (): void => {
-        const sessionId = native.sidebarRight.mounted.getSnapshot()
-        if (sessionId === undefined) return
-        if (source.getSnapshot().some(tab => tab.sessionId === sessionId && tab.kind === TEAM_TAB_KIND)) {
-          budget = REOPEN_BUDGET
-          return
-        }
-        // 无队伍的会话不主动开标签。
-        const hasTeam = getActivitySnapshotsSnapshot().teams.some(team => team.captainSessionId === sessionId)
-        if (!hasTeam || budget <= 0) return
-        budget -= 1
-        try { native.sidebarRight.openTab(TEAM_TAB_KIND) } catch { /* kind 尚未注册 */ }
-      }
-      const schedule = (): void => {
-        if (timer !== undefined) window.clearTimeout(timer)
-        timer = window.setTimeout(() => { timer = undefined; attempt() }, REOPEN_DELAY_MS)
-      }
-      const offTabs = source.subscribe(schedule)
-      const offMounted = native.sidebarRight.mounted.subscribe(schedule)
-      // 激活时先同步尝试一次：标签本来就在时不会触发 openTab。
-      attempt()
-      return () => {
-        if (timer !== undefined) window.clearTimeout(timer)
-        offTabs()
-        offMounted()
-      }
-    })
-    // 洪荒协作页「只切换、不关闭」：
-    // 1) 宿主的 dock 关闭按钮由它自己渲染，插件用一条按 tabId 命中的样式把本插件标签的
-    //    × 去掉（[data-dockkit-tab-close=<tabId>]），tabId 从 openTabs 观察点取；
-    // 2) 快捷键/菜单仍可能触发 closeTab，宿主约定 close handler 抛错即保留标签，这里据此否决。
-    native.effect(() => {
-      const styleId = 'agent-teams-tab-lock'
-      let style = document.getElementById(styleId) as HTMLStyleElement | null
-      if (style === null) {
-        style = document.createElement('style')
-        style.id = styleId
-        document.head.appendChild(style)
-      }
-      const source = (native.sidebarRight as unknown as { openTabs?: OpenTabsSource }).openTabs
-      const paint = (): void => {
-        const ids = [...new Set((source?.getSnapshot() ?? [])
-          .filter(tab => tab.kind === TEAM_TAB_KIND && typeof tab.tabId === 'string' && tab.tabId !== '')
-          .map(tab => tab.tabId as string))]
-        style!.textContent = ids
-          .map(id => '[data-dockkit-tab-close="' + id.replace(/["\\]/g, '\\$&') + '"]{display:none!important}')
-          .join('\n')
-      }
-      paint()
-      const off = source?.subscribe(paint)
-      return () => {
-        off?.()
-        style?.remove()
-      }
-    })
-    native.effect(() => {
-      const register = (native.sidebarRight as unknown as {
-        registerCloseHandler?: (kind: string, handler: () => void) => () => void
-      }).registerCloseHandler
-      // 旧宿主没有 close handler：仍然保留上面的样式隐藏与自愈。
-      if (typeof register !== 'function') return () => {}
-      return register.call(native.sidebarRight, TEAM_TAB_KIND, () => {
-        throw new Error('agent-teams: the 洪荒协作 page is permanent; switch tabs instead of closing it')
-      })
-    })
+    // 驱动网关同样是普通可关标签：交付结果看够了就关，需要时用「展开结果」或交付
+    // 自动打开重新拉起，不再做「隐藏 × + 拒绝关闭」的常驻锁定。
     native.slots.inject('conversation.session.header.actions', () => native.slots.register({
       name: 'conversation.session.header.actions', id: 'agent-teams-create', order: 49,
       locale: AGENT_TEAMS_LOCALE_NAMESPACE,
@@ -220,6 +205,82 @@ export function apply(ctx: ClientContext): void {
       }, WorkspaceActivity)
       bridge.set(native.sidebarRight)
       return () => { bridge.set(undefined); dispose() }
+    })
+    // 驱动网关：交付产物的右栏独立视图。注册类型 + body，并接住「展开结果」
+    // 与「交付自动打开」的 window 事件；内容按 teamId 关联到对应交付。
+    native.effect(() => native.sidebarRightTabs.register({
+      id: GATEWAY_TAB_ID,
+      kind: GATEWAY_TAB_KIND,
+      title: () => t('gateway.title'),
+    }))
+    native.slots.inject('sidebar.right.pane.tab', () => native.slots.register({
+      name: 'sidebar.right.pane.tab',
+      key: GATEWAY_TAB_ID,
+      locale: AGENT_TEAMS_LOCALE_NAMESPACE,
+      inject: () => ({ state, revealPath: revealWorkspacePath }),
+    }, DriverGateway))
+    native.effect(() => {
+      const timers = new Set<number>()
+      /**
+       * 刚创建的标签页宿主只把它摆进栏里，不保证切换过去（第一次点「展开结果」常见：
+       * 标签出现了，视图还停在洪荒页）。开完再显式 focus 一次，并用 rAF 兜住 store 提交延迟。
+       */
+      const focusGateway = (sessionId: string): void => {
+        const source = (native.sidebarRight as unknown as {
+          openTabs?: { getSnapshot(): readonly { readonly sessionId?: string; readonly kind: string; readonly tabId?: string }[] }
+        }).openTabs
+        const record = source?.getSnapshot().find(tab =>
+          tab.sessionId === sessionId && tab.kind === GATEWAY_TAB_KIND && typeof tab.tabId === 'string' && tab.tabId !== '')
+        if (record?.tabId === undefined) return
+        try {
+          native.sidebarRight.focus(record.tabId)
+        } catch { /* tab disappeared between listing and focus */ }
+      }
+      /** 右栏只对「屏上会话」执行命令：命中就开标签，未命中把原因留给调用方。 */
+      const tryOpen = (detail: GatewayTarget): boolean => {
+        if (native.sidebarRight.mounted.getSnapshot() !== detail.sessionId) return false
+        try {
+          native.sidebarRight.openTab(GATEWAY_TAB_KIND, { params: { teamId: detail.teamId } })
+          focusGateway(detail.sessionId)
+          window.requestAnimationFrame(() => { focusGateway(detail.sessionId) })
+          return true
+        } catch (error: unknown) {
+          // 不再静默：kind 未注册 / 无座席时这里必须留下痕迹，否则用户只看到“点了没反应”。
+          console.warn('agent-teams: failed to open the driver gateway tab', error)
+          return false
+        }
+      }
+      const open = (event: Event): void => {
+        const detail = (event as CustomEvent<GatewayTarget>).detail
+        if (detail?.sessionId === undefined) return
+        if (tryOpen(detail)) return
+        // 「展开结果」可能点在别的会话的队伍上，或主栏正被全局面板占住（此时宿主把
+        // mounted 报成 undefined）。先导航回该队伍的主会话并退出面板，等 mounted 追上来
+        // 再开右栏标签；轮询有上限，避免一直挂着。
+        openCaptain(detail.sessionId as SessionId)
+        let tries = 0
+        const timer = window.setInterval(() => {
+          tries += 1
+          if (tryOpen(detail)) {
+            window.clearInterval(timer)
+            timers.delete(timer)
+            return
+          }
+          if (tries >= 40) {
+            // 会话始终没有变成屏上会话（切不过去，或宿主没跟上）：留下一条可查的痕迹。
+            console.warn('agent-teams: gave up opening the driver gateway; the team session never became the on-screen session', detail)
+            window.clearInterval(timer)
+            timers.delete(timer)
+          }
+        }, 120)
+        timers.add(timer)
+      }
+      window.addEventListener(OPEN_GATEWAY_EVENT, open)
+      return () => {
+        window.removeEventListener(OPEN_GATEWAY_EVENT, open)
+        for (const timer of timers) window.clearInterval(timer)
+        timers.clear()
+      }
     })
   })
 

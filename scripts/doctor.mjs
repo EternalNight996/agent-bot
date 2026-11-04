@@ -51,9 +51,10 @@ export function inspectInstallation(hostRoot, profileRoot, support = policy) {
   walk(hostPath)
   let plugin
   if (profileRoot) {
-    const path = locatePackage('dsh-super-agents', resolve(profileRoot))
+    const path = locatePackage('@eternalnight/agent-bot', resolve(profileRoot))
+      ?? locatePackage('dsh-super-agents', resolve(profileRoot))
       ?? locatePackage('dsh-super-agent', resolve(profileRoot))
-    if (!path) missing.push('dsh-super-agents (profile)')
+    if (!path) missing.push('@eternalnight/agent-bot (profile)')
     else {
       const pkg = manifest(path)
       plugin = { version: pkg.version, path: dirname(path) }

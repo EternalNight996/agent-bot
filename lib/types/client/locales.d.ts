@@ -5,6 +5,7 @@ export declare const AGENT_TEAMS_LOCALE_NAMESPACE = "agentTeams";
 export declare const zh: {
     'workspace.dependencies': string;
     'workspace.title': string;
+    'workspace.guideHint': string;
     'workspace.guide': string;
     'workspace.eyebrow': string;
     'workspace.description': string;
@@ -80,6 +81,8 @@ export declare const zh: {
     'team.acceptHint': string;
     'team.accepted': string;
     'team.acceptStale': string;
+    'team.gateway': string;
+    'team.gatewayHint': string;
     'team.stop': string;
     'team.stopped': string;
     'team.stopTitle': string;
@@ -783,6 +786,15 @@ export declare const zh: {
     'library.showcase': string;
     'library.showcaseHint': string;
     'showcase.title': string;
+    'showcase.reveal': string;
+    'showcase.revealHint': string;
+    'showcase.revealed': string;
+    'showcase.revealFailed': string;
+    'showcase.zoomIn': string;
+    'showcase.zoomOut': string;
+    'showcase.zoomReset': string;
+    'gateway.title': string;
+    'gateway.empty': string;
     'showcase.preview': string;
     'showcase.close': string;
     'showcase.loading': string;
@@ -1130,6 +1142,7 @@ export type AgentTeamsLocaleKey = keyof typeof zh;
 export declare const en: {
     'workspace.dependencies': string;
     'workspace.title': string;
+    'workspace.guideHint': string;
     'workspace.guide': string;
     'workspace.eyebrow': string;
     'workspace.description': string;
@@ -1205,6 +1218,8 @@ export declare const en: {
     'team.acceptHint': string;
     'team.accepted': string;
     'team.acceptStale': string;
+    'team.gateway': string;
+    'team.gatewayHint': string;
     'team.stop': string;
     'team.stopped': string;
     'team.stopTitle': string;
@@ -1908,6 +1923,15 @@ export declare const en: {
     'library.showcase': string;
     'library.showcaseHint': string;
     'showcase.title': string;
+    'showcase.reveal': string;
+    'showcase.revealHint': string;
+    'showcase.revealed': string;
+    'showcase.revealFailed': string;
+    'showcase.zoomIn': string;
+    'showcase.zoomOut': string;
+    'showcase.zoomReset': string;
+    'gateway.title': string;
+    'gateway.empty': string;
     'showcase.preview': string;
     'showcase.close': string;
     'showcase.loading': string;

@@ -24,6 +24,45 @@
   color: #e8eef6;
 }
 
+/* 驱动网关：右侧栏里的常驻视图，铺满面板、不画弹窗边框。 */
+.docked {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary, #e8eef6);
+  background: var(--dsw-alias-bg-layer-1, #0b1119);
+}
+
+.docked .head {
+  padding: 6px 12px;
+  background: linear-gradient(180deg, rgba(111, 182, 255, 0.1), rgba(111, 182, 255, 0));
+}
+
+/* 右栏通常只有 380–560px：文件列表放顶部横条，预览占满整宽。
+   64px 的单行条只保留「图标 + 文件名 + 入口徽标」，不再堆目录和体积。 */
+.docked .body {
+  grid-template-columns: 1fr;
+  grid-template-rows: 64px minmax(0, 1fr);
+}
+
+.docked .files {
+  flex-direction: row;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.docked .file { min-width: 140px; margin: 2px 0; }
+.docked .fileDir,
+.docked .fileMeta { display: none; }
+.docked .preview { background: var(--dsw-alias-bg-layer-2, #0e141d); }
+.docked .footHint { display: none; }
+
 .head {
   display: flex;
   align-items: center;
@@ -113,6 +152,7 @@
 .previewBar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 6px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -130,11 +170,69 @@
   padding: 2px 8px;
   color: #6fb6ff;
   text-decoration: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }
 .openLink:hover { border-color: #6fb6ff; background: rgba(111, 182, 255, 0.1); }
 
 .frameWrap { flex: 1; display: flex; min-height: 0; }
 .frame { flex: 1; width: 100%; height: 100%; border: 0; background: #fff; }
+
+/* 预览视口：承载缩放/平移；放大后盖一层透明层，左键拖动移动视野。 */
+.viewport {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+  background: var(--dsw-alias-bg-layer-2, #0e141d);
+}
+
+.zoomLayer {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.zoomLayer > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.panShield {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  cursor: grab;
+  background: transparent;
+}
+
+.panShield:active { cursor: grabbing; }
+
+.zoomGroup { display: inline-flex; align-items: center; gap: 2px; flex: none; }
+
+.zoomButton {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid rgba(111, 182, 255, 0.35);
+  border-radius: 6px;
+  background: transparent;
+  color: #9aa4b2;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.zoomButton:hover { color: #d6ecff; border-color: #6fb6ff; }
 
 .imageWrap {
   flex: 1;

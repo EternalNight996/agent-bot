@@ -312,22 +312,11 @@ export function SectHallOverlay({
     if (member !== undefined) setCharacterId(member.id || member.name)
   }, [sheet, sessionId, hall.captainSessionId, hall.members])
   // 点击师父：回到他所在的主对话（而不是打开一个“成员子会话”）。
-  const goHome = (): void => {
-    if (openCaptain !== undefined && hall.captainSessionId !== '') openCaptain(hall.captainSessionId as SessionId)
-  }
   // 当前对话框属于谁：师父主对话还是某位行者的子对话。
   const viewingCaptain = sessionId !== undefined && sessionId === hall.captainSessionId
   const viewingMember = sessionId === undefined
     ? undefined
     : hall.members.find(member => member.id === sessionId)
-  // 新建任务由师父（主对话）执行：回到主对话并聚焦输入框，用户直接说要建什么。
-  const startNewTask = (): void => {
-    focusProgress()
-    goHome()
-    window.setTimeout(() => {
-      document.querySelector<HTMLElement>('[data-composer-card] [contenteditable="true"][role="textbox"], [data-composer-card] textarea')?.focus()
-    }, 160)
-  }
   // 天机阁：打开当前角色（或师父）的装备页。
   const openGear = (): void => {
     const memberRef = viewingMember === undefined ? undefined : (viewingMember.id || viewingMember.name)
@@ -357,10 +346,18 @@ export function SectHallOverlay({
     writeHallPage(sheet === undefined ? undefined : hallPageForSheet(sheet))
   }, [sheet])
 
+  // 展开的福地必须有页：收起会清空 sheet（好让下次展开从头开始），但 HMR/布局恢复
+  // 或右栏重建后可能留下「collapsed=false + sheet=undefined」的空白态，这里补默认页。
+  useEffect(() => {
+    if (!collapsed && sheet === undefined) setSheet('home')
+  }, [collapsed, sheet])
+
   // ① 令牌在任何落地态都能把福地带出来：先把 main 还给对话（页面态会占住 main 槽，
   //    右栏是 session-bound 的，被占时 openTab 无处可挂），再展开右栏。
+  //    收起时会把 sheet 清空；重新展开必须补回「洪荒」页，否则导航在、内容区空白。
   const bringHallBack = (): void => {
     pendingOpenRef.current = true
+    setSheet(current => current ?? 'home')
     onOpenSidebar?.()
   }
 
@@ -375,15 +372,6 @@ export function SectHallOverlay({
     // 只有「已展开但宿主把福地藏了」才重新把它调回来。
     if (collapsed || hallVisibleRef.current) { toggleCollapsed(); return }
     bringHallBack()
-  }
-
-  // t43：新建任务/组队成功后自动展开右栏并停在「总进度」页。
-  const focusProgress = (): void => {
-    pendingOpenRef.current = true
-    setReviewing(false)
-    setSheet('board')
-    if (collapsed) { setCollapsed(false); writeHallCollapsed(false) }
-    onOpenSidebar?.()
   }
 
   const toggleCollapsed = (): void => {
@@ -704,15 +692,6 @@ export function SectHallOverlay({
         role="region"
         aria-label={title}
       >
-        <header className={css.sheetHead}>
-          <span className={css.sheetTitle}>{title}</span>
-          {hasTeam && (sheet === 'board' || sheet === 'library' || (sheet === 'config' && !staged)) && (
-            <button type="button" className={css.sheetAction} onClick={startNewTask} title={t('office.newTaskHint')}>
-              ＋ {t('office.newTask')}
-            </button>
-          )}
-          <button type="button" className={css.sheetClose} onClick={finishSheet} aria-label={t('office.closePanel')}>×</button>
-        </header>
         <div className={css.sheetBody}>
           {sheet === 'ranks' ? (
             <div className={css.ranks}>

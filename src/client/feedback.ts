@@ -7,7 +7,7 @@
  */
 
 /** 本项目仓库地址（反馈与 Star 都指这里）。 */
-export const PLUGIN_REPO = 'https://github.com/EternalNight996/dsh-super-agents'
+export const PLUGIN_REPO = 'https://github.com/EternalNight996/agent-bot'
 
 /** 反馈内容：用户描述 + 诊断 + 版本。 */
 export interface FeedbackInput {
@@ -18,7 +18,7 @@ export interface FeedbackInput {
 }
 
 /** issue 标题：取用户描述的第一行，限制长度；没写就给个兜底标题。 */
-export function buildIssueTitle(description: string, fallback = 'dsh-super-agents 异常反馈'): string {
+export function buildIssueTitle(description: string, fallback = 'agent-bot 异常反馈'): string {
   const first = description.trim().split('\n')[0]?.trim() ?? ''
   const title = first === '' ? fallback : first
   return title.length <= 60 ? title : `${title.slice(0, 59)}…`

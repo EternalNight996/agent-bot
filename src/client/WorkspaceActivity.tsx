@@ -25,6 +25,7 @@ import { TeamUiBoundary } from './TeamUiBoundary.tsx'
 import { OPEN_HALL_SHEET_EVENT } from './hall-events.ts'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { OPEN_PANEL_EVENT } from './AgentTeamsCard.tsx'
+import { GATEWAY_TAB_KIND, claimGatewayAutoOpen } from './gateway.ts'
 import type { AgentTeamsCardData } from './agent-teams-card-definition.ts'
 import { currentSessionId } from './session-navigation.ts'
 import { PLAN_APPROVED_EVENT, TEAM_CREATED_EVENT, shouldRevealTeam, teamHasStarted, type PlanApprovedDetail } from './team-reveal.ts'
@@ -118,10 +119,13 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
   const stagedFallback = sessionTeams.length === 0 ? snapshots.teams.find(team => team.phase === 'staged') : undefined
   const hallTeam = sessionTeams.find(team => team.teamId === wanted) ?? sessionTeams[0] ?? linkedTeam ?? stagedFallback
   const visibleTeam = hallTeam ?? directTeam
-  // 历史：工作区维度，而不是只认当前会话——桌面端重启后会话 id 会变，
-  // 旧队伍仍在同一个工作区里，必须继续出现在洪荒的历史切换栏。
+  // 历史：按对话隔离。每个会话只看到自己开队的队伍（行者子会话仍能看到所属
+  // 师父的队伍），不再把同一工作区里其他对话的队伍混进洪荒的切换栏。
   const historyTeams = [...snapshots.teams, ...snapshots.archivedTeams]
     .filter(team => team.teamId !== visibleTeam?.teamId)
+    .filter(team => current === undefined
+      || team.captainSessionId === current
+      || team.members.some(member => member.id === current))
     .filter((team, index, all) => all.findIndex(item => item.teamId === team.teamId) === index)
     .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
   const targets = useSyncExternalStore(subscribeActivityMonitorTargets, getActivityMonitorTargetsSnapshot)
@@ -241,6 +245,19 @@ function WorkspaceMonitor({ sessionsList, sidebar, state, t, openMember, openCap
     window.addEventListener(PLAN_APPROVED_EVENT, approved)
     return () => { window.removeEventListener(PLAN_APPROVED_EVENT, approved) }
   }, [current, sidebar, state])
+  // 交付完成：自动打开一次驱动网关（每队一次），把产物直接摆到用户眼前。
+  // 触发放在这个常驻监视器里，而不是只挂在展开后的面板上——交付时面板可能收起。
+  useEffect(() => {
+    if (current === undefined || sidebar === undefined) return
+    if (sidebar.mounted.getSnapshot() !== current) return
+    const delivered = snapshots.teams.find(team => team.captainSessionId === current && team.delivery?.ok === true)
+    if (delivered === undefined) return
+    if (!claimGatewayAutoOpen(delivered.teamId)) return
+    state.select(current, delivered.teamId)
+    try {
+      sidebar.openTab(GATEWAY_TAB_KIND, { params: { teamId: delivered.teamId } })
+    } catch { /* column unavailable */ }
+  }, [snapshots, current, sidebar, state])
   // Direct workspace refresh if the shared activity poll has not produced any
   // teams yet; without this a new/staged team can look like an empty hall.
   useEffect(() => {

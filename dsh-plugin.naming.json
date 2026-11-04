@@ -4,8 +4,8 @@
   "plugin": {
     "namespace": "eternalnight996",
     "name": "super-agent",
-    "coordinate": "eternalnight996/dsh-super-agents",
-    "packageName": "dsh-super-agents"
+    "coordinate": "eternalnight996/agent-bot",
+    "packageName": "@eternalnight/agent-bot"
   },
   "names": {
     "pluginNames": [

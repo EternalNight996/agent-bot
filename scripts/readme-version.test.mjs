@@ -16,7 +16,7 @@ test('a README that still names an older plugin version is rejected', () => {
   const markdown = 'Install with `dsh plugin add dsh-super-agent@0.1.17`.'
   const problems = checkReadmeVersions({ version: '0.1.20', known: KNOWN, files: { 'README.md': markdown } })
   assert.ok(
-    problems.includes('README.md pins dsh-super-agents@0.1.17 but the package is 0.1.20'),
+    problems.includes('README.md pins @eternalnight/agent-bot@0.1.17 but the package is 0.1.20'),
     `expected a pinned-install problem, got ${JSON.stringify(problems)}`
   )
 })

@@ -21,7 +21,14 @@ function sandbox() {
   const document = {
     visibilityState: 'visible',
     head: { appendChild: (node) => { styleTags.push(node); node.parentNode = document.head } },
-    body: { appendChild: () => {}, append: () => {} },
+    // antd's cssinjs probes a server-rendered style host on body at module init.
+    body: {
+      appendChild: () => {},
+      append: () => {},
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      getAttribute: () => null,
+    },
     documentElement: { style: { setProperty: () => {}, removeProperty: () => {} }, setAttribute: () => {}, removeAttribute: () => {} },
     createElement: () => ({ dataset: {}, style: {}, setAttribute: () => {}, appendChild: () => {}, textContent: '' }),
     createTextNode: () => ({}),
@@ -60,12 +67,36 @@ function sandbox() {
   return { window, document, styleTags }
 }
 
-const reactStub = new Proxy(function reactStub() {}, {
-  get: () => reactStub,
-  apply: () => reactStub,
-})
+/**
+ * Minimal React face. The bundle now carries antd, whose module init calls
+ * `createContext`; the previous callable Proxy answered every read with itself,
+ * so `createContext(...)` returned a function instead of a context object and
+ * the factory aborted. Only module-init APIs need real shapes here — the test
+ * executes the factory, it never renders.
+ */
+class ReactComponent {
+  constructor(props) { this.props = props }
+  setState() {}
+  forceUpdate() {}
+  render() { return null }
+}
+const reactStub = {
+  Component: ReactComponent,
+  PureComponent: ReactComponent,
+  createContext: defaultValue => ({ Provider: ({ children }) => children, Consumer: () => null, _currentValue: defaultValue }),
+  useContext: () => undefined,
+  createElement: () => ({}),
+  createRef: () => ({ current: null }),
+  forwardRef: render => render,
+  memo: component => component,
+  useId: () => 'test-id',
+  Fragment: Symbol('Fragment'),
+  Children: { toArray: () => [], map: () => [] },
+}
+reactStub.default = reactStub
 const requireStub = (id) => {
-  if (id === 'react' || id === 'react-dom') return reactStub
+  if (id === 'react') return reactStub
+  if (id === 'react-dom') return { ...reactStub, createPortal: () => null, flushSync: callback => callback() }
   if (id === 'react/jsx-runtime') return { jsx: () => ({}), jsxs: () => ({}), Fragment: Symbol('Fragment') }
   if (id === 'react-dom/client') return { createRoot: () => ({ render: () => {}, unmount: () => {} }) }
   return reactStub
@@ -108,5 +139,8 @@ test('the shipped bundle carries no expert prompt bodies', () => {
   // The host catalog owns the prompt text; shipping it here would re-inflate the
   // download by ~1 MB (see agency-role-prompts.ts).
   assert.equal(bundleCode.includes('AGENCY_ROLE_PROMPTS'), false)
-  assert.ok(Buffer.byteLength(bundleCode) < 900 * 1024, 'client bundle grew past its budget')
+  // antd (Tabs / ConfigProvider / theme) is deliberately bundled for the 洪荒
+  // sidebar's card tabs; it accounts for roughly 300 KB of the payload.
+  assert.ok(Buffer.byteLength(bundleCode) < 1100 * 1024, 'client bundle grew past its budget')
 })
+

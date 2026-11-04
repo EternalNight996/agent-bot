@@ -10,10 +10,10 @@
 - insert:
     - id: dsh-super-agent
       # Node-resolvable package name — must stay in sync with package.json
-      # `name`. The npm name is the plural `dsh-super-agents` (the original
-      # singular name belongs to another publisher); the plugin id above is the
-      # stable identity used by routes, message sources and stored state.
-      name: 'dsh-super-agents'
+      # `name`. The npm name is the scoped `@eternalnight/agent-bot`, and the
+      # plugin id above is the stable identity used by routes, message sources
+      # and stored state, so it intentionally keeps its historical value.
+      name: '@eternalnight/agent-bot'
       config:
         # Team state lives under `<session workspace>/<stateDir>/<teamId>/`
         # (team.json + inbox/*.jsonl mailboxes).

@@ -1,6 +1,6 @@
 # 赞助与交流
 
-DSH Super Agents（dsh-super-agents）是 MIT 协议的开源插件，始终免费。
+Agent Bot（@eternalnight/agent-bot）是 MIT 协议的开源插件，始终免费。
 
 如果它帮你省了时间，或在像素洞府里玩得开心，可以自愿支持**惠州市梦游科技有限公司**的产品团队。
 
@@ -24,11 +24,11 @@ DSH Super Agents（dsh-super-agents）是 MIT 协议的开源插件，始终免�
 
 优先通过 GitHub Issues 反馈，并附上插件「宗门志 → 反馈异常」生成的诊断信息：
 
-- 仓库：https://github.com/EternalNight996/dsh-super-agents
-- 新建 issue：https://github.com/EternalNight996/dsh-super-agents/issues/new
+- 仓库：https://github.com/EternalNight996/agent-bot
+- 新建 issue：https://github.com/EternalNight996/agent-bot/issues/new
 
 ## 企业与版权
 
 - 维护与发布：**惠州市梦游科技有限公司**
-- 项目主页：https://github.com/EternalNight996/dsh-super-agents
+- 项目主页：https://github.com/EternalNight996/agent-bot
 - 代码许可：MIT；像素洞府、修炼体系、装备、封神榜与宗门志为本项目原创。

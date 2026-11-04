@@ -8,7 +8,6 @@ import { usdToCny } from '../currency.ts'
 import { ACTIVITY_HALT_URL } from './activity-monitor.ts'
 import { memberArtUrl } from './artwork.ts'
 import { formatElapsed, teamElapsedCounting, teamElapsedMs } from './activity-model.ts'
-import { ShowcasePanel } from './ShowcasePanel.tsx'
 
 interface DeliveryArtifact {
   readonly path: string
@@ -76,22 +75,8 @@ export function LibraryPanel({ sessionId, t, onStartTeam }: {
     const timer = window.setInterval(() => { setNow(Date.now()) }, 1000)
     return () => { window.clearInterval(timer) }
   }, [elapsedCounting])
-  // 交付后一定要给用户看：所有任务了结即视为交付完成，展示一次产物。
-  const deliveredTeamId = team !== null && team.tasks.length > 0 && team.tasks.every(task => task.status === 'completed')
-    ? team.teamId
-    : undefined
-  const [showcaseOpen, setShowcaseOpen] = useState(false)
-  useEffect(() => {
-    if (deliveredTeamId === undefined) return
-    const key = 'dsh-super-agent:showcase:auto:' + deliveredTeamId
-    try {
-      if (window.localStorage.getItem(key) === '1') return
-      window.localStorage.setItem(key, '1')
-    } catch {
-      // Private mode without storage: still show it once for this mount.
-    }
-    setShowcaseOpen(true)
-  }, [deliveredTeamId])
+  // 交付后一定要给用户看：交付产物统一在右侧栏「驱动网关」里展示（见
+  // gateway.ts 与 DriverGateway），藏经阁页不再弹独立预览层。
   if (team === null) {
     return <p className={css.empty}>{t('library.empty')}</p>
   }
@@ -162,16 +147,6 @@ export function LibraryPanel({ sessionId, t, onStartTeam }: {
         <span className={css.scale}>{team.scale}</span>
         <span className={css.gate}>{t('library.gate', { pass: team.gate.passed, total: team.gate.total })}</span>
         <span className={css.version}>v{PLUGIN_VERSION}</span>
-        {deliveredTeamId !== undefined && (
-          <button
-            type="button"
-            className={css.showcase}
-            title={t('library.showcaseHint')}
-            onClick={() => { setShowcaseOpen(true) }}
-          >
-            ▣ {t('library.showcase')}
-          </button>
-        )}
         {onStartTeam !== undefined && (
           <button type="button" className={css.startTeam} onClick={onStartTeam}>＋ {t('quickstart.entry')}</button>
         )}
@@ -328,15 +303,6 @@ export function LibraryPanel({ sessionId, t, onStartTeam }: {
           ? <span>{t('library.noBlocker')}</span>
           : <span>{team.blocker.subject}：{team.blocker.reason}</span>}
       </footer>
-      {showcaseOpen && deliveredTeamId !== undefined && (
-        <ShowcasePanel
-          sessionId={sessionId}
-          teamId={team.teamId}
-          teamName={team.name}
-          t={t}
-          onClose={() => { setShowcaseOpen(false) }}
-        />
-      )}
     </div>
   )
 }

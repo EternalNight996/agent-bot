@@ -226,9 +226,9 @@ check(
     && clientIndexSource.includes('ctx.uiConversation.events.register(agentTeamsCardDefinition)')
     && clientIndexSource.includes('ctx.locale.register(AGENT_TEAMS_LOCALE_NAMESPACE, { zh, en })')
     // Every locale-bound slot registration: create entry, chat entry, turn
-    // tail, shell overlay, keyed chat node, the composer preempt control, and
-    // the right-pane team page.
-    && clientIndexSource.match(/locale:\s*AGENT_TEAMS_LOCALE_NAMESPACE/gu)?.length === 6,
+    // tail, shell overlay, keyed chat node, the composer preempt control, the
+    // right-pane team page and the driver gateway page.
+    && clientIndexSource.match(/locale:\s*AGENT_TEAMS_LOCALE_NAMESPACE/gu)?.length === 7,
 )
 check(
   'slash command transcript hides the duplicate pre-message result row',

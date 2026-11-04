@@ -1,7 +1,7 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/app-icons/desktop/png/app-128.png" width="56" alt="dsh-super-agents 图标" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/app-icons/desktop/png/app-128.png" width="56" alt="agent-bot 图标" />
   <br/>
-  dsh-super-agents
+  agent-bot
 </h1>
 
 <p align="center"><b>你的智能体不需要又一个仪表盘。<br/>它们需要一个地方干活。</b></p>
@@ -9,9 +9,9 @@
 <p align="center"><sub>常驻在 DeepSeek Harness 右侧栏的像素宗门——你批准计划，掌教带一队专精修士把活干完，再把产物直接摊开给你看。</sub></p>
 
 <p align="center">
-  <a href="https://github.com/EternalNight996/dsh-super-agents/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/dsh-super-agents?style=flat" alt="GitHub stars" /></a>
-  <a href="https://www.npmjs.com/package/dsh-super-agents"><img src="https://img.shields.io/npm/v/dsh-super-agents?color=CB3837" alt="npm version" /></a>
-  <a href="https://github.com/EternalNight996/dsh-super-agents/releases"><img src="https://img.shields.io/badge/release-v0.1.187-FF7A45" alt="release" /></a>
+  <a href="https://github.com/EternalNight996/agent-bot/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/agent-bot?style=flat" alt="GitHub stars" /></a>
+  <a href="https://www.npmjs.com/package/@eternalnight/agent-bot"><img src="https://img.shields.io/npm/v/@eternalnight/agent-bot?color=CB3837" alt="npm version" /></a>
+  <a href="https://github.com/EternalNight996/agent-bot/releases"><img src="https://img.shields.io/badge/release-v0.1.0-FF7A45" alt="release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license" /></a>
   <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/DSH-Web%20%2B%20Headless-5B4CF0" alt="DSH" /></a>
 </p>
@@ -19,7 +19,7 @@
 <p align="center"><a href="README.md">English</a> · <b>简体中文</b></p>
 
 <p align="center">
-  <a href="https://github.com/EternalNight996/dsh-super-agents"><img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/social-preview.webp" width="100%" alt="dsh-super-agent — 给 AI 团队的像素修仙洞府" /></a>
+  <a href="https://github.com/EternalNight996/agent-bot"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/social-preview.webp" width="100%" alt="dsh-super-agent — 给 AI 团队的像素修仙洞府" /></a>
 </p>
 
 <p align="center"><b>开宗 → 审计划 → 批准 → 看洞府跑起来。</b></p>
@@ -31,26 +31,26 @@
 ## 🎬 真实会话，不是示意图
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/plan-review.webp" width="49%" alt="执行前计划审查" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/progress.webp" width="49%" alt="任务进度与洞府实况" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/plan-review.webp" width="49%" alt="执行前计划审查" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/progress.webp" width="49%" alt="任务进度与洞府实况" />
 </p>
 <p align="center"><sub><b>先审后跑</b> —— 3 名修士、3 项任务、2 条依赖；确认草案后才创建与调度。 &nbsp;·&nbsp; <b>实时任务 DAG</b> —— 掌教派发 t1，毒修等 t1，体修等 t2。</sub></p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/equipment.webp" width="100%" alt="天机阁装备与坐骑" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/equipment.webp" width="100%" alt="天机阁装备与坐骑" />
 </p>
 <p align="center"><sub><b>装备真的会画出来</b> —— 换上飞剑，掌教就御剑而行；法器、坐骑、技能按境界解锁。</sub></p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/dao-rules.webp" width="32%" alt="道统与名册配置" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/ranks.webp" width="32%" alt="封神榜十五重境界" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/readme/roster.webp" width="32%" alt="山门名册与已完成任务" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/dao-rules.webp" width="32%" alt="道统与名册配置" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/ranks.webp" width="32%" alt="封神榜十五重境界" />
+  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/roster.webp" width="32%" alt="山门名册与已完成任务" />
 </p>
 <p align="center"><sub><b>一支小宗门</b> —— 角色、境界、模型一眼看清。 &nbsp;·&nbsp; <b>十五重境界</b> —— 从凡人到道祖。 &nbsp;·&nbsp; <b>历史留名</b> —— 已完成任务与下一次开宗。</sub></p>
 
 ## 🐉 这是什么？
 
-**dsh-super-agents** 把 DeepSeek Harness 的一个会话变成一间真正干活的宗门。你批准计划，掌教把它拆成带依赖的任务 DAG，各专精修士按固定契约交付。洞府常驻右侧栏，永远只差一次点击——收起后就变成一枚可拖到任意角落的令牌。
+**agent-bot** 把 DeepSeek Harness 的一个会话变成一间真正干活的宗门。你批准计划，掌教把它拆成带依赖的任务 DAG，各专精修士按固定契约交付。洞府常驻右侧栏，永远只差一次点击——收起后就变成一枚可拖到任意角落的令牌。
 
 像素下面是一层交付治理，不是聊天皮肤：
 
@@ -64,7 +64,7 @@
 
 ## 🆚 不是又一个智能体仪表盘
 
-|  | 常见智能体 UI | dsh-super-agents |
+|  | 常见智能体 UI | agent-bot |
 |---|---|---|
 | 谁在干活 | 日志行 | 坐在案前的修士 |
 | 什么卡住了 | 状态文字 | 功德碑 + 依赖边 |
@@ -88,7 +88,7 @@
 
 **DeepSeek Harness（桌面 / Web）**
 
-    dsh plugin --profile desktop add dsh-super-agents
+    dsh plugin --profile desktop add @eternalnight/agent-bot
     # 重开 DSH —— 洞府已经在右侧栏等你
 
 然后：
@@ -99,19 +99,19 @@
 
 **从 GitHub 安装**
 
-    git clone https://github.com/EternalNight996/dsh-super-agents
-    dsh plugin --profile desktop add ./dsh-super-agents
+    git clone https://github.com/EternalNight996/agent-bot
+    dsh plugin --profile desktop add ./agent-bot
 
 **GitHub 很慢时（网络受限）**
 
 git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `pnpm add github:…` 也会一直卡住。`--registry=<镜像>` 只改 npm 源，不会代理 GitHub。改用下面任一方式：
 
     # a) 从 Release 用普通 HTTPS 下载构建好的 tgz
-    #    https://github.com/EternalNight996/dsh-super-agents/releases
-    dsh plugin --profile desktop add ./dsh-super-agents-<版本>.tgz
+    #    https://github.com/EternalNight996/agent-bot/releases
+    dsh plugin --profile desktop add ./eternalnight-agent-bot-<版本>.tgz
 
     # b) 安装已发布的 npm 版本（npmmirror 等镜像可用）
-    dsh plugin --profile desktop add dsh-super-agents@0.1.138
+    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.0
 
 插件必须装进 DSH profile，不要用裸 `pnpm add <github-url>`。
 
@@ -231,17 +231,17 @@ quality:
 
 | QQ 交流群 | 微信交流群 |
 |:---:|:---:|
-| <a href="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/group-qr.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/group-qr.jpg" width="220" alt="QQ 交流群二维码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/group-wechat.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/group-wechat.jpg" width="220" alt="微信交流群二维码" /></a> |
+| <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-qr.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-qr.jpg" width="220" alt="QQ 交流群二维码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-wechat.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-wechat.jpg" width="220" alt="微信交流群二维码" /></a> |
 
 **请作者喝杯咖啡（完全自愿）：**
 
 | 微信收款码 | 微信赞赏码 |
 |:---:|:---:|
-| <a href="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/wechat-pay.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/wechat-pay.jpg" width="200" alt="微信收款码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/wechat-reward.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/dsh-super-agents/main/assets/support/wechat-reward.jpg" width="200" alt="微信赞赏码" /></a> |
+| <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-pay.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-pay.jpg" width="200" alt="微信收款码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-reward.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-reward.jpg" width="200" alt="微信赞赏码" /></a> |
 
 > 赞助完全自愿，不影响任何功能；插件本体始终开源免费（MIT）。见 [SPONSOR.md](SPONSOR.md)。
 
-- Issues：https://github.com/EternalNight996/dsh-super-agents/issues
+- Issues：https://github.com/EternalNight996/agent-bot/issues
 - 由 **惠州市梦游科技有限公司** 维护与发布。
 
 ## 📄 许可

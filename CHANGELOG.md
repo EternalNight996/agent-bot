@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0] - 2026-11-04
+
+### Changed (发布身份)
+- 包名由 `dsh-super-agents` 改为 `@eternalnight/agent-bot`，仓库改为 `EternalNight996/agent-bot`，版本重新从 `0.1.0` 起算。
+- 徽章、npm 链接、安装命令、issue 反馈仓库地址与 package.json 元数据（repository/homepage/bugs/author）全部同步到新身份。
+- 插件 id `dsh-super-agent` 与 `/plugins/dsh-super-agent` 路由保持不变（存储的团队状态、消息来源与路由依赖这个稳定身份）。
+- 旧的 npm 包 `dsh-super-agents` 与旧 GitHub 仓库已下线；旧的深层历史版本号（0.1.x）不再延续。
+
 ## [0.1.146] - 2026-11-04
 
 ### Fixed

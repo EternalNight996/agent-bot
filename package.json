@@ -1,7 +1,7 @@
 {
-  "name": "dsh-super-agents",
-  "version": "0.1.187",
-  "description": "DSH Super Agent：DeepSeek Harness 的多智能体团队协作与交付流水线（AgentTeams 衍生，MIT）。",
+  "name": "@eternalnight/agent-bot",
+  "version": "0.1.0",
+  "description": "agent-bot：DeepSeek Harness 的多智能体团队协作与交付流水线（AgentTeams 衍生，MIT）。",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -39,15 +39,15 @@
   "license": "MIT",
   "author": {
     "name": "惠州市梦游科技有限公司",
-    "url": "https://github.com/EternalNight996/dsh-super-agents"
+    "url": "https://github.com/EternalNight996/agent-bot"
   },
-  "homepage": "https://github.com/EternalNight996/dsh-super-agents#readme",
+  "homepage": "https://github.com/EternalNight996/agent-bot#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EternalNight996/dsh-super-agents.git"
+    "url": "git+https://github.com/EternalNight996/agent-bot.git"
   },
   "bugs": {
-    "url": "https://github.com/EternalNight996/dsh-super-agents/issues"
+    "url": "https://github.com/EternalNight996/agent-bot/issues"
   },
   "keywords": [
     "dsh",
@@ -251,6 +251,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "~18.3.1",
     "@types/react-dom": "^18.3.7",
+    "antd": "6.7.0",
     "lightningcss": "^1.33.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -258,6 +259,6 @@
     "typescript": "^5.9.3"
   },
   "bin": {
-    "dsh-super-agent-doctor": "scripts/doctor.mjs"
+    "agent-bot-doctor": "scripts/doctor.mjs"
   }
 }

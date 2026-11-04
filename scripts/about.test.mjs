@@ -17,7 +17,7 @@ test('client version constant tracks package.json', () => {
 
 test('issue title takes the first line and caps its length', () => {
   assert.equal(buildIssueTitle('归栏后界面空白\n复现步骤…'), '归栏后界面空白')
-  assert.equal(buildIssueTitle('   '), 'dsh-super-agents 异常反馈')
+  assert.equal(buildIssueTitle('   '), 'agent-bot 异常反馈')
   const long = buildIssueTitle('x'.repeat(80))
   assert.equal(long.length, 60)
   assert.ok(long.endsWith('…'))

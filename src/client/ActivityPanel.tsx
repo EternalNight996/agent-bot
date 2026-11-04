@@ -99,6 +99,7 @@ import {
   type PanelLayout,
   type PanelResizeEdge,
 } from './panel-geometry.ts'
+import { requestGateway } from './gateway.ts'
 import css from './ActivityPanel.module.css'
 
 /** Grace before the panel collapses once no team remains. */
@@ -899,6 +900,19 @@ export function TeamSection({ team, modelDirectory, onContinuePlanning, onDiscar
             >
               <span aria-hidden>⤓</span>
               {t('team.report')}
+            </button>
+          )}
+          {team.delivery?.ok === true && (
+            <button
+              type="button"
+              className={css.reportButton}
+              data-control="gateway"
+              aria-label={t('team.gateway')}
+              title={t('team.gatewayHint')}
+              onClick={() => { requestGateway({ sessionId: team.captainSessionId, teamId: team.teamId }) }}
+            >
+              <span aria-hidden>▣</span>
+              {t('team.gateway')}
             </button>
           )}
           {team.delivery?.ok === true && (

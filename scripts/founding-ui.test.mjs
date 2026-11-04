@@ -59,13 +59,16 @@ test('the founding entry opens the hall start page, never the inbox sheet', () =
   assert.match(workspace, /action !== 'start'/, 'the workspace sheet must not route start into the inbox fallback')
 })
 
-test('the 洪荒协作 tab is permanent: no close button, only switching', () => {
+test('the 洪荒协作 tab is a plain closable tab that can always be reopened', () => {
   const client = readFileSync(new URL('../src/client/index.tsx', import.meta.url), 'utf8')
-  // 宿主 dock 的关闭按钮由它自己渲染，插件按 tabId 命中并隐藏；
-  // 快捷键/菜单关闭则用 close handler 抛错否决（宿主约定：失败保留标签）。
-  assert.match(client, /data-dockkit-tab-close/)
-  assert.match(client, /registerCloseHandler/)
-  assert.match(client, /the 洪荒协作 page is permanent/)
+  // 福地不再锁定标签：宿主自己的关闭按钮保留，右栏「开始」页的 guide 入口
+  // 负责在关掉之后重新打开，所以这里既不该隐藏关闭按钮，也不该否决关闭。
+  assert.match(client, /guide: \[\{\s*id: 'agent-teams-workspace'/)
+  assert.ok(!client.includes('data-dockkit-tab-close'), 'the hall tab must not hide the host close button')
+  assert.ok(!client.includes('registerCloseHandler'), 'the hall tab must not veto closing')
+  assert.ok(!client.includes('the 洪荒协作 page is permanent'))
+  // 驱动网关同样是普通可关标签，靠「展开结果」/交付自动打开的 window 事件重新拉起。
+  assert.match(client, /OPEN_GATEWAY_EVENT/)
   // 不再把「用户关标签」当成收起福地的信号：标签必须被补回来。
   assert.ok(!client.includes('COLLAPSE_HALL_EVENT'))
 })

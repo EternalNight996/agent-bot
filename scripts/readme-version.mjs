@@ -50,7 +50,7 @@ export function findPinnedInstallVersions(markdown) {
   // Accept both the current package name and the upstream scoped name it was
   // renamed from (`@nanmicoder/dsh-agent-teams`), so install commands written
   // under either identity still get checked.
-  return [...markdown.matchAll(/(?<![0-9A-Za-z./-])(?:@eternalnight\/dsh-super-agent|dsh-super-agent|@nanmicoder\/dsh-agent-teams)@([0-9A-Za-z.-]+)/g)]
+  return [...markdown.matchAll(/(?<![0-9A-Za-z./-])(?:@eternalnight\/agent-bot|@eternalnight\/dsh-super-agent|dsh-super-agent|dsh-super-agents|@nanmicoder\/dsh-agent-teams)@([0-9A-Za-z.-]+)/g)]
     .map(match => match[1])
 }
 
@@ -62,7 +62,7 @@ export function checkReadmeVersions({ version, known, files }) {
     }
     for (const pinned of findPinnedInstallVersions(markdown)) {
       if (pinned !== version) {
-        problems.push(`${name} pins dsh-super-agents@${pinned} but the package is ${version}`)
+        problems.push(`${name} pins @eternalnight/agent-bot@${pinned} but the package is ${version}`)
       }
     }
   }
