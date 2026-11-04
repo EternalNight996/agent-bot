@@ -111,7 +111,7 @@ Git's smart protocol is often throttled even when plain HTTPS downloads are fine
     dsh plugin --profile desktop add ./eternalnight-agent-bot-<version>.tgz
 
     # b) a published npm version (mirrors such as npmmirror work)
-    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.2
+    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.3
 
 Do not use bare `pnpm add <github-url>` for this plugin: a DSH plugin must be installed into a DSH profile.
 

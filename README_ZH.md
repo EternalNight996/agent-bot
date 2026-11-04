@@ -111,7 +111,7 @@ git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `
     dsh plugin --profile desktop add ./eternalnight-agent-bot-<版本>.tgz
 
     # b) 安装已发布的 npm 版本（npmmirror 等镜像可用）
-    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.2
+    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.3
 
 插件必须装进 DSH profile，不要用裸 `pnpm add <github-url>`。
 
