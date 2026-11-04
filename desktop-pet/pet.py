@@ -429,7 +429,10 @@ class PetApp:
         self.anim_until = 0.0
         self.anim_next: str | None = None
         self.sleeping = False
-        self.next_idle_at = time.time() + random.randint(25, 45)
+        self.last_click: str | None = None
+        self.last_work: str | None = None
+        self.last_idle_variant: str | None = None
+        self.next_idle_at = time.time() + random.uniform(15, 30)
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
@@ -537,8 +540,11 @@ if ($h -ne 0) {
                 self.anim_index = 0
         if (not self.anim_until and not self.sleeping and self.anim_name == "idle"
                 and now >= self.next_idle_at):
-            self.play_animation(random.choice(IDLE_VARIANTS), once=True)
-            self.next_idle_at = now + random.randint(30, 55)
+            self.play_animation(self.pick_idle_variant(), once=True)
+            delay = random.uniform(14, 30) if self.state["energy"] >= 40 else random.uniform(8, 18)
+            if self.state["mood"] < 30:
+                delay *= 0.8
+            self.next_idle_at = now + delay
         frames = self.animations.get(self.anim_name) or self.animations["idle"]
         level = level_of(int(self.state["xp"]))[0]
         stage = stage_of(level)
@@ -557,9 +563,33 @@ if ($h -ne 0) {
         if not frames:
             return
         self.anim_name = name
-        self.anim_index = 0
+        self.anim_index = random.randrange(len(frames)) if name == "idle" and not once else 0
         self.anim_next = then
         self.anim_until = time.time() + len(frames) * FRAME_MS / 1000 if once else 0.0
+
+    def pick_idle_variant(self) -> str:
+        weights = {
+            "idle-look": 3,
+            "idle-breathe": 2,
+            "idle-stretch": 2 if self.state["energy"] >= 40 else 1,
+            "idle-yawn": 3 if self.state["energy"] < 45 else 1,
+        }
+        pool = [(name, weight) for name, weight in weights.items() if name != self.last_idle_variant]
+        choice = random.choices([name for name, _ in pool], weights=[weight for _, weight in pool])[0]
+        self.last_idle_variant = choice
+        return choice
+
+    def pick_click(self) -> str:
+        pool = [name for name in CLICK_ANIMS if name != self.last_click]
+        choice = random.choice(pool)
+        self.last_click = choice
+        return choice
+
+    def pick_work(self) -> str:
+        pool = [name for name in WORK_ANIMS if name != self.last_work]
+        choice = random.choice(pool)
+        self.last_work = choice
+        return choice
 
     def build_preview_menu(self) -> None:
         preview = tk.Menu(self.menu, tearoff=0)
@@ -666,6 +696,7 @@ if ($h -ne 0) {
         if kind == "pat" and self.sleeping:
             self.sleeping = False
             self.play_animation("sleep-end", then="idle")
+            self.next_idle_at = time.time() + random.uniform(2, 6)
             save_state(self.state)
             return
         if kind != "rest" and self.sleeping:
@@ -681,7 +712,7 @@ if ($h -ne 0) {
                 self.sleeping = True
                 self.play_animation("sleep-start", then="sleep-loop")
             elif kind == "pat":
-                self.play_animation(random.choice(CLICK_ANIMS))
+                self.play_animation(self.pick_click())
             else:
                 self.play_animation({"feed": "feed", "play": "play"}[kind])
         if after > before:
@@ -710,7 +741,7 @@ if ($h -ne 0) {
                 self.state["last_task_count"] = total
                 save_state(self.state)
                 self.spark("✨", "#9fe0ff")
-                self.play_animation(random.choice(WORK_ANIMS))
+                self.play_animation(self.pick_work())
             elif delta < 0:
                 self.state["last_task_count"] = total
                 save_state(self.state)
