@@ -19,6 +19,18 @@ test('the pet lives in settings, not as a hall tab, and keeps four interactions'
   for (const kind of ['feed', 'pat', 'play', 'rest']) assert.match(room, new RegExp("'" + kind + "'"))
   assert.match(room, /tickPetNow/)
   assert.match(room, /syncTasks/)
+  assert.match(room, /PET_SLEEP_ART/, 'the room shows the real sleep pose')
+  assert.match(room, /wake\(/, 'clicking the sleeping pet wakes it')
+  assert.match(hall, /PET_TOKEN_SLEEP_ART/, 'the token mirrors the sleep state')
+})
+
+test('sleep is a real ten-minute state, not an instant energy refill', () => {
+  assert.match(model, /SLEEP_MS = 10 \* MINUTE/)
+  assert.match(model, /sleepUntil/)
+  assert.match(model, /wakePet/)
+  for (const key of ['pet.wake', 'pet.sleepTimer', 'pet.speech.sleeping', 'pet.feedback.woke']) {
+    assert.ok(locales.split("'" + key + "'").length - 1 >= 2, key + ' must exist in zh and en')
+  }
 })
 
 test('the pet model keeps offline growth and stages explicit', () => {

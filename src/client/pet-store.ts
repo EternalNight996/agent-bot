@@ -1,7 +1,7 @@
 /** 小肥鱼养成状态：localStorage 持久化 + React 订阅。 */
 import { useSyncExternalStore } from 'react'
 import {
-  feedPet, newPet, patPet, playPet, restPet, syncCompletedTasks, tickPet,
+  feedPet, newPet, patPet, playPet, restPet, syncCompletedTasks, tickPet, wakePet,
   type PetActionResult, type PetState,
 } from '../pet-model.ts'
 
@@ -28,6 +28,9 @@ function sanitize(value: unknown): PetState | undefined {
     lastPlayedAt: num('lastPlayedAt', 0),
     lastPettedAt: num('lastPettedAt', 0),
     lastRestedAt: num('lastRestedAt', 0),
+    sleeping: raw['sleeping'] === true && num('sleepUntil', 0) > Date.now(),
+    sleepStartedAt: Math.max(0, num('sleepStartedAt', 0)),
+    sleepUntil: Math.max(0, num('sleepUntil', 0)),
   }
 }
 
@@ -83,6 +86,14 @@ export function rest(): PetActionResult {
   const result = restPet(current, Date.now())
   if (result.ok) persist(result.pet)
   return result
+}
+
+/** 点击唤醒；不在睡觉时是 no-op。 */
+export function wake(): PetActionResult {
+  const next = wakePet(current)
+  if (next === current) return { pet: current, ok: false, reason: 'woke' }
+  persist(next)
+  return { pet: next, ok: true, reason: 'woke' }
 }
 
 export function syncTasks(completed: number): void {

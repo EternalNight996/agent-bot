@@ -66,6 +66,11 @@
   will-change: transform;
 }
 
+.petTokenImage[data-sleeping='true'] {
+  animation-duration: 8s;
+  filter: saturate(0.8) brightness(0.86) drop-shadow(0 8px 16px rgb(0 0 0 / 45%)) drop-shadow(0 0 10px rgb(120 150 220 / 25%));
+}
+
 @keyframes petTokenFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }

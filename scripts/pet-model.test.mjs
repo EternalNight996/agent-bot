@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   MAX_LEVEL, OFFLINE_CAP_MS, feedPet, levelOf, newPet, patPet, playPet,
-  syncCompletedTasks, tickPet, xpForNextLevel,
+  restPet, syncCompletedTasks, tickPet, xpForNextLevel,
 } from '../lib/pet-model.js'
 
 test('levels grow on a fixed curve and stop at the cap', () => {
@@ -62,4 +62,29 @@ test('completed tasks award xp only for the delta', () => {
   assert.equal(repeat, first)
   const next = syncCompletedTasks(first, 5)
   assert.equal(next.xp, 60)
+})
+
+test('sleep lasts 10 minutes, recovers energy and wakes on click', () => {
+  const now = 1_800_000_000_000
+  const pet = { ...newPet(now), energy: 40 }
+  const started = restPet(pet, now)
+  assert.equal(started.ok, true)
+  assert.equal(started.pet.sleeping, true)
+  assert.equal(started.pet.sleepUntil, now + 10 * 60 * 1000)
+  assert.equal(started.pet.energy, pet.energy)
+
+  const halfway = tickPet(started.pet, now + 5 * 60 * 1000)
+  assert.equal(halfway.sleeping, true)
+  assert.ok(halfway.energy > pet.energy)
+  assert.equal(feedPet(halfway, now + 5 * 60 * 1000).reason, 'sleeping')
+  assert.equal(playPet(halfway, now + 5 * 60 * 1000).reason, 'sleeping')
+
+  const petted = patPet(halfway, now + 5 * 60 * 1000)
+  assert.equal(petted.ok, true)
+  assert.equal(petted.reason, 'woke')
+  assert.equal(petted.pet.sleeping, false)
+
+  const auto = tickPet(started.pet, now + 10 * 60 * 1000)
+  assert.equal(auto.sleeping, false)
+  assert.equal(auto.sleepUntil, 0)
 })

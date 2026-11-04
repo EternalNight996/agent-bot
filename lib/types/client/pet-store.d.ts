@@ -6,6 +6,8 @@ export declare function feed(): PetActionResult;
 export declare function play(): PetActionResult;
 export declare function pat(): PetActionResult;
 export declare function rest(): PetActionResult;
+/** 点击唤醒；不在睡觉时是 no-op。 */
+export declare function wake(): PetActionResult;
 export declare function syncTasks(completed: number): void;
 /** 重置为一只新鱼（设置页/调试用）。 */
 export declare function resetPet(): void;

@@ -18,16 +18,22 @@ export interface PetState {
     lastPlayedAt: number;
     lastPettedAt: number;
     lastRestedAt: number;
+    /** 是否在睡觉；睡觉期间保持 10 分钟，点击可提前唤醒。 */
+    sleeping: boolean;
+    sleepStartedAt: number;
+    sleepUntil: number;
 }
 export interface PetActionResult {
     readonly pet: PetState;
     readonly ok: boolean;
     /** 失败原因；ok=true 时为空。 */
-    readonly reason?: 'full' | 'tired' | 'cooldown' | 'maxLevel';
+    readonly reason?: 'full' | 'tired' | 'cooldown' | 'maxLevel' | 'sleeping' | 'woke';
 }
 /** 离线最多结算 12 小时，避免久未打开后数值归零。 */
 export declare const OFFLINE_CAP_MS: number;
 export declare const MAX_LEVEL = 50;
+/** 一次睡觉持续 10 分钟；期间点击可提前唤醒。 */
+export declare const SLEEP_MS: number;
 /** 升到下一级需要的经验（当前等级）。 */
 export declare function xpForNextLevel(level: number): number;
 /** 由累计经验反推等级与当前级进度。 */
@@ -47,7 +53,9 @@ export declare function feedPet(pet: PetState, now?: number): PetActionResult;
 export declare function playPet(pet: PetState, now?: number): PetActionResult;
 export declare function patPet(pet: PetState, now?: number): PetActionResult;
 export declare function restPet(pet: PetState, now?: number): PetActionResult;
+/** 点击唤醒；不在睡觉时返回原对象。 */
+export declare function wakePet(pet: PetState): PetState;
 /** 每完成一个团队任务发一次经验，只对增量结算。 */
 export declare function syncCompletedTasks(pet: PetState, completed: number): PetState;
 /** 根据当前状态挑一句台词。 */
-export declare function petSpeech(pet: PetState): 'hungry' | 'bored' | 'sleepy' | 'happy';
+export declare function petSpeech(pet: PetState): 'hungry' | 'bored' | 'sleepy' | 'happy' | 'sleeping';

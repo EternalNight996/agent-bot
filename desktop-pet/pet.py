@@ -109,6 +109,8 @@ def new_state(now: float | None = None) -> dict:
         "last_played": 0.0,
         "last_petted": 0.0,
         "last_rested": 0.0,
+        "sleeping": False,
+        "sleep_until": 0.0,
         "x": None,
         "y": None,
     }
@@ -132,6 +134,8 @@ def normalize_state(raw: object, now: float | None = None) -> dict:
         "last_played": num("last_played", 0),
         "last_petted": num("last_petted", 0),
         "last_rested": num("last_rested", 0),
+        "sleeping": raw.get("sleeping") is True and num("sleep_until", 0) > now,
+        "sleep_until": num("sleep_until", 0),
         "x": int(raw["x"]) if isinstance(raw.get("x"), (int, float)) else None,
         "y": int(raw["y"]) if isinstance(raw.get("y"), (int, float)) else None,
     })
@@ -143,6 +147,17 @@ def tick_state(state: dict, now: float | None = None) -> dict:
     elapsed = max(0.0, min(MAX_OFFLINE_SECONDS, now - float(state["last_tick"])))
     minutes = int(elapsed // 60)
     if minutes <= 0:
+        return state
+    if state.get("sleeping") and float(state.get("sleep_until", 0)) > 0:
+        woke = now >= float(state["sleep_until"])
+        state.update({
+            "satiety": clamp(state["satiety"] - minutes // 20),
+            "mood": clamp(state["mood"] + 3) if woke else state["mood"],
+            "energy": clamp(state["energy"] + minutes // 2 + (5 if woke else 0)),
+            "sleeping": not woke,
+            "sleep_until": 0.0 if woke else state["sleep_until"],
+            "last_tick": state["last_tick"] + minutes * 60,
+        })
         return state
     satiety = clamp(state["satiety"] - minutes // 8)
     mood_drop = minutes // 8 if satiety <= 0 else minutes // 15
@@ -160,6 +175,8 @@ def _cooldown(state: dict, field: str, now: float, seconds: float) -> bool:
 
 
 def feed(state: dict, now: float) -> tuple[bool, str]:
+    if state.get("sleeping"):
+        return False, "sleeping"
     if state["satiety"] >= 100:
         return False, "full"
     if not _cooldown(state, "last_fed", now, 15):
@@ -175,6 +192,8 @@ def feed(state: dict, now: float) -> tuple[bool, str]:
 
 
 def play(state: dict, now: float) -> tuple[bool, str]:
+    if state.get("sleeping"):
+        return False, "sleeping"
     if state["energy"] < 10:
         return False, "tired"
     if not _cooldown(state, "last_played", now, 20):
@@ -190,6 +209,9 @@ def play(state: dict, now: float) -> tuple[bool, str]:
 
 
 def pat(state: dict, now: float) -> tuple[bool, str]:
+    if state.get("sleeping"):
+        state.update({"sleeping": False, "sleep_until": 0.0, "mood": clamp(state["mood"] + 7), "xp": state["xp"] + 2})
+        return True, "woke"
     if not _cooldown(state, "last_petted", now, 8):
         return False, "cooldown"
     state.update({
@@ -201,12 +223,15 @@ def pat(state: dict, now: float) -> tuple[bool, str]:
 
 
 def rest(state: dict, now: float) -> tuple[bool, str]:
+    if state.get("sleeping"):
+        return False, "sleeping"
     if state["energy"] >= 100:
         return False, "full"
     if not _cooldown(state, "last_rested", now, 30):
         return False, "cooldown"
     state.update({
-        "energy": clamp(state["energy"] + 24),
+        "sleeping": True,
+        "sleep_until": now + 600,
         "mood": clamp(state["mood"] + 2),
         "xp": state["xp"] + 3,
         "last_rested": now,
@@ -428,11 +453,13 @@ class PetApp:
         self.anim_index = 0
         self.anim_until = 0.0
         self.anim_next: str | None = None
-        self.sleeping = False
+        self.sleeping = bool(self.state.get("sleeping"))
         self.last_click: str | None = None
         self.last_work: str | None = None
         self.last_idle_variant: str | None = None
         self.next_idle_at = time.time() + random.uniform(15, 30)
+        if self.sleeping and "sleep-loop" in self.animations:
+            self.anim_name = "sleep-loop"
         self.roaming = False
         self.roam_target_x: int | None = None
         self.next_roam_at = time.time() + random.uniform(8, 14)
@@ -748,12 +775,16 @@ if ($h -ne 0) {
         self.stop_roam()
         if kind == "pat" and self.sleeping:
             self.sleeping = False
+            self.state["sleeping"] = False
+            self.state["sleep_until"] = 0.0
             self.play_animation("sleep-end", then="idle")
             self.next_idle_at = time.time() + random.uniform(2, 6)
             save_state(self.state)
             return
         if kind != "rest" and self.sleeping:
             self.sleeping = False
+            self.state["sleeping"] = False
+            self.state["sleep_until"] = 0.0
         now = time.time()
         before = level_of(int(self.state["xp"]))[0]
         handlers = {"feed": feed, "play": play, "pat": pat, "rest": rest}
@@ -781,6 +812,9 @@ if ($h -ne 0) {
 
     def tick_loop(self) -> None:
         tick_state(self.state)
+        if self.sleeping and not self.state.get("sleeping"):
+            self.sleeping = False
+            self.play_animation("sleep-end", then="idle")
         save_state(self.state)
         self.root.after(30_000, self.tick_loop)
 
@@ -817,6 +851,20 @@ def run_check(workspace: Path | None) -> int:
     assert int(state["satiety"]) < before, (before, state["satiety"])
     ok, _ = feed(state, now + 7200)
     assert ok, "feed should succeed"
+    sleepy = new_state(now)
+    sleepy["energy"] = 40
+    ok, _ = rest(sleepy, now + 31)
+    assert ok and sleepy["sleeping"], "rest should start a sleep"
+    assert sleepy["sleep_until"] == now + 31 + 600
+    mid = tick_state(sleepy, now + 31 + 300)
+    assert mid["sleeping"] and mid["energy"] > 40, "sleep should recover energy"
+    woke_ok, woke_reason = pat(mid, now + 31 + 301)
+    assert woke_ok and woke_reason == "woke" and not mid["sleeping"], "pat should wake"
+    auto_state = new_state(now)
+    auto_state["energy"] = 40
+    rest(auto_state, now + 31)
+    auto = tick_state(auto_state, now + 31 + 600)
+    assert not auto["sleeping"], "sleep should end after 10 minutes"
     frames = render_frames()
     assert len(frames) == FRAME_COUNT and frames[0].size == (260, 260)
     idle = load_animation("idle")

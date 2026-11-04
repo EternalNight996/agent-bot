@@ -1,9 +1,9 @@
 /** 养成宠物页：小肥鱼的状态、互动和成长。 */
 import { useEffect, useState } from 'react'
 import type { AgentTeamsTranslate } from './locales.ts'
-import { PET_ART } from './pet-art.ts'
+import { PET_ART, PET_SLEEP_ART } from './pet-art.ts'
 import { levelOf, petSpeech, stageOf, type PetStage } from '../pet-model.ts'
-import { feed, pat, play, rest, syncTasks, tickPetNow, usePet } from './pet-store.ts'
+import { feed, pat, play, rest, syncTasks, tickPetNow, usePet, wake } from './pet-store.ts'
 import css from './PetRoom.module.css'
 
 type ActionKind = 'feed' | 'pat' | 'play' | 'rest'
@@ -20,6 +20,7 @@ const SPEECH_KEY = {
   bored: 'pet.speech.bored',
   sleepy: 'pet.speech.sleepy',
   happy: 'pet.speech.happy',
+  sleeping: 'pet.speech.sleeping',
 } as const
 
 function StatBar({ label, value, tone }: { readonly label: string; readonly value: number; readonly tone: 'satiety' | 'mood' | 'energy' }) {
@@ -38,6 +39,8 @@ export function PetRoom({ t, completedTasks }: { readonly t: AgentTeamsTranslate
   const level = levelOf(pet.xp)
   const stage = stageOf(level.level)
   const speech = petSpeech(pet)
+  const sleeping = pet.sleeping
+  const sleepMinutes = sleeping ? Math.max(1, Math.ceil((pet.sleepUntil - Date.now()) / 60_000)) : 0
 
   useEffect(() => {
     tickPetNow()
@@ -50,12 +53,26 @@ export function PetRoom({ t, completedTasks }: { readonly t: AgentTeamsTranslate
   }, [completedTasks])
 
   const act = (kind: ActionKind): void => {
+    if (kind === 'rest' && sleeping) {
+      const woken = wake()
+      setMessage(t(woken.ok ? 'pet.feedback.woke' : 'pet.feedback.sleeping'))
+      return
+    }
     const result = kind === 'feed' ? feed() : kind === 'play' ? play() : kind === 'pat' ? pat() : rest()
     if (result.ok) {
-      setMessage(t(('pet.feedback.' + kind) as Parameters<typeof t>[0]))
+      setMessage(t(('pet.feedback.' + (result.reason === 'woke' ? 'woke' : kind)) as Parameters<typeof t>[0]))
       return
     }
     setMessage(t(('pet.feedback.' + (result.reason ?? 'cooldown')) as Parameters<typeof t>[0]))
+  }
+
+  const tapPet = (): void => {
+    if (sleeping) {
+      const woken = wake()
+      setMessage(t(woken.ok ? 'pet.feedback.woke' : 'pet.feedback.sleeping'))
+      return
+    }
+    act('pat')
   }
 
   const progress = level.need === 0 ? 100 : Math.round((level.into / level.need) * 100)
@@ -70,12 +87,23 @@ export function PetRoom({ t, completedTasks }: { readonly t: AgentTeamsTranslate
         <span className={css.taskBadge}>{t('pet.taskXp', { count: pet.lastTaskCount })}</span>
       </header>
 
-      <div className={css.tank} data-stage={stage}>
+      <div
+        className={css.tank}
+        data-stage={stage}
+        data-sleeping={sleeping ? 'true' : undefined}
+        role="button"
+        tabIndex={0}
+        onClick={tapPet}
+        onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); tapPet() } }}
+        aria-label={sleeping ? t('pet.wake') : t('pet.pat')}
+      >
         <span className={css.bubble} aria-hidden />
         <span className={css.bubble} aria-hidden />
         <span className={css.bubble} aria-hidden />
-        <div className={css.speech} data-speech={speech}>{t(SPEECH_KEY[speech])}</div>
-        <img className={css.fish} src={PET_ART} alt="" draggable={false} />
+        <div className={css.speech} data-speech={speech}>
+          {sleeping ? t('pet.speech.sleeping') + ' · ' + t('pet.sleepTimer', { minutes: sleepMinutes }) : t(SPEECH_KEY[speech])}
+        </div>
+        <img className={css.fish} data-sleeping={sleeping ? 'true' : undefined} src={sleeping ? PET_SLEEP_ART : PET_ART} alt="" draggable={false} />
         <span className={css.shadow} aria-hidden />
       </div>
 
@@ -95,7 +123,7 @@ export function PetRoom({ t, completedTasks }: { readonly t: AgentTeamsTranslate
         <button type="button" className={css.action} onClick={() => { act('feed') }}>🍚 {t('pet.feed')}</button>
         <button type="button" className={css.action} onClick={() => { act('pat') }}>🤚 {t('pet.pat')}</button>
         <button type="button" className={css.action} onClick={() => { act('play') }}>🎾 {t('pet.play')}</button>
-        <button type="button" className={css.action} onClick={() => { act('rest') }}>😴 {t('pet.rest')}</button>
+        <button type="button" className={css.action} onClick={() => { act('rest') }}>{sleeping ? '⏰ ' + t('pet.wake') : '😴 ' + t('pet.rest')}</button>
       </div>
 
       {message !== '' && <p className={css.message} role="status">{message}</p>}

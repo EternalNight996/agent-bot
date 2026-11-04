@@ -24,7 +24,8 @@ import { QuickStartWizard } from './QuickStartDialog.tsx'
 import { ConfigCenter } from './ConfigCenter.tsx'
 import { CULTIVATION_ITEMS, captainKey, cultivationFromXp, idleXpPer10s, memberKey } from './cultivation.ts'
 import { SKIN_OPTIONS } from './artwork.ts'
-import { PET_TOKEN_ART } from './pet-token-art.ts'
+import { PET_TOKEN_ART, PET_TOKEN_SLEEP_ART } from './pet-token-art.ts'
+import { tickPetNow, usePet, wake } from './pet-store.ts'
 import { ingestCultivation, useCultivationVersion, xpOf } from './cultivation-store.ts'
 import { COLLAPSE_HALL_EVENT, OPEN_HALL_SHEET_EVENT, OPEN_HALL_START_EVENT, type HallSheetAction } from './hall-events.ts'
 import { ASCENSION_RANKS, ASCENSION_STORY, ASCENSION_TIER_KEYS, ASCENSION_TIPS, rankAtLevel } from './immortals.ts'
@@ -173,7 +174,15 @@ export function SectHallOverlay({
   /** 收起右侧栏（回到令牌）。 */
   readonly onCollapseSidebar?: () => void
 }) {
+  const pet = usePet()
   const [collapsed, setCollapsed] = useState(() => readHallCollapsed())
+  // 睡觉期间令牌也要自动结算：到 10 分钟后自动醒，不依赖设置页是否打开。
+  useEffect(() => {
+    if (!pet.sleeping) return
+    tickPetNow()
+    const timer = window.setInterval(() => { tickPetNow() }, 30_000)
+    return () => { window.clearInterval(timer) }
+  }, [pet.sleeping])
   // 页面即状态：刷新后按 localStorage 里的页面恢复（Q7）。
   const [sheet, setSheet] = useState<SheetKind | undefined>(() => {
     // 网站式默认页：没有记录时落「像素活动」主页（t17），有记录则恢复。
@@ -369,6 +378,8 @@ export function SectHallOverlay({
   }
 
   const activateToken = (): void => {
+    // 睡觉时第一下点击只负责唤醒，不顺手展开福地。
+    if (pet.sleeping) { wake(); return }
     // 收起态点击 = 展开；已展开且福地可见时再点 = 收起（与 aria-label / title 一致）；
     // 只有「已展开但宿主把福地藏了」才重新把它调回来。
     if (collapsed || hallVisibleRef.current) { toggleCollapsed(); return }
@@ -1291,13 +1302,19 @@ export function SectHallOverlay({
             className={css.token}
             data-hall-token
             onPointerDown={beginTokenDrag}
-            onClick={(event) => { if (event.detail === 0) toggleCollapsed() }}
-            aria-label={collapsed ? t('office.expand') : t('office.collapse')}
+            onClick={(event) => { if (event.detail === 0) activateToken() }}
+            aria-label={pet.sleeping ? t('pet.wake') : collapsed ? t('office.expand') : t('office.collapse')}
             aria-expanded={!collapsed}
-            title={(collapsed ? t('office.expand') : t('office.collapse')) + ' · ' + tokenTitle}
+            title={(pet.sleeping ? t('pet.wake') : collapsed ? t('office.expand') : t('office.collapse')) + ' · ' + tokenTitle}
           >
             <span className={css.tokenInner} aria-hidden>
-              <img className={css.petTokenImage} src={PET_TOKEN_ART} alt="" draggable={false} />
+              <img
+                className={css.petTokenImage}
+                data-sleeping={pet.sleeping ? 'true' : undefined}
+                src={pet.sleeping ? PET_TOKEN_SLEEP_ART : PET_TOKEN_ART}
+                alt=""
+                draggable={false}
+              />
             </span>
           </button>
           <button

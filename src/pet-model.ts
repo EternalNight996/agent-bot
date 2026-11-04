@@ -19,13 +19,17 @@ export interface PetState {
   lastPlayedAt: number
   lastPettedAt: number
   lastRestedAt: number
+  /** 是否在睡觉；睡觉期间保持 10 分钟，点击可提前唤醒。 */
+  sleeping: boolean
+  sleepStartedAt: number
+  sleepUntil: number
 }
 
 export interface PetActionResult {
   readonly pet: PetState
   readonly ok: boolean
   /** 失败原因；ok=true 时为空。 */
-  readonly reason?: 'full' | 'tired' | 'cooldown' | 'maxLevel'
+  readonly reason?: 'full' | 'tired' | 'cooldown' | 'maxLevel' | 'sleeping' | 'woke'
 }
 
 const HOUR = 60 * 60 * 1000
@@ -33,6 +37,8 @@ const MINUTE = 60 * 1000
 /** 离线最多结算 12 小时，避免久未打开后数值归零。 */
 export const OFFLINE_CAP_MS = 12 * HOUR
 export const MAX_LEVEL = 50
+/** 一次睡觉持续 10 分钟；期间点击可提前唤醒。 */
+export const SLEEP_MS = 10 * MINUTE
 
 const clamp = (value: number): number => Math.max(0, Math.min(100, Math.round(value)))
 
@@ -74,6 +80,9 @@ export function newPet(now: number = Date.now()): PetState {
     lastPlayedAt: 0,
     lastPettedAt: 0,
     lastRestedAt: 0,
+    sleeping: false,
+    sleepStartedAt: 0,
+    sleepUntil: 0,
   }
 }
 
@@ -85,6 +94,19 @@ export function tickPet(pet: PetState, now: number = Date.now()): PetState {
   const elapsed = Math.max(0, Math.min(OFFLINE_CAP_MS, now - pet.lastTick))
   const minutes = Math.floor(elapsed / MINUTE)
   if (minutes <= 0) return pet
+  if (pet.sleeping && pet.sleepUntil > 0) {
+    const woke = now >= pet.sleepUntil
+    return {
+      ...pet,
+      satiety: clamp(pet.satiety - Math.floor(minutes / 20)),
+      mood: woke ? clamp(pet.mood + 3) : pet.mood,
+      energy: clamp(pet.energy + Math.floor(minutes / 2) + (woke ? 5 : 0)),
+      sleeping: !woke,
+      sleepStartedAt: woke ? 0 : pet.sleepStartedAt,
+      sleepUntil: woke ? 0 : pet.sleepUntil,
+      lastTick: pet.lastTick + minutes * MINUTE,
+    }
+  }
   const satiety = clamp(pet.satiety - Math.floor(minutes / 8))
   const moodDrop = satiety <= 0 ? Math.floor(minutes / 8) : Math.floor(minutes / 15)
   return {
@@ -101,6 +123,7 @@ function cooled(pet: PetState, field: keyof PetState, now: number, cooldownMs: n
 }
 
 export function feedPet(pet: PetState, now: number = Date.now()): PetActionResult {
+  if (pet.sleeping) return { pet, ok: false, reason: 'sleeping' }
   if (pet.satiety >= 100) return { pet, ok: false, reason: 'full' }
   if (!cooled(pet, 'lastFedAt', now, 15_000)) return { pet, ok: false, reason: 'cooldown' }
   return {
@@ -117,6 +140,7 @@ export function feedPet(pet: PetState, now: number = Date.now()): PetActionResul
 }
 
 export function playPet(pet: PetState, now: number = Date.now()): PetActionResult {
+  if (pet.sleeping) return { pet, ok: false, reason: 'sleeping' }
   if (pet.energy < 10) return { pet, ok: false, reason: 'tired' }
   if (!cooled(pet, 'lastPlayedAt', now, 20_000)) return { pet, ok: false, reason: 'cooldown' }
   return {
@@ -133,6 +157,13 @@ export function playPet(pet: PetState, now: number = Date.now()): PetActionResul
 }
 
 export function patPet(pet: PetState, now: number = Date.now()): PetActionResult {
+  if (pet.sleeping) {
+    return {
+      ok: true,
+      reason: 'woke',
+      pet: { ...wakePet(pet), mood: clamp(pet.mood + 7), xp: pet.xp + 2, lastPettedAt: now },
+    }
+  }
   if (!cooled(pet, 'lastPettedAt', now, 8_000)) return { pet, ok: false, reason: 'cooldown' }
   return {
     ok: true,
@@ -141,18 +172,27 @@ export function patPet(pet: PetState, now: number = Date.now()): PetActionResult
 }
 
 export function restPet(pet: PetState, now: number = Date.now()): PetActionResult {
+  if (pet.sleeping) return { pet, ok: false, reason: 'sleeping' }
   if (pet.energy >= 100) return { pet, ok: false, reason: 'full' }
   if (!cooled(pet, 'lastRestedAt', now, 30_000)) return { pet, ok: false, reason: 'cooldown' }
   return {
     ok: true,
     pet: {
       ...pet,
-      energy: clamp(pet.energy + 24),
+      sleeping: true,
+      sleepStartedAt: now,
+      sleepUntil: now + SLEEP_MS,
       mood: clamp(pet.mood + 2),
       xp: pet.xp + 3,
       lastRestedAt: now,
     },
   }
+}
+
+/** 点击唤醒；不在睡觉时返回原对象。 */
+export function wakePet(pet: PetState): PetState {
+  if (!pet.sleeping) return pet
+  return { ...pet, sleeping: false, sleepStartedAt: 0, sleepUntil: 0, mood: clamp(pet.mood + 2) }
 }
 
 /** 每完成一个团队任务发一次经验，只对增量结算。 */
@@ -168,7 +208,8 @@ export function syncCompletedTasks(pet: PetState, completed: number): PetState {
 }
 
 /** 根据当前状态挑一句台词。 */
-export function petSpeech(pet: PetState): 'hungry' | 'bored' | 'sleepy' | 'happy' {
+export function petSpeech(pet: PetState): 'hungry' | 'bored' | 'sleepy' | 'happy' | 'sleeping' {
+  if (pet.sleeping) return 'sleeping'
   if (pet.satiety < 30) return 'hungry'
   if (pet.mood < 40) return 'bored'
   if (pet.energy < 25) return 'sleepy'
