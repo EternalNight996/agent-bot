@@ -435,12 +435,13 @@ class PetApp:
         self.dragged = False
         self.menu = tk.Menu(root, tearoff=0)
         for label, command in (("喂食 🍚", lambda: self.action("feed")), ("陪玩 🎾", lambda: self.action("play")),
-                               ("摸摸 🤚", lambda: self.action("pat")), ("休息 😴", lambda: self.action("rest")),
-                               ("", None), ("查看状态", self.show_status), ("退出", self.quit)):
-            if command is None:
-                self.menu.add_separator()
-            else:
-                self.menu.add_command(label=label, command=command)
+                               ("摸摸 🤚", lambda: self.action("pat")), ("休息 😴", lambda: self.action("rest"))):
+            self.menu.add_command(label=label, command=command)
+        self.menu.add_separator()
+        self.build_preview_menu()
+        self.menu.add_separator()
+        self.menu.add_command(label="查看状态", command=self.show_status)
+        self.menu.add_command(label="退出", command=self.quit)
         self.setup_window()
         self.build_canvas()
         for key, kind in (("f", "feed"), ("p", "play"), ("m", "pat"), ("r", "rest")):
@@ -559,6 +560,53 @@ if ($h -ne 0) {
         self.anim_index = 0
         self.anim_next = then
         self.anim_until = time.time() + len(frames) * FRAME_MS / 1000 if once else 0.0
+
+    def build_preview_menu(self) -> None:
+        preview = tk.Menu(self.menu, tearoff=0)
+        groups = (
+            ("点击回应", (
+                ("元气挥手", "click-wave"), ("开心跃动", "click-happy"),
+                ("害羞惊讶", "click-shy"), ("傲娇生气", "click-pout"),
+                ("挠痒咯咯笑", "click-tickle"),
+            )),
+            ("睡觉", (("开始", "sleep-start"), ("循环", "sleep-loop"), ("起来", "sleep-end"))),
+            ("工作状态", (
+                ("踱步张望", "work-pace"), ("垂头叹气", "work-sigh"),
+                ("忙碌点按", "work-busy"), ("思考冒泡", "work-think"),
+                ("清点归档", "work-sort"), ("雀跃庆祝", "work-cheer"),
+            )),
+            ("拖拽反馈", (("悬空反馈", "drag"),)),
+            ("随机待机", (
+                ("东张西望", "idle-look"), ("超大伸懒腰", "idle-stretch"),
+                ("哈欠连天", "idle-yawn"), ("待机呼吸", "idle-breathe"),
+            )),
+        )
+        for title, items in groups:
+            sub = tk.Menu(preview, tearoff=0)
+            for label, key in items:
+                sub.add_command(label=label, command=lambda k=key: self.preview_animation(k))
+            preview.add_cascade(label=title, menu=sub)
+        preview.add_separator()
+        preview.add_command(label="回到待机", command=self.preview_idle)
+        self.menu.add_cascade(label="动作预览", menu=preview)
+
+    def preview_animation(self, name: str) -> None:
+        if name == "sleep-start":
+            self.sleeping = True
+            self.play_animation(name, then="sleep-loop")
+        elif name == "sleep-loop":
+            self.sleeping = True
+            self.play_animation(name, once=False)
+        elif name == "sleep-end":
+            self.sleeping = False
+            self.play_animation(name, then="idle")
+        else:
+            self.sleeping = False
+            self.play_animation(name, once=True)
+
+    def preview_idle(self) -> None:
+        self.sleeping = False
+        self.play_animation("idle", once=False)
 
     def spark(self, glyph: str, color: str = "#ffd1e6") -> None:
         item = self.canvas.create_text(WINDOW_W // 2, 120, text=glyph, fill=color,
