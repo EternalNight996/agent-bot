@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.5] - 2026-11-05
+
+### Changed
+- The workspace tab is now the pixel hall itself: roster, task board, delivery
+  gate and inbox open as facility sheets over the hall, and the old text board
+  is gone.
+- Client dictionaries were rewritten in plain product language; the legacy
+  sect/cultivation vocabulary and the `themeLocale` display layer were removed.
+- The hall lands on the home page after the plan is approved and when it is
+  reopened, instead of parking the user on the progress sheet.
+- Desk-pet and token artwork resources were refreshed.
+
+### Removed
+- Dead modules `sects.ts` and the `ClarifySheet` / `PolishPreview` /
+  `StagingPlanEditor` stylesheets.
+
+### Docs
+- README rebuilt around the 2026-11-05 real-machine screenshots: English by
+  default with a Chinese mirror, following the memory-eternal layout.
+
 ## [0.1.4] - 2026-11-05
 
 ### Changed
