@@ -19,8 +19,13 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Verify the committed artifacts directly; rebuilding on Linux can change
-      # source-map/line-ending bytes and is a local release-gate concern.
+      # scripts/verify.mjs imports the per-file client modules tsc generates
+      # under lib/client/; they are gitignored because the shipped client is the
+      # bundled lib/client.js. Compile just that side instead of rebuilding the
+      # bundle: CSS-module hashes embed the absolute checkout path, so a Linux
+      # rebuild cannot match the committed artifact stamp. tsc output is
+      # deterministic and lib/client/ is excluded from the stamp.
+      - run: pnpm exec tsc -p tsconfig.client.json
       - run: pnpm typecheck
       - run: pnpm verify
       - run: pnpm verify:release-guard
