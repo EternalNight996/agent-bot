@@ -4,7 +4,7 @@ r"""小肥鱼桌面宠物（Windows / tkinter）。
 一个真正浮在桌面上的透明宠物窗口：蓝色大肥鱼会呼吸、摆尾、眨眼，
 可以拖动换位置，左键摸摸、双击唤醒 DSH 并展开右侧福地、右键喂食/玩耍/休息/退出。
 
-养成数据保存在 %APPDATA%\dsh-pet\state.json；默认读取当前工作区的
+养成数据保存在 %APPDATA%\xiaofeiyu\state.json（旧版存档会自动迁移）；默认读取当前工作区的
 .agent-teams/**/team.json，团队每完成一个任务，宠物获得一次成长经验。
 """
 from __future__ import annotations
@@ -15,6 +15,7 @@ import json
 import math
 import os
 import random
+import shutil
 import subprocess
 import sys
 import threading
@@ -34,7 +35,10 @@ except Exception as exc:  # pragma: no cover - 桌面环境缺失时给出可读
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 _PET_MUTEX = None
 ASSET_DIR = APP_DIR / "assets"
-STATE_DIR = Path(os.environ.get("APPDATA", str(Path.home()))) / "dsh-pet"
+_APPDATA = Path(os.environ.get("APPDATA", str(Path.home())))
+STATE_DIR = _APPDATA / "xiaofeiyu"
+# 旧版本的存档目录：首次启动时搬一次，搬完只用新目录。
+LEGACY_STATE_DIR = _APPDATA / "dsh-pet"
 STATE_FILE = STATE_DIR / "state.json"
 
 WINDOW_W, WINDOW_H = 180, 240
@@ -261,7 +265,22 @@ def count_completed_tasks(workspace: Path) -> int:
     return total
 
 
+def _migrate_legacy_state() -> None:
+    """把旧版存档目录里的 state.json 复制到新目录（只搬一次，原目录保留）。"""
+    if STATE_FILE.exists():
+        return
+    legacy = LEGACY_STATE_DIR / "state.json"
+    if not legacy.exists():
+        return
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(legacy, STATE_FILE)
+    except OSError:
+        pass
+
+
 def load_state(workspace: Path | None) -> dict:
+    _migrate_legacy_state()
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     if not STATE_FILE.exists():
         state = new_state()
@@ -451,7 +470,7 @@ class PetApp:
             if loaded:
                 self.animations[name] = loaded
         if "idle" not in self.animations:
-            print("[pet] dsh-pet idle frames unavailable; falling back to generated frames", file=sys.stderr)
+            print("[pet] idle frames unavailable; falling back to generated frames", file=sys.stderr)
             self.animations["idle"] = self.frames
         self.anim_name = "idle"
         self.anim_index = 0

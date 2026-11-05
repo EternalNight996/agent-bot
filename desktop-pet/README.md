@@ -1,11 +1,6 @@
 # 小肥鱼桌面宠物（desktop-pet）
 
-不是令牌皮肤，而是一只真正浮在 Windows 桌面上的养成宠物：透明无边框窗口、置顶、可拖动；使用上游 dsh-pet 的真实逐帧动作，会待机、进食、玩耍、睡觉和干活。收起福地后的入口也已替换成这只宠物。
-
-参考了：
-
-- [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（DSH 桌面宠物插件：透明动画、多开、拖拽、自定义素材）
-- [MerZlin/dsh-pet-indesktop](https://github.com/MerZlin/dsh-pet-indesktop)（Python 桌面端版本）
+不是令牌皮肤，而是一只真正浮在 Windows 桌面上的养成宠物：透明无边框窗口、置顶、可拖动；内置 25 组逐帧动作，会待机、进食、玩耍、睡觉和干活。收起福地后的入口也已替换成这只宠物。
 
 ## 安装包（推荐给普通用户）
 
@@ -15,7 +10,7 @@
 powershell -ExecutionPolicy Bypass -File desktop-pet\build-installer.ps1
 ```
 
-产物：`artifacts/installer/DSH-Pet-Setup-0.1.3.exe`
+产物：`artifacts/installer/DSH-Pet-Setup-0.1.5.exe`
 
 - 按用户安装到 `%LOCALAPPDATA%\Programs\DSH Pet`，不需要管理员权限
 - 默认创建**桌面快捷方式**
@@ -46,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File desktop-pet\build-installer.ps1
 | 左键拖动 | 把宠物拖到桌面任意位置（位置会记住，并夹在屏幕内） |
 | 双击 | 唤醒 DSH 并把右侧福地展开到首页；DSH 没启动时会自动启动 |
 | 右键 | 喂食 / 陪玩 / 摸摸 / 休息（睡 10 分钟）/ 动作预览 / 打开 DSH / 查看状态 / 退出 |
-| 右键 → 动作预览 | 逐项播放 19 个行为动作（点击回应 / 睡觉 / 工作 / 拖拽 / 待机），方便验证 |
+| 右键 → 动作预览 | 逐项播放 25 组动作（点击回应 / 睡觉 / 工作 / 拖拽 / 待机），方便验证 |
 | 快捷键 F / P / M / R | 喂食 / 陪玩 / 摸摸 / 休息（S 查看状态，D 打开 DSH） |
 
 完整数值、成长条和四个互动按钮在 DSH 的「设置 → 宠物」页里，桌面端保持干净。
@@ -62,7 +57,7 @@ powershell -ExecutionPolicy Bypass -File desktop-pet\build-installer.ps1
 - 阶段：幼鲸（Lv1-2）→ 小鲸娘（Lv3-4）→ 鲸鱼娘（Lv5-7）→ 大鲸娘（Lv8+），体型跟着变大。
 - 离线最多结算 12 小时，不会一觉醒来饿成鱼干。
 
-存档：`%APPDATA%\dsh-pet\state.json`。
+存档：`%APPDATA%\xiaofeiyu\state.json`（旧版 `%APPDATA%\dsh-pet` 首次启动会自动迁移一份，原目录保留）。
 
 ## 自检 / 重置
 
@@ -71,10 +66,10 @@ python desktop-pet\pet.py --check --workspace .
 python desktop-pet\pet.py --reset
 ```
 
-## 复刻程度
+## 动作资源
 
-- **桌面壳/交互**：按 dsh-pet 的形态复刻——透明、置顶、可拖拽、右键互动、状态持久化。
-- **动画**：使用上游 dsh-pet 的 webm 原始动作，抽取为逐帧 PNG（去黑底、裁切、缩放），共 25 组：
+- **桌面壳/交互**：透明、置顶、可拖拽、右键互动、状态持久化。
+- **动画**：内置 25 组逐帧 PNG（去黑底、裁切、缩放）：
   - 核心互动：idle / feed / play / sleep / work / pet
   - 点击回应：元气挥手、开心跃动、害羞惊讶、傲娇生气、挠痒咯咯笑
   - 睡觉链路：开始 / 循环 / 起来
@@ -82,7 +77,7 @@ python desktop-pet\pet.py --reset
   - 拖拽反馈：被鼠标拖拽悬空
   - 随机待机：东张西望、超大伸懒腰、哈欠连天、待机呼吸
   - 收起福地的入口使用 idle 静态帧 + CSS 浮动，替代原来的令牌，避免 GIF 循环截断造成的跑停。
-- **素材**：`assets/anim-*` 与 `assets/whale-girl.png` 均来自你提供的 dsh-pet 角色素材；上游为 MIT/BSD 授权的同人素材，发布前请确认授权与署名。
+- **素材**：`assets/anim-*` 与 `assets/whale-girl.png` 的授权记录见仓库根目录 [NOTICE.md](../NOTICE.md)。
 
 ## 说明
 

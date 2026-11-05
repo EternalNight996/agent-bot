@@ -19,7 +19,7 @@ OutputBaseFilename=DSH-Pet-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-SetupIconFile=..\assets\dsh-pet.ico
+SetupIconFile=..\assets\pet.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
 

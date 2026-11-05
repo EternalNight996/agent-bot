@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $assets = Join-Path $root 'desktop-pet\assets'
-$icon = Join-Path $assets 'dsh-pet.ico'
+$icon = Join-Path $assets 'pet.ico'
 $out = Join-Path $root 'artifacts\installer'
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
@@ -25,6 +25,6 @@ $iscc = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) { throw 'Inno Setup ISCC.exe not found; install Inno Setup 6 first.' }
 
-& $iscc (Join-Path $root 'desktop-pet\installer\dsh-pet.iss')
+& $iscc (Join-Path $root 'desktop-pet\installer\pet-setup.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup failed' }
 Write-Host "Installer written to $out"
