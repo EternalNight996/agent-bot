@@ -8,7 +8,7 @@
  * sendMessage instead steers a running Agent and must never carry team jobs.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { Agent, AgentOptions } from '@deepseek-ai/dsh-agent'
+import { installModelSelection, type Agent, type AgentOptions, type ModelSelection } from '@deepseek-ai/dsh-agent'
 import type { ContentBlock, MessageId, MessageSource } from '@deepseek-ai/dsh-llm'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import * as dshSession from '@deepseek-ai/dsh-session'
@@ -291,6 +291,84 @@ export function installContinuableMemberSetup(ctx: Context, setup: Setup): void 
     }
     return cleanup
   }, 'agent-teams: member lifecycle compatibility')
+}
+
+/**
+ * Pre-0.2.2 caller-owned selection ref. 0.2.2 moved the route onto the Agent
+ * (`agent.model`) and removed this exported type, so the shape stays local to
+ * this seam instead of importing a type the newer host no longer declares.
+ */
+interface LegacySelectionRef {
+  current: ModelSelection | undefined
+  assembled: ModelSelection | undefined
+}
+
+/** Both audited signatures: 1-arg durable route (0.2.2+) and 2-arg legacy ref. */
+type InstallModelSelection = {
+  (agentCtx: Context): () => void
+  (agentCtx: Context, selection: LegacySelectionRef): () => void
+}
+
+/** Host-owned durable model route introduced by the 0.2.2 Agent API. */
+interface AgentRouteSurface {
+  current(): Readonly<ModelSelection> | undefined
+  select(selection: Readonly<ModelSelection>): void
+}
+
+function agentRoute(agent: Agent): AgentRouteSurface | undefined {
+  const model = (agent as unknown as { model?: AgentRouteSurface }).model
+  return typeof model?.current === 'function' && typeof model.select === 'function' ? model : undefined
+}
+
+/**
+ * One member's live model-route bridge across the 0.2.2 boundary.
+ *
+ * `durable` marks the Agent-owned route: the host fixes a route for the whole
+ * step, so {@link select} applies from the next step and a different route in
+ * `agent/request` is rejected. The legacy ref is still consulted by prompt
+ * assembly and request routing inside the same step.
+ */
+export interface MemberModelRoute {
+  readonly durable: boolean
+  current(): Readonly<ModelSelection> | undefined
+  select(selection: ModelSelection): void
+  dispose(): void
+}
+
+/**
+ * Bind one member's route before its first step and install the host's switch
+ * notice. Fresh creations already carry `agentOptions`; a cold resume restores
+ * the descriptor route, and the durable team record remains authoritative, so
+ * a mismatch is re-selected here.
+ * @param agentCtx - the child's scoped context (unpublished setup or live).
+ * @param child - the child Agent whose route is bound.
+ * @param initial - the member route resolved from the durable team record.
+ */
+export function installMemberModelRoute(agentCtx: Context, child: Agent, initial: ModelSelection): MemberModelRoute {
+  const install = installModelSelection as unknown as InstallModelSelection
+  const route = agentRoute(child)
+  if (route === undefined) {
+    const ref: LegacySelectionRef = { current: initial, assembled: undefined }
+    const dispose = install(agentCtx, ref)
+    return {
+      durable: false,
+      current: () => ref.current,
+      select: selection => { ref.current = selection; ref.assembled = selection },
+      dispose,
+    }
+  }
+  const dispose = install(agentCtx)
+  const current = route.current()
+  if (current?.provider !== initial.provider || current.model !== initial.model
+    || current.reasoningEffort !== initial.reasoningEffort) {
+    route.select(initial)
+  }
+  return {
+    durable: true,
+    current: () => route.current(),
+    select: selection => route.select(selection),
+    dispose,
+  }
 }
 
 /** Queue a distinct host-authored turn; never substitute model-message steer. */

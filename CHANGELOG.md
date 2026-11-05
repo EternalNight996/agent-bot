@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.4] - 2026-11-05
+
+### Changed
+- Support DeepSeek Harness 0.2.2-rc.1 (npm `next`): peer ranges and
+  compatibility.json now include it as a preview host; 0.2.1-rc.5 remains the
+  recommended host and development baseline.
+- Member model routing follows the 0.2.2 Agent-owned durable route: the route is
+  restored through `agent.model` instead of the removed caller-owned selection
+  ref, and a fallback switch applies from the next step because the host fixes
+  the route for an in-step retry.
+
 ## [0.1.0] - 2026-11-04
 
 ### Changed (发布身份)

@@ -12,7 +12,7 @@
  * @module dsh-agent-teams/members
  */
 import type { Context } from '@deepseek-ai/cordis';
-import { type Agent } from '@deepseek-ai/dsh-agent';
+import type { Agent } from '@deepseek-ai/dsh-agent';
 import type { Session } from '@deepseek-ai/dsh-session';
 import { type SessionFormatBearer } from './harness-compat.ts';
 import type { MemberToolFilter } from './tool-policies.ts';

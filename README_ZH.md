@@ -111,7 +111,7 @@ git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `
     dsh plugin --profile desktop add ./eternalnight-agent-bot-<版本>.tgz
 
     # b) 安装已发布的 npm 版本（npmmirror 等镜像可用）
-    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.3
+    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.4
 
 插件必须装进 DSH profile，不要用裸 `pnpm add <github-url>`。
 
@@ -120,7 +120,7 @@ git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `
     dsh --profile desktop
     # 直接说：用 AgentTeams 开一个团队做 …
 
-当前版本 **0.1.187**。推荐宿主：DeepSeek Harness **0.2.1-rc.5**（Web + Headless）。精确矩阵见 [compatibility.json](compatibility.json)。
+当前版本 **0.1.4**。推荐宿主：DeepSeek Harness **0.2.1-rc.5**（Web + Headless）；预览 **0.2.2-rc.1**（npm `next`）。精确矩阵见 [compatibility.json](compatibility.json)。
 
 想先看效果？**[打开梦游官网的在线展示页](http://180.76.144.48/dsh-super-agent)**。
 

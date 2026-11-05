@@ -13,14 +13,14 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { installModelSelection, type Agent, type ModelSelection } from '@deepseek-ai/dsh-agent'
+import type { Agent, ModelSelection } from '@deepseek-ai/dsh-agent'
 // Declaration merge only: makes ctx.subagents visible.
 import { foldSubagentDescriptor } from '@deepseek-ai/dsh-subagent'
 import { createUserMessage, LlmError, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { readFileSync } from 'node:fs'
 import { dirname, isAbsolute, join } from 'node:path'
-import { agentTeamsSource, observedSessionFormatVersion, type SessionFormatBearer, guardSubagentCreation, startMember, usesManagedActivations, guardSubagentDelivery, installContinuableMemberSetup, memberToolFilter, queueMemberPrompt, restrictableToolNames, startMemberWithLenientFilter, steerMemberPrompt, sessionOwnEvents } from './harness-compat.ts'
+import { agentTeamsSource, observedSessionFormatVersion, type SessionFormatBearer, guardSubagentCreation, startMember, usesManagedActivations, guardSubagentDelivery, installContinuableMemberSetup, installMemberModelRoute, memberToolFilter, queueMemberPrompt, restrictableToolNames, startMemberWithLenientFilter, steerMemberPrompt, sessionOwnEvents } from './harness-compat.ts'
 import { markMailboxDelivered, appendMailbox, CAPTAIN_KEY, createMessage, readRetiredMemberIds, readTeamSync, readTeam, releaseMailboxDelivery, withTeamLock, writeTeam } from './state.ts'
 import { mailboxPrompt } from './mailbox.ts'
 import { nearestLiveLead } from './lineage.ts'
@@ -751,22 +751,21 @@ export function installMemberSelectionRuntime(
     })
     // Legacy teams still need failure reporting even without a saved route.
     if (selection === undefined) return () => { disposeFailure(); cleanupAdmission() }
-    const selectionRef = { current: modelSelection(selection), assembled: undefined as ModelSelection | undefined }
-    const disposeSelection = installModelSelection(childCtx, selectionRef)
+    const memberRoute = installMemberModelRoute(childCtx, child, modelSelection(selection))
     const fallback = selection.fallback
     let switched = false
     const disposeFallback = childCtx.on('agent/request-error', async (payload, next) => {
       if (payload.agent.id !== child.id || payload.signal.aborted) return next()
-      const transition = selectFallbackRoute(selectionRef.current ?? { provider: selection.provider, model: selection.model }, fallback, payload.failure.code, switched)
+      const transition = selectFallbackRoute(memberRoute.current() ?? { provider: selection.provider, model: selection.model }, fallback, payload.failure.code, switched)
       // selectFallbackRoute only retries when a fallback route exists; the
       // explicit guard narrows that fact for the compiler.
       if (fallback !== undefined && transition.retry) {
         switched = transition.switched
-        selectionRef.current = transition.selection
-        // Request recovery repeats buildRequest inside the current step; it
-        // does not re-run prompt assembly. Override that captured route too,
-        // otherwise the authorized retry would hit the failed primary again.
-        selectionRef.assembled = transition.selection
+        // 0.2.1 keeps the caller-owned ref consulted by request routing, so the
+        // retry itself reaches the fallback route. 0.2.2+ fixes the step's route
+        // and rejects a different one in agent/request, so the durable selection
+        // applies from the next step while this retry stays on the failed route.
+        memberRoute.select(transition.selection)
         await updateFallbackState(stateRoot, teamId, memberName, fallback, ctx).catch((error: unknown) => {
           ctx.logger.warn(`agent-teams: failed to persist fallback route: ${String(error)}`)
         })
@@ -777,7 +776,7 @@ export function installMemberSelectionRuntime(
     })
     return () => {
       disposeFallback()
-      disposeSelection()
+      memberRoute.dispose()
       disposeFailure()
       cleanupAdmission()
     }

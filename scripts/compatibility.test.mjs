@@ -189,3 +189,15 @@ test('released target enters the download matrix and replaces the old source pre
   assert.ok(validatePolicy(policy).includes('0.2.0-rc.2'))
   assert.ok(!declaredHostVersions().includes('0.2.0'))
 })
+
+test('preview channel host is supported without displacing the latest recommendation', () => {
+  // npm next = 0.2.2-rc.1 while latest is still 0.2.1-rc.5. Plugins installed on
+  // the preview channel must pass the peer gate, but the ordinary-user
+  // recommendation (and every stable release's development baseline) stays on
+  // the latest host.
+  const preview = policy.supportedHosts.filter(host => host.track === 'preview').map(host => host.version)
+  assert.ok(preview.includes('0.2.2-rc.1'))
+  assert.ok(validatePolicy(policy).includes('0.2.2-rc.1'))
+  assert.equal(policy.recommendedHost, '0.2.1-rc.5')
+  assert.ok(!preview.includes(policy.recommendedHost))
+})

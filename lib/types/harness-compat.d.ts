@@ -8,7 +8,7 @@
  * sendMessage instead steers a running Agent and must never carry team jobs.
  */
 import type { Context } from '@deepseek-ai/cordis';
-import type { Agent, AgentOptions } from '@deepseek-ai/dsh-agent';
+import { type Agent, type AgentOptions, type ModelSelection } from '@deepseek-ai/dsh-agent';
 import type { ContentBlock, MessageId, MessageSource } from '@deepseek-ai/dsh-llm';
 import type { Session, SessionEvent, SessionId } from '@deepseek-ai/dsh-session';
 import { type MemberToolFilter } from './tool-policies.ts';
@@ -113,6 +113,30 @@ export declare function onAgentReady(ctx: Context, listener: (agent: Agent, veto
 export declare function sessionOwnEvents(session: Session): readonly SessionEvent[];
 /** Install before the first request, including cold resume, with HMR cleanup. */
 export declare function installContinuableMemberSetup(ctx: Context, setup: Setup): void;
+/**
+ * One member's live model-route bridge across the 0.2.2 boundary.
+ *
+ * `durable` marks the Agent-owned route: the host fixes a route for the whole
+ * step, so {@link select} applies from the next step and a different route in
+ * `agent/request` is rejected. The legacy ref is still consulted by prompt
+ * assembly and request routing inside the same step.
+ */
+export interface MemberModelRoute {
+    readonly durable: boolean;
+    current(): Readonly<ModelSelection> | undefined;
+    select(selection: ModelSelection): void;
+    dispose(): void;
+}
+/**
+ * Bind one member's route before its first step and install the host's switch
+ * notice. Fresh creations already carry `agentOptions`; a cold resume restores
+ * the descriptor route, and the durable team record remains authoritative, so
+ * a mismatch is re-selected here.
+ * @param agentCtx - the child's scoped context (unpublished setup or live).
+ * @param child - the child Agent whose route is bound.
+ * @param initial - the member route resolved from the durable team record.
+ */
+export declare function installMemberModelRoute(agentCtx: Context, child: Agent, initial: ModelSelection): MemberModelRoute;
 /** Queue a distinct host-authored turn; never substitute model-message steer. */
 export declare function queueMemberPrompt(runtime: Context['subagents'], parent: Agent, childId: SessionId, content: ContentBlock[], signal: AbortSignal): Promise<MessageId>;
 /** Coordination joins the nearest step, including waking an idle/cold child. */

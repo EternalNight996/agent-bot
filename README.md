@@ -111,7 +111,7 @@ Git's smart protocol is often throttled even when plain HTTPS downloads are fine
     dsh plugin --profile desktop add ./eternalnight-agent-bot-<version>.tgz
 
     # b) a published npm version (mirrors such as npmmirror work)
-    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.3
+    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.4
 
 Do not use bare `pnpm add <github-url>` for this plugin: a DSH plugin must be installed into a DSH profile.
 
@@ -120,7 +120,7 @@ Do not use bare `pnpm add <github-url>` for this plugin: a DSH plugin must be in
     dsh --profile desktop
     # ask: 用 AgentTeams 开一个团队做 …
 
-Package version **0.1.187**. Recommended host: DeepSeek Harness **0.2.1-rc.5** (web + headless). Exact matrix: [compatibility.json](compatibility.json).
+Package version **0.1.4**. Recommended host: DeepSeek Harness **0.2.1-rc.5** (web + headless); preview **0.2.2-rc.1** (npm `next`). Exact matrix: [compatibility.json](compatibility.json).
 
 Prefer to look first? **[Open the live product page](http://180.76.144.48/en/dsh-super-agent)** on the Mengyou website.
 
