@@ -1,192 +1,190 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/app-icons/desktop/png/app-128.png" width="56" alt="agent-bot 图标" />
+  <img src="desktop-pet/assets/whale-girl.png" width="110" alt="大肥鱼" />
   <br/>
   agent-bot
 </h1>
 
-<p align="center"><b>你的智能体不需要又一个仪表盘。<br/>它们需要一个地方干活。</b></p>
-
-<p align="center"><sub>常驻在 DeepSeek Harness 右侧栏的像素宗门——你批准计划，掌教带一队专精修士把活干完，再把产物直接摊开给你看。</sub></p>
+<p align="center"><b>小肥鱼桌宠 + 会交付的 AI 团队</b></p>
 
 <p align="center">
-  <a href="https://github.com/EternalNight996/agent-bot/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/agent-bot?style=flat" alt="GitHub stars" /></a>
-  <a href="https://www.npmjs.com/package/@eternalnight/agent-bot"><img src="https://img.shields.io/npm/v/@eternalnight/agent-bot?color=CB3837" alt="npm version" /></a>
-  <a href="https://github.com/EternalNight996/agent-bot/releases"><img src="https://img.shields.io/badge/release-v0.1.0-FF7A45" alt="release" /></a>
+  <a href="https://github.com/EternalNight996/agent-bot/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/agent-bot?style=flat" alt="GitHub stars" /></a>&nbsp;
+  <a href="https://www.npmjs.com/package/@eternalnight/agent-bot"><img src="https://img.shields.io/npm/v/@eternalnight/agent-bot?color=CB3837" alt="npm" /></a>&nbsp;
+  <a href="https://github.com/EternalNight996/agent-bot/releases"><img src="https://img.shields.io/badge/release-v0.1.4-FF7A45" alt="release" /></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license" /></a>
-  <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/DSH-Web%20%2B%20Headless-5B4CF0" alt="DSH" /></a>
 </p>
 
-<p align="center"><a href="README.md">English</a> · <b>简体中文</b></p>
+[English (default)](README.md) · **简体中文（镜像）**
 
 <p align="center">
-  <a href="https://github.com/EternalNight996/agent-bot"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/social-preview.webp" width="100%" alt="dsh-super-agent — 给 AI 团队的像素修仙洞府" /></a>
+  <img src="assets/screenshots/任务交付.png" width="900" alt="交付现场：右侧驱动网关正在运行刚交付的贪吃蛇，左侧是验收证据" />
 </p>
+<p align="center"><sub>▲ 交付现场：右侧「驱动网关」当场跑起刚交付的生产物，左侧是同一件活儿的验收证据</sub></p>
 
-<p align="center"><b>开宗 → 审计划 → 批准 → 看洞府跑起来。</b></p>
+> **你的智能体不缺仪表盘，缺一个能把活干完、还能把产物摆到你眼前的地方。**
+>
+> 批准计划 → 队长拆任务 → 成员按契约交付 → 独立审查 → 产物就地跑起来。本地优先、MIT、不需要云账号。
 
-<p align="center"><b>▶ <a href="http://180.76.144.48/dsh-super-agent">在线展示页</a></b> &nbsp;·&nbsp; 下面是真实 DSH 会话截图</p>
+- 🔍 **先审后跑** —— 成员、任务、依赖、验收都确认后才创建、才派发；批准之前不启动任何东西。
+- 🧾 **交付靠证据** —— 每条验收都有验证命令，宿主会**自己复跑**；实现者不能批准自己的实现。
+- 🖼 **产物当场打开** —— 网页在面板内直接跑、图片直接渲染、源码可直接读，不用你装环境、起服务。
+- 🏯 **右侧栏常驻** —— 收起后是一枚可拖令牌，挡住对话就收起来，点一下就能叫回来。
+- 🐳 **桌面上还有一只宠物** —— 透明、置顶、可拖动；会待机、进食、玩耍、睡觉、干活，双击把 DSH 唤醒。
+- 🔒 **本地优先** —— 团队状态在你自己工作区的 `.agent-teams/`；没有隐藏的云同步。
 
-<p align="center"><strong>⭐ 如果这就是你一直想要的智能体界面，点一个 Star——这座洞府靠它继续长大。</strong></p>
-
-## 🎬 真实会话，不是示意图
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/plan-review.webp" width="49%" alt="执行前计划审查" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/progress.webp" width="49%" alt="任务进度与洞府实况" />
-</p>
-<p align="center"><sub><b>先审后跑</b> —— 3 名修士、3 项任务、2 条依赖；确认草案后才创建与调度。 &nbsp;·&nbsp; <b>实时任务 DAG</b> —— 掌教派发 t1，毒修等 t1，体修等 t2。</sub></p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/equipment.webp" width="100%" alt="天机阁装备与坐骑" />
-</p>
-<p align="center"><sub><b>装备真的会画出来</b> —— 换上飞剑，掌教就御剑而行；法器、坐骑、技能按境界解锁。</sub></p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/dao-rules.webp" width="32%" alt="道统与名册配置" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/ranks.webp" width="32%" alt="封神榜十五重境界" />
-  <img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/readme/roster.webp" width="32%" alt="山门名册与已完成任务" />
-</p>
-<p align="center"><sub><b>一支小宗门</b> —— 角色、境界、模型一眼看清。 &nbsp;·&nbsp; <b>十五重境界</b> —— 从凡人到道祖。 &nbsp;·&nbsp; <b>历史留名</b> —— 已完成任务与下一次开宗。</sub></p>
-
-## 🐉 这是什么？
-
-**agent-bot** 把 DeepSeek Harness 的一个会话变成一间真正干活的宗门。你批准计划，掌教把它拆成带依赖的任务 DAG，各专精修士按固定契约交付。洞府常驻右侧栏，永远只差一次点击——收起后就变成一枚可拖到任意角落的令牌。
-
-像素下面是一层交付治理，不是聊天皮肤：
-
-- **先审后跑**——成员、任务、依赖与验收都确认后才创建、才派发；
-- 持久成员会话、依赖感知派发、邮箱、重试、冷恢复、attempt 所有权；
-- **质量契约**（目标 / 范围 / 验收 / 验证）由宿主复跑命令，外加独立审查门禁——实现者不能批准自己的实现；
-- 按任务记账的真实成本、交付报告，以及把产物直接在面板里打开的「交付展示」；
-- 宗门状态在 `.agent-teams/`，就在你的工作区；本地优先、MIT、不需要云账号。
-
-**开一个宗门，给它一个目标，批准计划，看洞府跑起来——最后让它把交付摊开给你看。**
-
-## 🆚 不是又一个智能体仪表盘
-
-|  | 常见智能体 UI | agent-bot |
-|---|---|---|
-| 谁在干活 | 日志行 | 坐在案前的修士 |
-| 什么卡住了 | 状态文字 | 功德碑 + 依赖边 |
-| 审查 | 可选 | 独立门禁 |
-| 进度 | 一个百分比 | 十五重境界、装备、坐骑 |
-| 状态 | 云账号 | 你的工作区，本地优先 |
-| 好玩 | 无 | 说实话，挺多 |
-
-## ✨ 为什么值得一个 Star
-
-- 🏯 **洞府就在对话旁边** —— 宗门常驻右侧栏，不盖住对话；收起成令牌可拖到任意角落，点一下就回来——切到还没有宗门的对话也仍有入口。
-- ⏹ **输入区直接叫停换任务** —— 当前任务卡在长任务后面时，一个按钮中断在跑的任务、立刻开始下一条 ready 任务；3 秒内二次点击才执行，不误触。
-- 🧠 **真团队协议** —— 持久子智能体、依赖感知派发、邮箱、重试、冷恢复、attempt 所有权。不是演示壳子。
-- 🧾 **交付，不靠感觉** —— 质量契约、宿主复跑每条 verify 命令、独立审查门禁：实现者不能批准自己的实现。
-- 🖥 **交付展示** —— 任务交付后藏经阁直接打开产物：页面在面板里运行、图片直接看、源码可读；不用自己装依赖、开服务、跑命令。
-- 🌱 **看得见的修炼** —— 任务与挂机喂养全宗共享的十五重境界；法器、坐骑、技能直接画进洞府；跨境界时破境特效停留更久。
-- 📜 **封神榜 + 宗门志** —— 本宗留名、境界谱、修为卡、赞助/交流群/关于/反馈，一个面板收齐。
-- 🔒 **本地优先 & MIT** —— 宗门状态在你的工作区；没有云账号、没有隐藏同步。一条命令，Web + Headless。
+<p align="center"><strong>⭐ 如果它替你省下一次「装环境、起服务、再截图」的功夫，点个 Star 就够了。</strong><br/><sub>DSH 一行安装：<code>dsh plugin --profile desktop add @eternalnight/agent-bot</code></sub></p>
 
 ## ⚡ 快速开始
 
-**DeepSeek Harness（桌面 / Web）**
+**一、装进 DeepSeek Harness（团队面板）**
 
-    dsh plugin --profile desktop add @eternalnight/agent-bot
-    # 重开 DSH —— 洞府已经在右侧栏等你
+```powershell
+dsh plugin --profile desktop add @eternalnight/agent-bot
+# 重开 DSH，右侧栏就是团队面板
+```
 
-然后：
+然后走一遍最小闭环：
 
-1. 点 **开宗立派**（或把洞府收成令牌再点令牌）——向导会问目标（含可选视觉爆炸开关与复刻项目）、道统、需求与宗门。
-2. 审核 staged 计划——成员、任务、依赖、验收——然后批准；批准前不会创建任何修士、也不派发。
-3. 看洞府跑起来：点修士进对话、点等级牌换装备，交付后在 **藏经阁 → 展示** 里直接看产物，不用跑命令。
+1. 点 **组建团队**（或把面板收起成令牌再点它）—— 填目标、开发模式、验收与阵容；
+2. **需求访谈**里勾选你的选择，点 **拍板**；
+3. **先审计划**：成员、任务、依赖、验收都看清楚再批准，批准前不会创建任何东西；
+4. 看它跑起来：点成员打开他的会话，点等级徽章看装备，交付时 **驱动网关** 会把产物直接跑给你看。
 
-**从 GitHub 安装**
+**二、装上桌面宠物（普通用户）**
 
-    git clone https://github.com/EternalNight996/agent-bot
-    dsh plugin --profile desktop add ./agent-bot
+到 [Releases](https://github.com/EternalNight996/agent-bot/releases) 下载 `DSH-Pet-Setup-<version>.exe`：
 
-**GitHub 很慢时（网络受限）**
+- 按用户安装到 `%LOCALAPPDATA%\Programs\DSH Pet`，**不需要管理员权限**；
+- 默认创建桌面快捷方式，可选开机自启，可从「控制面板 / 设置」正常卸载；
+- 单实例：开机自启和桌面快捷方式同时存在也不会出现两只。
 
-git 智能协议常被限速，即使普通 HTTPS 下载正常，`git clone` / `pnpm add github:…` 也会一直卡住。`--registry=<镜像>` 只改 npm 源，不会代理 GitHub。改用下面任一方式：
+**三、从源码跑宠物（开发者）**
 
-    # a) 从 Release 用普通 HTTPS 下载构建好的 tgz
-    #    https://github.com/EternalNight996/agent-bot/releases
-    dsh plugin --profile desktop add ./eternalnight-agent-bot-<版本>.tgz
+```powershell
+# 最省事：自带运行时，不需要另装 Python / Pillow
+.\desktop-pet\start-pet.cmd
 
-    # b) 安装已发布的 npm 版本（npmmirror 等镜像可用）
-    dsh plugin --profile desktop add @eternalnight/agent-bot@0.1.4
+# 等价命令（优先使用 DSH 内置 Python，找不到时回退系统 pythonw）
+& "$env:USERPROFILE\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\python\python.exe" desktop-pet\pet.py --workspace .
 
-插件必须装进 DSH profile，不要用裸 `pnpm add <github-url>`。
+# 自检 / 复位存档
+python desktop-pet\pet.py --check --workspace .
+python desktop-pet\pet.py --reset
+```
 
-**CLI / Headless**
+> 主流程已实跑（2026-11-05）：`pet.py --check --workspace .` 退出码 0，输出 `{"ok": true, "level": 2, "stage": "fry", "frames": 16, ...}`（`completedTasks` 随任务完成数变化，不写死）。桌面端与 DSH 内是同一套养成规则，存档各自独立。
 
-    dsh --profile desktop
-    # 直接说：用 AgentTeams 开一个团队做 …
+## 📸 实机截图
 
-当前版本 **0.1.4**。推荐宿主：DeepSeek Harness **0.2.1-rc.5**（Web + Headless）；预览 **0.2.2-rc.1**（npm `next`）。精确矩阵见 [compatibility.json](compatibility.json)。
+全部为当前版本真机画面（Windows 11 · DSH 桌面端，2026-11-05 采集），原样拷贝到 `assets/screenshots/`，**未美化、未拼接、未重绘**。上一代 `assets/readme/*.webp` 展示图已全部删除。
 
-想先看效果？**[打开梦游官网的在线展示页](http://180.76.144.48/dsh-super-agent)**。
+<p align="center">
+  <img src="assets/screenshots/任务目标.png" width="49%" alt="组建团队第 1 步：目标、开发模式与阵容" />
+  <img src="assets/screenshots/任务拍板.png" width="49%" alt="组建团队第 2 步：需求访谈选项，勾选后拍板" />
+</p>
+<p align="center"><sub>▲ ① 目标「做个贪吃蛇」· 开发模式/阵容 · 视觉爆炸 —— ② AI 按目标拟访谈题（运行环境 / 主题 / 动效强度），勾选后拍板</sub></p>
 
-## 🏯 洞府里有什么
+<p align="center">
+  <img src="assets/screenshots/任务交付.png" width="100%" alt="交付：驱动网关内直接运行交付物，左侧是验收证据" />
+</p>
+<p align="center"><sub>▲ ③ 交付：驱动网关里直接跑起刚交付的产物，左侧是冒烟结果、独立验收与真实渲染证据</sub></p>
 
-| 设施 | 作用 |
-|---|---|
-| **山门 · 名册** | 当前宗门、历史宗门与团队入口 |
-| **藏经阁 · 道统** | 成员、任务契约、开宗草案与向导；交付完成后「展示」直接预览产物 |
-| **功德碑 · 进度** | 任务依赖、派发进度、验证证据 |
-| **封神榜** | 本宗留名、十五重境界、修为卡、升级提示、宗门故事 |
-| **天机阁** | 法器 / 坐骑 / 技能物品栏，选择后洞府即时预览 |
-| **宗门志** | 赞助、交流群、关于、隐私受限的反馈表单 |
-| **收件** | 掌教收件箱，键盘可达、文本转义 |
+<p align="center">
+  <img src="assets/screenshots/交付结果.png" width="49%" alt="交付结果：2/2 通过，0 阻断，13 分 33 秒" />
+  <img src="assets/screenshots/交付demo.png" width="49%" alt="交付物本体：霓虹赛博贪吃蛇 NEON SERPENT" />
+</p>
+<p align="center"><sub>▲ ④ 交付结果：2/2 通过 · 0 阻断 · 13m33s · 165.2K token · ¥1.66 　⑤ 产物本体：NEON SERPENT（霓虹赛博 · 贪吃蛇）</sub></p>
 
-墙面和底栏是同一套面板的两个入口。收起洞府会变成一枚可拖动的令牌，点令牌把右侧栏洞府叫回来。单击修士进入对话；单击头顶等级牌打开装备。
+<p align="center">
+  <img src="assets/screenshots/pet-main.png" width="32%" alt="桌面宠物主界面" />
+  <img src="assets/screenshots/pet-first-launch.png" width="32%" alt="首次启动" />
+  <img src="assets/screenshots/pet-token.png" width="32%" alt="收起右侧栏后的可拖令牌" />
+</p>
+<p align="center"><sub>▲ 桌面宠物：主界面（只有角色本体，没有气泡和数值面板） · 首次启动 · 收起右侧栏后的可拖令牌</sub></p>
 
-## 🧠 像素下面
+<p align="center">
+  <img src="assets/screenshots/pet-behaviors.png" width="86%" alt="动作总览：点击回应 / 睡觉 / 工作 / 拖拽 / 待机变体" />
+</p>
+<p align="center"><sub>▲ 五格依次为 点击回应 · 睡觉 · 工作 · 拖拽 · 待机变体</sub></p>
 
-- 掌教带队的任务 DAG，依赖满足才派发；
-- 持久成员会话、邮箱、attempt 所有权；
-- 质量契约：目标、范围、验收、验证命令、审查结论；
-- 独立验证/审查门禁、修复轮次、冷恢复；
-- 每个角色有独立写入边界，前端/后端/合契互不重叠；
-- 宗门状态在 `.agent-teams/<teamId>/`——可查、本地、属于你。
+## 🐍 一次真实交付：从「做个贪吃蛇」到能玩
 
-## 🧩 角色与模板
+下面这组图是同一次真实任务的全过程，不是示意图：
 
-| 模板 | 默认角色 | 适合 |
-|---|---|---|
-| **全栈** | 合契师 · 灵绘师 · 地脉师 · 验证 · 审查 | 契约先行、前后端并行 |
-| **安全加固** | 巡查使 · 镇魔师 · 验证 · 审查 | 先复现、最小修复、残余风险 |
-| **只读审计 / 巡查** | 巡查使 · 审查 | 只读取证、不改工作区 |
-| **修 Bug / 新功能 / 调研 / 构建 / 文档 / 论道** | 小规模角色组 | 日常团队任务 |
-| **架构重构** | 阵法师 · 实现 · 验证 · 审查 | 边界与迁移 |
+| 步骤 | 画面 | 发生了什么 |
+| --- | --- | --- |
+| 1 | `任务目标.png` | 目标写「做个贪吃蛇」，选开发模式与阵容；可选打开「视觉爆炸」，也可填「复刻项目」让 AI 先解析参考 |
+| 2 | `任务拍板.png` | AI 按目标拟出需求访谈：运行环境、视觉主题、动效强度…… 勾选后 **拍板** |
+| 3 | 计划审核 | 成员、任务、依赖、验收、验证命令全部先摊开给你看，**批准前不创建任何东西** |
+| 4 | `任务交付.png` | 队长派发，成员交付；驱动网关里直接跑起产物，左侧附冒烟结果、独立验收与渲染证据 |
+| 5 | `交付结果.png` / `交付demo.png` | 团队页汇总 2/2 通过、0 阻断；产物本体是一份可以直接玩的贪吃蛇 |
 
-每个专业角色都有固定契约：ownership、must / must not、done、五条 Report、Working budget。全栈刻意压到五人：合契师同时拥有契约与最终联调，少一次交接。
+> 图内数值是这一次运行的真实记录（13m33s · 165.2K token · ¥1.66），不同任务会有差异，不是承诺。
 
-## 🧾 交付，不靠感觉
+## 🖥 桌面宠物
+
+桌面窗口**只显示角色本体**：没有气泡、按钮和常驻数值面板。
+
+| 操作 | 效果 |
+| --- | --- |
+| 左键单击 | 摸摸，心情 +7、经验 +2，冒一颗心 |
+| 左键拖动 | 拖到桌面任意位置（位置会记住并夹在屏幕内） |
+| 双击 | 唤醒 DSH 并展开右侧栏到首页；DSH 没启动时自动启动 |
+| 右键 | 喂食 / 陪玩 / 摸摸 / 休息（睡 10 分钟）/ 动作预览 / 打开 DSH / 查看状态 / 退出 |
+| 快捷键 | F 喂食 · P 陪玩 · M 摸摸 · R 休息 · S 查看状态 · D 打开 DSH |
+
+完整数值、成长条和四个互动按钮在 DSH 的「设置 → 宠物」页；桌面端保持干净。
+
+**养成与存档**
+
+- 饱食度随时间下降，饿到 0 时心情下降更快；精力缓慢恢复，右键「休息」进入 10 分钟睡眠，点击可提前唤醒。
+- 喂食 +26 饱食 / +6 经验；陪玩 +18 心情 / +8 经验；摸摸 +2 经验。
+- 每完成 1 个团队任务（读取工作区 `.agent-teams/**/team.json`），宠物 +12 经验、+4 心情。
+- 阶段：Lv1-2 → Lv3-4 → Lv5-7 → Lv8+，体型跟着变大；离线最多结算 12 小时。
+- 存档位置：`%APPDATA%\dsh-pet\state.json`。
+
+## 🏯 右侧栏面板
+
+右侧栏是六个可点面板，桌面端与 DSH 端入口一致：
+
+| 面板 | 现在做什么 |
+| --- | --- |
+| **工作台·名册 / Workspace · roster** | 当前团队、历史团队与成员入口 |
+| **任务板·进度 / Task board · progress** | 任务依赖、派发进度、验证证据 |
+| **资料库·协作准则 / Library · guidelines** | 成员、任务契约、计划草案、组建向导；「展示」按钮就地预览交付物 |
+| **装备库·清单 / Gear · list** | 装备柜：法器 / 坐骑 / 技能，立即在面板内预览 |
+| **排行榜·留名 / Team board · names** | 成员等级、成长卡、升级提示、团队故事 |
+| **关于 / About** | 支持、社区、关于，以及带隐私边界的反馈表单 |
+
+另有 **收件箱·消息 / Post · inbox**：队长信箱，可键盘到达、正文转义。面板墙和底部栏是同一批面板的两条入口；收起后变成可拖令牌，点击令牌可把右侧栏叫回来。
+
+## 🧾 交付门禁
 
 | 信号 | 证据 |
-|---|---|
-| 全量测试 | **pnpm verify** exit 0 |
-| 浏览器侧契约 | **pnpm verify:web-routes** 通过 |
-| 发布产物 | package smoke 检查运行时 + 支持二维码，排除源码/测试/文档 |
-| 真实团队运行 | 掌教派发 → 成员写文件 → 独立审查 → 汇总（由全量测试覆盖） |
+| --- | --- |
+| 全量套件 | `pnpm verify` 退出码 0 |
+| 浏览器侧契约 | `pnpm verify:web-routes` 通过 |
+| 发布产物 | 包冒烟检查运行时与支持二维码，排除源码 / 测试 / 文档 |
+| 真实团队跑 | 队长派发 → 成员写入 → 独立审查 → 汇总（由全量套件覆盖） |
 | 隔离 | 实现者不能批准自己的实现 |
 
-这是一个追求**并行墙钟 + 独立验证**的工具，不承诺所有任务更省 token。小任务通常单 agent 更合适。
+这是给**并行墙钟 + 独立验证**用的工具，不是「每个任务都更便宜」的承诺；小任务通常一个智能体更划算。
 
-## ⚙️ 质量门禁配置
+## 🎛 质量门禁配置
 
-插件配置里的 `quality` 字段控制审核方式：
+插件配置字段 `quality` 控制门禁如何审计：
 
 | 选项 | 默认 | 作用 |
-|---|---|---|
-| `autoVerify` | `true` | 完成任务前，宿主重新执行任务声明的 `verify` 命令 |
-| `autoReview` | `false` | 当所有门禁、实现验收与宿主命令都通过后，宿主自动完成待审查任务 |
-| `requireAcceptance` | `true` | 自动审核要求被审实现的每条验收都通过 |
-| `autoDetect` | `true` | 自动探测产物目录 `package.json` 的 test/typecheck 脚本，纳入宿主验证 |
-| `reviewMode` | `"auto"` | `auto`：宿主直接完成审查；`human`：宿主审核通过后停在「待人工复核」，由人在藏经阁点「确认复核」 |
-| `commands` | `["git diff --check"]` | 生成项目的兜底验证命令；不再继承插件自身的脚本 |
-| `commandsByProject` | `{}` | 按产物根配置验证命令，如 `"projects/贪吃蛇": ["node projects/贪吃蛇/smoke.mjs"]` |
-| `verifyTimeoutMs` | `120000` | 宿主执行每条验证命令的超时 |
+| --- | --- | --- |
+| `autoVerify` | `true` | 宿主在接收完成的质检任务前，复跑每条声明的 `verify` 命令 |
+| `autoReview` | `false` | 所有门禁、目标验收与宿主命令通过后，自动完成就绪的审查任务 |
+| `requireAcceptance` | `true` | 自动审查要求被审任务的每条验收都通过 |
+| `autoDetect` | `true` | 检测生成项目自带的 `package.json` 测试 / 类型检查脚本并一起跑 |
+| `reviewMode` | `"auto"` | `auto`：宿主收口；`human`：宿主审完停在「待人工复核」 |
+| `commands` | `["git diff --check"]` | 生成项目的兜底验证命令，不继承插件脚本 |
+| `commandsByProject` | `{}` | 按项目根目录配置验证命令 |
+| `verifyTimeoutMs` | `120000` | 每条验证命令的宿主超时 |
 
-每个字段都可单独省略，省略即用默认值（整个 `quality` 不写则全部用默认行为）。
+字段全部可选，省略即用默认值（整体省略 `quality` 则不做任何覆盖）。
 
 ```yaml
 quality:
@@ -196,56 +194,94 @@ quality:
     "projects/贪吃蛇": ["node projects/贪吃蛇/smoke.mjs"]
 ```
 
-## 🛡️ 边界
+## 🧩 角色与模板
 
-- 不做隐藏云同步：修炼与反馈诊断都留在本地。
-- 批准才开工：staged 计划必须由你批准。
-- 部署必须显式确认；智能体不会静默替换正在运行的宗门。
-- 审查独立：实现者不能批准自己的实现。
+阵容按「接下来要干什么」组队，席位上限 5，空闲角色不消耗 token。下面是内置的 6 套任务阵容（定义在 `src/client/lineup-store.ts`，角色显示名取自 `src/agency-role-seeds.ts`）：
 
-## 🗺️ 路线图
+| 阵容 | 角色（id → 显示名） | 适合 |
+| --- | --- | --- |
+| **功能直交** | `product-manager` 产品经理（PM） · `engineering-senior-developer` 高级开发者 · `testing-evidence-collector` 证据收集者 · `engineering-code-reviewer` 代码审查员 | 少绕弯，功能直接抵达任务 |
+| **缺陷修复** | `engineering-codebase-onboarding-engineer` 代码库入职引导工程师 · `engineering-senior-developer` 高级开发者 · `testing-evidence-collector` 证据收集者 | 先摸清代码，再定位并修 |
+| **全栈功能** | `product-manager` 产品经理（PM） · `engineering-frontend-developer` 前端开发者 · `engineering-backend-architect` 后端架构师 · `testing-evidence-collector` 证据收集者 · `engineering-code-reviewer` 代码审查员 | 契约先行，前后端并行（满 5 席） |
+| **只读审计** | `engineering-codebase-onboarding-engineer` 代码库入职引导工程师 · `engineering-code-reviewer` 代码审查员 · `testing-evidence-collector` 证据收集者 · `engineering-technical-writer` 技术文档工程师 | 不动工作区，只取证 |
+| **性能压测** | `product-manager` 产品经理（PM） · `engineering-senior-developer` 高级开发者 · `testing-performance-benchmarker` 性能基准师 · `engineering-devops-automator` DevOps 自动化师 | 指标先行，压测结论有数据支撑 |
+| **安全合规** | `security-appsec-engineer` 应用安全工程师 · `security-cloud-security-architect` 云安全架构师 · `engineering-devops-automator` DevOps 自动化师 · `testing-evidence-collector` 证据收集者 | 先复现再修，最小 diff |
 
-- [ ] 更多宗门与角色模板；
-- [ ] 更深的装备、坐骑、技能特效；
-- [ ] 桌面 / Web / iOS / Android 原生图标集（桌面 PNG 梯度 + 1024 母版已就绪，移动端/Web 按需从母版生成）；
-- [ ] 更多文档与翻译；
-- [ ] 你的想法——欢迎开 issue。
+另有按开发模式生成的 6 套预设阵容（如「快速体验阵容」「标准交付阵容」），以及组建向导里的 12 个任务模板：**功能直交 / 修 Bug / 新功能 / 调研 / 审计 / 全栈交付 / 加固交付 / 构建交付 / 重构交付 / 文档交付 / 方案评审 / 短剧制作**（对应 `src/client/locales.ts` 的 `quickstart.tpl*`）。
 
-## 🧑‍💻 开发
+每个角色拿到固定契约：归属、必须做 / 不能做、完成标准、五条要点汇报与工作量预算。全栈阵容刻意保持 5 席：少一次交接。
 
-    pnpm install
-    pnpm typecheck
-    pnpm build
-    pnpm verify
-    pnpm verify:web-routes
+## 🧠 机制说明
 
-新克隆请先 `pnpm build` 再 `pnpm verify`：`lib/client/` 构建中间产物与 `*.map` 为生成物、不入库。DSH 生命周期技能从共享记忆库实时获取，本仓库不再内置副本。
+- 队长主导的任务图，依赖感知派发；
+- 持久成员会话、信箱与 attempt 所有权；
+- 质量契约：目标、范围、验收、验证、审查结论；
+- 独立验证 / 审查门禁、修复轮次、冷恢复；
+- 按角色切分契约，让前端 / 后端 / 集成各做各层、互不越界；
+- 团队状态在 `.agent-teams/<teamId>/`，可检查、本地、属于你。
 
-入口：[CONTRIBUTING.md](CONTRIBUTING.md)、[CHANGELOG.md](CHANGELOG.md)、[compatibility.json](compatibility.json)、[IP 与归属](NOTICE.md)。
+## 🔒 边界
 
-应用图标在 `assets/app-icons/desktop/png/`（16–512 梯度 + 1024 母版）与 `assets/app-icons/desktop/app.ico`；插件同时携带 `assets/zhulong.ico` 与 `assets/zhulong-icon.png` 供应用打包使用，移动端与 Web 图标在发版时从 1024 母版生成。
+- 没有隐藏的云同步：养成与反馈诊断都留在本地。
+- 批准是显式的：计划草案在你批准前不会启动。
+- 部署需要明确确认：智能体不会悄悄替换正在运行的会话。
+- 审查是独立的：实现者不能批准自己的实现。
 
-## 💬 交流群 & 赞助
+## 🧭 后续方向
 
-**有问题、想法，或想聊 DSH 插件——扫码进 QQ / 微信交流群：**
+按开源项目 [OpenMausBot](https://github.com/milind-soni/OpenMausBot) 的方向做参照，**每条都标注来源**，不构成路线承诺。
+> 取数说明：本机直连 `github.com` / `raw.githubusercontent.com` 不可达（实测多次 `fetch failed`），以下证据取自该项目的公开元数据、PR / commit 标题与文档索引标题，未逐字引用其 README 正文。GitHub 打不开时可用镜像：[AtomGit · OpenMausBot](https://atomgit.com/GitHub_Trending/op/OpenMausBot)。
 
-| QQ 交流群 | 微信交流群 |
-|:---:|:---:|
-| <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-qr.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-qr.jpg" width="220" alt="QQ 交流群二维码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-wechat.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/group-wechat.jpg" width="220" alt="微信交流群二维码" /></a> |
+| # | 方向 | 落到本项目 | 来源（均派生自 https://github.com/milind-soni/OpenMausBot ） |
+| --- | --- | --- | --- |
+| 1 | 让 bot 拥有一台真正可用的虚拟机桌面（computer use） | 桌面宠物目前是展示层；下一步让成员能在真实桌面里点、拖、验证交付物 | [仓库主页](https://github.com/milind-soni/OpenMausBot) 描述：“Open-source Grok Bot alternative with a virtual machine that bots can use” |
+| 2 | 本地 VM：bot 驱动本机 Linux 桌面 | 交付展示从只读预览升级为可交互实机操作 | [PR #87](https://github.com/milind-soni/OpenMausBot/pull/87) “Local VM: a bot can drive a Linux desktop on this machine” |
+| 3 | 用 Cua Driver 承接本地 VM 计算 | 直接复用驱动层，不自研 | [commit aa39a82](https://github.com/milind-soni/OpenMausBot/commit/aa39a82f93b0de70abd4ebcf13cae7c5c4363256) “Use Cua Driver for local VM computers” |
+| 4 | computer use / browser use 作为独立能力文档 | 现有 `pnpm verify:web-routes` 可延伸为 bot 自动点验 | [docs/computer-use-integration.md](https://github.com/milind-soni/OpenMausBot/blob/main/docs/computer-use-integration.md) |
+| 5 | 多智能体聊天体验 | 对标成员会话与聊天交互 | [AtomGit 镜像仓库](https://atomgit.com/GitHub_Trending/op/OpenMausBot) 摘要：“基于 TypeScript/React/Electron 的 AI 多智能体聊天应用项目” |
+| 6 | 自托管 / 容器化部署 | 目前本地优先，下一步补 headless 与 Docker 部署脚本 | [仓库主页 topics](https://github.com/milind-soni/openmausbot)：`self-hosted`、`docker` |
+| 7 | 桌面外壳与移动端 | 桌宠现为 tkinter 独立进程，方向是并入统一桌面外壳 | [仓库主页 topics](https://github.com/milind-soni/openmausbot)：`electron`、`expo` |
+| 8 | 对齐多家执行器生态 | 角色 executor 抽象扩展为多执行器后端 | [仓库主页 topics](https://github.com/milind-soni/openmausbot)：`claude-code`、`codex` |
 
-**请作者喝杯咖啡（完全自愿）：**
+> 许可提示：OpenMausBot 为 Apache-2.0，本项目为 MIT；借鉴其代码时注意许可差异。
 
-| 微信收款码 | 微信赞赏码 |
-|:---:|:---:|
-| <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-pay.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-pay.jpg" width="200" alt="微信收款码" /></a> | <a href="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-reward.jpg" target="_blank" rel="noreferrer" title="点击放大"><img src="https://raw.githubusercontent.com/EternalNight996/agent-bot/main/assets/support/wechat-reward.jpg" width="200" alt="微信赞赏码" /></a> |
+## 🛠 开发
 
-> 赞助完全自愿，不影响任何功能；插件本体始终开源免费（MIT）。见 [SPONSOR.md](SPONSOR.md)。
+```powershell
+pnpm install
+pnpm typecheck
+pnpm build
+pnpm verify
+pnpm verify:web-routes
+```
 
+新克隆后先 `pnpm build` 再 `pnpm verify`：`lib/client/` 的构建中间产物与 `*.map` 是生成物，不入库。DSH 生命周期技能从共享记忆库实时解析，不在本仓内置。
+
+## 📚 文档与链接
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) · [compatibility.json](compatibility.json)
+- [IP 与署名](NOTICE.md) · [赞助说明（可选，不影响功能与许可）](SPONSOR.md)
 - Issues：https://github.com/EternalNight996/agent-bot/issues
-- 由 **惠州市梦游科技有限公司** 维护与发布。
+- Releases：https://github.com/EternalNight996/agent-bot/releases
+
+## 💬 社区
+
+**问题、想法、插件闲聊，进群说：**
+
+| QQ 群 | 微信群 |
+|:---:|:---:|
+| <img src="assets/support/group-qr.jpg" width="240" alt="QQ 群二维码" /> | <img src="assets/support/group-wechat.jpg" width="240" alt="微信群二维码" /> |
+
+**请作者喝杯咖啡（可选）：**
+
+| 微信支付 | 微信赞赏 |
+|:---:|:---:|
+| <img src="assets/support/wechat-pay.jpg" width="200" alt="微信支付码" /> | <img src="assets/support/wechat-reward.jpg" width="200" alt="微信赞赏码" /> |
+
+> 赞助完全可选，不影响功能与许可，插件保持 MIT 免费。详见 [SPONSOR.md](SPONSOR.md)。
 
 ## 📄 许可
 
-MIT © 2026 惠州市梦游科技有限公司。归属与许可全文见 [NOTICE.md](NOTICE.md) 与 [LICENSE](LICENSE)。像素洞府、修炼体系、装备、封神榜与宗门志为本项目原创。
+MIT © 2026 惠州市梦游科技有限公司。授权与声明见 [NOTICE.md](NOTICE.md) 与 [LICENSE](LICENSE)。右侧栏面板 UI、交付治理层与桌面宠物均为本项目原创。
 
-<p align="center"><strong>⭐ 想让这座洞府继续长大，就点一个 Star。</strong></p>
+**如果你希望这支队伍继续长大，给个 Star。**
