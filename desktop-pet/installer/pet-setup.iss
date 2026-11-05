@@ -2,7 +2,7 @@
 ; 先用 build-installer.ps1 生成 artifacts/installer/dist/DSH-Pet，再编译本脚本。
 #define MyAppName "小肥鱼桌面宠物"
 #define MyAppVersion "0.1.5"
-#define MyAppPublisher "EternalNight"
+#define MyAppPublisher "梦游科技有限公司"
 #define MyAppExeName "DSH-Pet.exe"
 
 [Setup]

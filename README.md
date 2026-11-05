@@ -306,7 +306,7 @@ After a fresh clone run `pnpm build` before `pnpm verify`: `lib/client/` interme
 
 ## License & links
 
-MIT © 2026 Huizhou Mengyou Technology Co., Ltd. Terms and attribution in [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE). The sidebar panel UI, the delivery governance layer and the desk pet are original to this project.
+MIT © 2026 Mengyou Technology Co., Ltd. Author: 梦游 (Mengyou) · Company: Mengyou Technology Co., Ltd. · Email: eternalnightyeah2@yeah.net. Terms and attribution in [NOTICE.md](NOTICE.md) and [LICENSE](LICENSE). The sidebar panel UI, the delivery governance layer and the desk pet are original to this project.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) · [compatibility.json](compatibility.json) · [IP and attribution](NOTICE.md)
 - Issues: https://github.com/EternalNight996/agent-bot/issues · Releases: https://github.com/EternalNight996/agent-bot/releases

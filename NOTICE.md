@@ -15,7 +15,9 @@ their author. This derivative uses its own package identity
 
 ## Derivative copyright and original additions
 
-Copyright (c) 2026 惠州市梦游科技有限公司.
+Copyright (c) 2026 梦游科技有限公司.
+
+Contact: eternalnightyeah2@yeah.net
 
 The pixel hall scene, cultivation/realm system, equipment and mount visuals,
 封神榜, 宗门志, README/marketing copy and the Zhulong icon are original to this

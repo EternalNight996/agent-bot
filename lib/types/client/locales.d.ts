@@ -827,6 +827,8 @@ export declare const zh: {
     'about.intro': string;
     'about.version': string;
     'about.author': string;
+    'about.developer': string;
+    'about.contact': string;
     'about.license': string;
     'about.companyNote': string;
     'about.repo': string;
@@ -1702,6 +1704,8 @@ export declare const en: {
     'about.intro': string;
     'about.version': string;
     'about.author': string;
+    'about.developer': string;
+    'about.contact': string;
     'about.license': string;
     'about.companyNote': string;
     'about.repo': string;

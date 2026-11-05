@@ -306,7 +306,7 @@ pnpm verify:web-routes
 
 ## 许可与链接
 
-MIT © 2026 惠州市梦游科技有限公司。授权与声明见 [NOTICE.md](NOTICE.md) 与 [LICENSE](LICENSE)。右侧栏面板 UI、交付治理层与桌面宠物均为本项目原创。
+MIT © 2026 梦游科技有限公司。作者：梦游 · 企业：梦游科技有限公司 · 邮箱：eternalnightyeah2@yeah.net。授权与声明见 [NOTICE.md](NOTICE.md) 与 [LICENSE](LICENSE)。右侧栏面板 UI、交付治理层与桌面宠物均为本项目原创。
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md) · [compatibility.json](compatibility.json) · [IP 与署名](NOTICE.md)
 - Issues：https://github.com/EternalNight996/agent-bot/issues · Releases：https://github.com/EternalNight996/agent-bot/releases · 官网：http://180.76.144.48/agent-bot

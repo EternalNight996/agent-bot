@@ -38,9 +38,11 @@
   ],
   "license": "MIT",
   "author": {
-    "name": "惠州市梦游科技有限公司",
+    "name": "梦游",
+    "email": "eternalnightyeah2@yeah.net",
     "url": "https://github.com/EternalNight996/agent-bot"
   },
+  "company": "梦游科技有限公司",
   "homepage": "https://github.com/EternalNight996/agent-bot#readme",
   "repository": {
     "type": "git",

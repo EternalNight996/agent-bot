@@ -877,8 +877,10 @@ export function SectHallOverlay({
                   <p className={css.settingsHint}>{t('about.intro')}</p>
                   <div className={css.aboutMeta}>
                     <span>{t('about.version')}: {PLUGIN_VERSION}</span>
-                    <span>{t('about.author')}: 惠州市梦游科技有限公司</span>
+                    <span>{t('about.developer')}: 梦游</span>
+                    <span>{t('about.author')}: 梦游科技有限公司</span>
                     <span>{t('about.license')}: MIT</span>
+                    <span>{t('about.contact')}: <a className={css.aboutLink} href="mailto:eternalnightyeah2@yeah.net">eternalnightyeah2@yeah.net</a></span>
                   </div>
                   <p className={css.settingsHint}>{t('about.companyNote')}</p>
                   <div className={css.aboutActions}>
