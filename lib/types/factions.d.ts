@@ -1,5 +1,5 @@
 /**
- * 西游阵营构造系统（原著提取版）。
+ * 阵营构造系统：把一支团队拆成可调度的岗位组合。
  *
  * 阵营不是皮肤包：每个阵营同时定义
  *   1) 调度拓扑（谁编排、谁并行、谁只做审计）
@@ -27,7 +27,7 @@ export interface FactionDefinition {
     readonly id: FactionId;
     readonly name: string;
     readonly tagline: string;
-    /** 原著行为逻辑（用于计划生成，不写进 UI 长文）。 */
+    /** 行为逻辑（用于计划生成，不写进 UI 长文）。 */
     readonly sourceLogic: string;
     readonly topology: FactionTopology;
     readonly topologyLabel: string;

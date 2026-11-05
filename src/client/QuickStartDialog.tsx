@@ -463,7 +463,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
           setBusy(false)
           setCreated(t('quickstart.created', {
             team: found.teamName ?? found.name ?? found.teamId,
-            sect: crewName,
+            template: crewName,
           }))
           window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: found.teamId, sessionId } }))
           onFounded?.()
@@ -842,7 +842,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         clearQuickStartDraft(sessionId)
         setCreated(t('quickstart.created', {
           team: body.teamName ?? body.teamId,
-          sect: crewName,
+          template: crewName,
         }))
         window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: body.teamId, sessionId, team: body.team } }))
         setGoal('')
@@ -855,7 +855,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
       }
       setCreated(t('quickstart.created', {
         team: body.teamName ?? body.teamId ?? '',
-        sect: crewName,
+        template: crewName,
       }))
       if (body.teamId !== undefined) window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: body.teamId, sessionId, team: body.team } }))
       setSubmitting(false)
@@ -874,7 +874,7 @@ export function QuickStartWizard({ sessionId, existingTeam, t, onDone, onFounded
         clearQuickStartDraft(sessionId)
         setCreated(t('quickstart.created', {
           team: found.name,
-          sect: crewName,
+          template: crewName,
         }))
         window.dispatchEvent(new CustomEvent(TEAM_CREATED_EVENT, { detail: { teamId: found.teamId, sessionId } }))
         setGoal('')

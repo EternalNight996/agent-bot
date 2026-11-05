@@ -14,21 +14,21 @@ import { getModeSpec, modeAddsAcceptanceBaseline, type TeamMode } from './modes.
 import { inScopeOverlap } from './quality-gates.ts'
 import type { PlanTaskSpec } from './plan-generator.ts'
 
-/** One built-in template: default roles and a small task DAG. */
-export const SECT_NAMES: Record<string, string> = {
-  fix: '不周山', feat: '昆仑山', research: '洪荒', audit: '妖族天庭',
-  build: '龙汉三族', array: '十二祖巫', docs: '西方教', debate: '三清道门',
-  fullstack: '洪荒', hardening: '幽冥血海', drama: '瑶池', ship: '洪荒',
+/** Display team name per template id, used as the staged team-name prefix. */
+export const TEAM_NAMES: Record<string, string> = {
+  fix: '修复小组', feat: '功能小组', research: '调研小组', audit: '审计小组',
+  build: '构建小组', array: '重构小组', docs: '文档小组', debate: '方案评审组',
+  fullstack: '全栈小组', hardening: '加固小组', drama: '演示小组', ship: '交付小组',
 }
 
 export const ROLE_NAMES: Record<string, string> = {
-  planner: '女娲', implementer: '盘古', verifier: '鲲鹏', reviewer: '天道',
-  researcher: '离朱', analyst: '师旷', writer: '酆都', auditor: '雷神',
-  architect: '杨眉大仙', tester: '神农', documenter: '接引', operator: '老子',
-  frontend: '羲和', backend: '应龙', integrator: '伏羲', security: '刑天',
-  // 佛道势力预设新增的 8 个法门：缺了它们，成员名会退化成裸角色 id（demon/poisoner）。
-  talisman: '镇元子', healer: '长生大帝', beastmaster: '九婴', puppeteer: '六耳',
-  musician: '常羲', poisoner: '冥河', monk: '准提', demon: '蚩尤',
+  planner: '产品经理', implementer: '全栈工程师', verifier: 'QA', reviewer: '技术评审',
+  researcher: '调研员', analyst: '分析师', writer: '内容策划', auditor: '审计',
+  architect: '架构师', tester: '测试工程师', documenter: '文档工程师', operator: '运维',
+  frontend: '前端工程师', backend: '后端工程师', integrator: '集成工程师', security: '安全工程师',
+  // 扩展角色也必须有名，否则成员名会退化成裸角色 id（demon/poisoner）。
+  talisman: '规则工程师', healer: '修复工程师', beastmaster: '资源调度', puppeteer: '模拟测试',
+  musician: '体验设计', poisoner: '破坏测试', monk: '合规', demon: '性能工程师',
 }
 
 export interface QuickStartTemplate {
@@ -60,7 +60,7 @@ export const QUICK_START_TEMPLATES: readonly QuickStartTemplate[] = [
     label: '功能直交',
     roles: ['implementer'],
     tasks: [
-      { id: 'deliver', subject: '实现并直接交付', role: 'implementer', description: '法脉「功能直交」：少绕弯、少概念堆叠，功能直接抵达用户任务。直接实现用户目标并交付可运行结果；以清晰、可执行、可验证为第一原则；不做独立验证或审查，交付前自测主流程。直交前的任务定型已由编排角色隐式完成（内部审计），无需为此额外产出文档。交付物要能在藏经阁「展示」里直接打开看到，不要只给运行命令让用户自己跑。', expected: '可运行产物；在藏经阁「展示」中可直接预览（页面/图片/说明），无需用户自行运行。' },
+      { id: 'deliver', subject: '实现并直接交付', role: 'implementer', description: '法脉「功能直交」：少绕弯、少概念堆叠，功能直接抵达用户任务。直接实现用户目标并交付可运行结果；以清晰、可执行、可验证为第一原则；不做独立验证或审查，交付前自测主流程。直交前的任务定型已由编排角色隐式完成（内部审计），无需为此额外产出文档。交付物要能在资料库「展示」里直接打开看到，不要只给运行命令让用户自己跑。', expected: '可运行产物；在资料库「展示」中可直接预览（页面/图片/说明），无需用户自行运行。' },
     ],
   },
   {
@@ -109,7 +109,7 @@ export const QUICK_START_TEMPLATES: readonly QuickStartTemplate[] = [
   },
   {
     id: 'audit',
-    label: '巡查',
+    label: '审计',
     roles: ['auditor', 'reviewer'],
     tasks: [
       { id: 'audit', subject: '只读审计', role: 'auditor', description: '只读检查代码、依赖、配置与文档，按严重度逐条记录发现；不改动工作区。', expected: '证据清单（文件/行、复现步骤、影响、建议）。', acceptance: ['每条发现都有可复核证据', '未改动工作区'] },
@@ -132,15 +132,15 @@ export const QUICK_START_TEMPLATES: readonly QuickStartTemplate[] = [
     label: '架构重构',
     roles: ['architect', 'implementer', 'verifier', 'reviewer'],
     tasks: [
-      { id: 'design', subject: '画阵定界', role: 'architect', kind: 'requirements', description: '给出目标结构、边界与迁移步骤，标注风险点。', acceptance: ['边界与迁移步骤可执行', '风险点已显式记录'] },
-      { id: 'refactor', subject: '依阵改构', role: 'implementer', kind: 'implementation', description: '按设计小步重构，保持可回退与可审查。', acceptance: ['行为保持不变', '声明的验证命令通过'], dependencies: ['design'] },
-      { id: 'verify', subject: '验阵', role: 'verifier', kind: 'verification', description: '验证行为不变与性能不回退，记录证据。', acceptance: ['声明的验证命令通过', '行为与性能证据已记录'], dependencies: ['refactor'] },
-      { id: 'review', subject: '审阵', role: 'reviewer', kind: 'review', reviewedTaskId: 'refactor', description: '审查边界、耦合与遗留风险。', acceptance: ['重构满足设计目标', '证据充分且记录遗留风险'], dependencies: ['verify'] },
+      { id: 'design', subject: '绘制设计', role: 'architect', kind: 'requirements', description: '给出目标结构、边界与迁移步骤，标注风险点。', acceptance: ['边界与迁移步骤可执行', '风险点已显式记录'] },
+      { id: 'refactor', subject: '按设计重构', role: 'implementer', kind: 'implementation', description: '按设计小步重构，保持可回退与可审查。', acceptance: ['行为保持不变', '声明的验证命令通过'], dependencies: ['design'] },
+      { id: 'verify', subject: '验证重构', role: 'verifier', kind: 'verification', description: '验证行为不变与性能不回退，记录证据。', acceptance: ['声明的验证命令通过', '行为与性能证据已记录'], dependencies: ['refactor'] },
+      { id: 'review', subject: '审查重构', role: 'reviewer', kind: 'review', reviewedTaskId: 'refactor', description: '审查边界、耦合与遗留风险。', acceptance: ['重构满足设计目标', '证据充分且记录遗留风险'], dependencies: ['verify'] },
     ],
   },
   {
     id: 'docs',
-    label: '文档传道',
+    label: '文档交付',
     roles: ['writer', 'documenter', 'reviewer'],
     tasks: [
       { id: 'outline', subject: '列纲', role: 'writer', description: '确定读者、目标与章节结构。' },
@@ -174,7 +174,7 @@ export const QUICK_START_TEMPLATES: readonly QuickStartTemplate[] = [
   },
   {
     id: 'debate',
-    label: '方案论道',
+    label: '方案评审',
     roles: ['researcher', 'analyst', 'reviewer'],
     tasks: [
       { id: 'prop', subject: '立论', role: 'researcher', description: '给出方案主张、依据与适用边界。' },
@@ -232,11 +232,11 @@ export interface QuickStartDelivery {
   contextText?: string
   /** Disjoint frontend/backend roots, when the workspace has recognizable layers. */
   layers?: { frontend: string[]; backend: string[] }
-  /** 阵营：决定默认队伍名与角色→角色名映射。 */
+  /** 团队配置：决定默认队伍名与角色→角色名映射。 */
   faction?: string
-  /** 阵营角色名（鸿钧/盘古/...），任务指派人优先用这里的名字。 */
+  /** 角色显示名（产品经理/全栈工程师/...），任务指派人优先用这里的名字。 */
   roleNames?: Readonly<Record<string, string>>
-  /** 阵营名，用作团队名前缀。 */
+  /** 团队名，用作团队名前缀。 */
   teamName?: string
   /** 角色 -> 执行 Agent 覆盖。 */
   roleAgents?: Readonly<Record<string, string>>
@@ -391,7 +391,7 @@ export function buildQuickStartPlan(
       ...kind === undefined ? {} : { coverageOf: [...(task.coverageOf ?? [goal])] },
     }
   })
-  const plan: QuickStartPlan = { teamName: `${delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队'}·${stamp.slice(8)}`, template: template.id, members, tasks }
+  const plan: QuickStartPlan = { teamName: `${delivery?.teamName ?? TEAM_NAMES[template.id] ?? '团队'}·${stamp.slice(8)}`, template: template.id, members, tasks }
   serializeOverlappingWriteTasks(plan.tasks)
   return plan
 }
@@ -569,7 +569,7 @@ export function buildPlanFromSpecs(
   const template = templateOf(templateId)
   const roles = quickStartRoles(templateId, requestedRoles)
   const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
-  // 只启用任务实际需要的角色，未使用的阵营角色不进入队伍。
+  // 只启用任务实际需要的角色，未使用的角色不进入队伍。
   const taskRoles = [...new Set(specs.map(spec => spec.role))]
   const effectiveRoles = roles.length > 0 ? roles : taskRoles
   const resolveExecutor = (executor: string): string | undefined => {
@@ -611,7 +611,7 @@ export function buildPlanFromSpecs(
       ...kind === undefined ? {} : { coverageOf: spec.coverageOf !== undefined && spec.coverageOf.length > 0 ? [goal, ...spec.coverageOf] : [goal] },
     }
   })
-  const plan: QuickStartPlan = { teamName: (delivery?.teamName ?? SECT_NAMES[template.id] ?? '取经队') + '·' + stamp.slice(8), template: template.id, members, tasks }
+  const plan: QuickStartPlan = { teamName: (delivery?.teamName ?? TEAM_NAMES[template.id] ?? '团队') + '·' + stamp.slice(8), template: template.id, members, tasks }
   serializeOverlappingWriteTasks(plan.tasks)
   return plan
 }

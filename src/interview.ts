@@ -169,7 +169,7 @@ export function buildClarificationPrompt(requirement: string, mode: TeamMode | u
   const spec = getModeSpec(mode)
   const ambition = isAmbitionId(extras?.ambition) ? getAmbitionSpec(extras?.ambition) : undefined
   const system = [
-    '你是售前架构师，要把访谈答案整理成"组队取经澄清"结构。',
+    '你是售前架构师，要把访谈答案整理成"团队协作澄清"结构。',
     '规则：',
     '1. 只输出 JSON，不要 Markdown，不要解释。',
     '2. 结构：{"type":"hardware|software","scale":"small|medium|fullstack","ui":{"references":string[],"styles":string[],"notes":string[]},"platforms":string[],"hardware":string[],"constraints":string[],"excluded":string[],"acceptance":string[],"memoryHints":string[]}。',

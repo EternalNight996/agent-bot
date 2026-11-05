@@ -62,14 +62,14 @@ const ROLE_ART: Readonly<Record<string, string>> = {
 
 /** Selectable skins for custom lineup characters: the same eight cycling portraits. */
 export const SKIN_OPTIONS = [
-  { id: 'demon', name: '蚩尤', art: art('avatar-demon.png') },
-  { id: 'implementer', name: '盘古', art: art('avatar-implementer.png') },
-  { id: 'captain', name: '鸿钧', art: art('avatar-captain.png') },
-  { id: 'planner', name: '帝俊', art: art('avatar-planner.png') },
-  { id: 'verifier', name: '鲲鹏', art: art('avatar-verifier.png') },
-  { id: 'reviewer', name: '天道', art: art('avatar-reviewer.png') },
-  { id: 'architect', name: '杨眉大仙', art: art('avatar-architect.png') },
-  { id: 'healer', name: '女娲', art: art('avatar-healer.png') },
+  { id: 'demon', name: '性能工程师', art: art('avatar-demon.png') },
+  { id: 'implementer', name: '全栈工程师', art: art('avatar-implementer.png') },
+  { id: 'captain', name: '项目负责人', art: art('avatar-captain.png') },
+  { id: 'planner', name: '产品经理', art: art('avatar-planner.png') },
+  { id: 'verifier', name: 'QA', art: art('avatar-verifier.png') },
+  { id: 'reviewer', name: '技术评审', art: art('avatar-reviewer.png') },
+  { id: 'architect', name: '架构师', art: art('avatar-architect.png') },
+  { id: 'healer', name: '修复工程师', art: art('avatar-healer.png') },
 ] as const
 
 /** Keyword fallback for custom roles, mapped onto the closest shipped portrait. */
@@ -88,15 +88,15 @@ const KEYWORD_ART: ReadonlyArray<readonly [RegExp, string]> = [
   [/规划|拆解|排程|plan|strateg/, 'avatar-planner.png'],
 ]
 
-/** Captain skin options: exclusive portraits, defaulting to 紫霄宫/鸿钧. */
+/** Captain skin options: exclusive portraits, defaulting to the project lead. */
 export const CAPTAIN_SKIN_ARTS = {
-  hongjun: { name: '鸿钧', art: art('avatar-captain.png') },
-  pangu: { name: '盘古 · 开天', art: art('avatar-implementer.png') },
-  nuwa: { name: '女娲 · 造人', art: art('avatar-healer.png') },
+  hongjun: { name: '项目负责人', art: art('avatar-captain.png') },
+  pangu: { name: '全栈工程师', art: art('avatar-implementer.png') },
+  nuwa: { name: '修复工程师', art: art('avatar-healer.png') },
 } as const
 export type CaptainSkinId = keyof typeof CAPTAIN_SKIN_ARTS
 
-/** Default captain skin is 紫霄宫·鸿钧. */
+/** Default captain skin is the project lead portrait. */
 export const DEFAULT_CAPTAIN_SKIN: CaptainSkinId = 'hongjun'
 
 /** New app icon (assets/app-icons, embedded as a 64px data URL). */

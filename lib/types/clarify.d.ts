@@ -9,7 +9,6 @@ import type { ClarifyReference, TeamClarification } from './types.ts';
 export declare const CLARIFY_SCALES: readonly ["small", "medium", "fullstack"];
 export declare const CLARIFY_PLATFORMS: readonly ["Windows", "Linux (UOS/麒麟)", "macOS", "Android", "iOS"];
 export declare const CLARIFY_UI_STYLES: readonly ["工业极简", "桌面端传统", "移动端触控优先", "科技感大屏"];
-export declare const DEFAULT_EXCLUDED: readonly ["不改 MES 接口", "不升级操作系统", "不引入云服务"];
 /**
  * AI-proposed answers for the clarification form. The section structure stays
  * fixed; these lists are tailored to the requirement by the model.

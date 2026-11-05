@@ -82,6 +82,17 @@ test('the 洪荒协作 tab is a plain closable tab that can always be reopened',
   assert.ok(!client.includes('COLLAPSE_HALL_EVENT'))
 })
 
+test('the hall always lands on the 洪荒 home page, never on the progress sheet', () => {
+  const hall = readFileSync(new URL('../src/client/SectHallOverlay.tsx', import.meta.url), 'utf8')
+  // 落地页：藏经阁（以及非待审的法脉页）恢复时一律回洪荒首页，绝不把进度页当首页。
+  assert.match(hall, /if \(restored === 'library'\) return 'home'/, 'a restored library page must fall back to home')
+  assert.match(hall, /if \(restored === 'config' && team\?\.phase !== 'staged'\) return 'home'/, 'a running team restores to home, not the doctrine page')
+  // 审核完不再停在进度页：显式批准事件和 staged → running 的隐式变化都切回首页。
+  assert.match(hall, /window\.addEventListener\(PLAN_APPROVED_EVENT, approved\)/, 'approval must move the hall back to 洪荒')
+  assert.match(hall, /setSheet\(current => current === 'config' \|\| current === 'library' \? 'home' : current\)/, 'the approval path parks the hall on home')
+  assert.doesNotMatch(hall, /setSheet\(sessionId === undefined \? 'board' : 'library'\)/, 'finishing the review must not drop the user into the library sheet')
+})
+
 test('the token show/hide control actually toggles and glides', () => {
   const hall = readFileSync(new URL('../src/client/SectHallOverlay.tsx', import.meta.url), 'utf8')
   const css = readFileSync(new URL('../src/client/SectHallOverlay.module.css', import.meta.url), 'utf8')
@@ -153,4 +164,75 @@ test('every new founding string exists in both dictionaries', () => {
   }
   assert.match(locales, /'quickstart\.stepInterview': '需求'/)
   assert.match(locales, /'quickstart\.summaryReference': '复刻项目'/)
+})
+
+test('the team tab renders the pixel hall instead of the old text board', () => {
+  const workspace = readFileSync(new URL('../src/client/WorkspaceActivity.tsx', import.meta.url), 'utf8')
+  assert.match(workspace, /import \{ PixelOffice, type SceneAction \} from '\.\/pixel-office\/PixelOffice\.tsx'/)
+  assert.match(workspace, /data-workspace-hall/)
+  assert.match(workspace, /<PixelOffice[\s\S]{0,800}?onAction=/)
+  assert.ok(!workspace.includes('data-workspace-board'), 'the live page must not fall back to the old board')
+  const sheet = workspace.slice(workspace.indexOf('const sheetBody'))
+  assert.match(sheet, /<TeamSection/, 'task detail stays available inside the facility sheet')
+})
+
+test('the display theme layer is gone and modern naming is baked into both dictionaries', async () => {
+  const { zh, en } = await import('../lib/client/locales.js')
+  assert.ok(!locales.includes('themeLocale'), 'the theme locale wrapper must be deleted')
+  assert.ok(!locales.includes('THEME_ZH'), 'the Chinese theme table must be deleted')
+  assert.ok(!locales.includes('THEME_EN'), 'the English theme table must be deleted')
+  const bannedZh = ['洪荒', '道场', '掌教', '炼气士', '玄门道统', '量劫进程', '大道榜', '群仙谱', '取经队', '修仙', '宗门', '掌门', '修士', '洞府', '功德', '境界', '法宝', '真言']
+  for (const [key, value] of Object.entries(zh)) {
+    for (const word of bannedZh) assert.ok(!value.includes(word), key + ' still contains ' + word)
+  }
+  const bannedEn = /\b(?:Sect|sect|Sects|sects|Cultivation|cultivation|Cultivator|cultivator|Pilgrim|pilgrim|pilgrims|Pilgrimage|Honghuang|Dharma|dharma|Ascension|ascension|Realm|realm|Vow|vow)\b/u
+  for (const [key, value] of Object.entries(en)) {
+    assert.doesNotMatch(value, bannedEn, key + ' still carries the old display theme')
+  }
+  assert.equal(zh['workspace.title'], '团队协作')
+  assert.equal(zh['captain.name'], '队长')
+  assert.equal(en['workspace.title'], 'Team workspace')
+})
+
+test('theme fields and the dead sect catalog are gone from the client', async () => {
+  const { existsSync } = await import('node:fs')
+  const skins = readFileSync(new URL('../src/client/skins.ts', import.meta.url), 'utf8')
+  const customSkins = readFileSync(new URL('../src/client/custom-skins.ts', import.meta.url), 'utf8')
+  const lineups = readFileSync(new URL('../src/client/lineup-store.ts', import.meta.url), 'utf8')
+  const config = readFileSync(new URL('../src/client/ConfigCenter.tsx', import.meta.url), 'utf8')
+  const hall = readFileSync(new URL('../src/client/SectHallOverlay.tsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(skins, /theme:/, 'the skin theme field must be deleted')
+  assert.doesNotMatch(customSkins, /theme:/, 'the custom-skin theme field must be deleted')
+  assert.doesNotMatch(lineups, /theme:/, 'the lineup theme field must be deleted')
+  assert.ok(!config.includes('newTheme') && !config.includes('skinTheme'), 'the theme inputs must be deleted')
+  assert.ok(!config.includes("'pilgrim'"))
+  assert.ok(!hall.includes("'pilgrim'"))
+  assert.ok(!existsSync(new URL('../src/client/sects.ts', import.meta.url)), 'the dead sect catalog must be deleted')
+  for (const css of ['ClarifySheet', 'PolishPreview', 'StagingPlanEditor']) {
+    assert.ok(!existsSync(new URL('../src/client/' + css + '.module.css', import.meta.url)), css + '.module.css must be deleted')
+  }
+})
+
+test('legacy skins and lineups saved with a theme field still load and are rewritten without it', async () => {
+  const previousWindow = globalThis.window
+  const store = {
+    'dsh-super-agent.customSkins': JSON.stringify([{ id: 'skin-legacy', name: '老王', art: 'data:,', background: '#123456', theme: '洪荒·道祖' }]),
+    'dsh-super-agent.customLineups': JSON.stringify([{ id: 'lineup-legacy', name: '我的阵容', theme: '洪荒·道祖', entries: [{ role: 'implementer', skin: 'pangu' }], builtin: false }]),
+  }
+  globalThis.window = { localStorage: { getItem: (key) => store[key] ?? null, setItem: (key, value) => { store[key] = value } } }
+  try {
+    const lineupStore = await import('../lib/client/lineup-store.js?legacy-theme=1')
+    const legacyLineup = lineupStore.allLineups().find(entry => entry.id === 'lineup-legacy')
+    assert.ok(legacyLineup !== undefined, 'the legacy lineup must still load')
+    assert.equal(legacyLineup.name, '我的阵容')
+    assert.equal(legacyLineup.theme, undefined, 'the removed theme field must not be carried')
+    const skinStore = await import('../lib/client/custom-skins.js?legacy-theme=1')
+    const legacySkin = skinStore.allCustomSkins().find(skin => skin.id === 'skin-legacy')
+    assert.ok(legacySkin !== undefined, 'the legacy skin must still load')
+    assert.equal(legacySkin.theme, undefined, 'the removed theme field must not be carried')
+    skinStore.removeCustomSkin('skin-legacy')
+    assert.ok(!store['dsh-super-agent.customSkins'].includes('theme'), 'rewrites must not emit the old field')
+  } finally {
+    globalThis.window = previousWindow
+  }
 })

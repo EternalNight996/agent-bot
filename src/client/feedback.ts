@@ -70,7 +70,7 @@ export function buildAgentPrompt(input: {
     ].join('\n')
   }
   return [
-    '你是 DeepSeek Harness 插件 dsh-super-agent（AgentTeams 的像素取经队福地）的排障助手。',
+    '你是 DeepSeek Harness 插件 dsh-super-agent（AgentTeams 的像素团队工作台）的排障助手。',
     '请根据下面的用户反馈与诊断信息复现问题、定位根因，并给出最小修复。',
     '',
     '## 用户反馈',

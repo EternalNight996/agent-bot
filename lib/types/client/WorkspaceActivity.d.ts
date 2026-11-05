@@ -19,5 +19,5 @@ export type WorkspaceActivityProps = PropsRuntime<'sidebar.right.pane.tab'> & Pr
     modelDirectories: ActivityPanelProps['modelDirectories'];
     openMember: ActivityPanelProps['openMember'];
 };
-/** The team tab: the sect hall is the page, its wall facilities are the menu. */
+/** The team tab: the pixel hall is the page, its wall facilities are the menu. */
 export declare function WorkspaceActivity({ sessionId, useTabInfo, t, state, modelDirectories, openMember }: WorkspaceActivityProps): import("react").JSX.Element;

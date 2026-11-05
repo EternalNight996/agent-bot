@@ -399,7 +399,7 @@ export function installTeamScheduler(ctx: Context, config: SchedulerConfig): Tea
           const key = next.id + ':' + String(next.attempt ?? 0)
           if (soloNotified.get(teamId) !== key) {
             soloNotified.set(teamId, key)
-            await config.notifyCaptain(captain, teamId, '【单师父·自动接续】下一项 ready 任务：' + next.id + ' ' + next.subject + '。请调用 agent_teams_reassign_task({ task_id: "' + next.id + '", assignee: "captain", reason: "solo-auto" }) 开始，并按契约完成、更新后再继续下一项。')
+            await config.notifyCaptain(captain, teamId, '【单队长·自动接续】下一项 ready 任务：' + next.id + ' ' + next.subject + '。请调用 agent_teams_reassign_task({ task_id: "' + next.id + '", assignee: "captain", reason: "solo-auto" }) 开始，并按契约完成、更新后再继续下一项。')
           }
         } else {
           soloNotified.delete(teamId)

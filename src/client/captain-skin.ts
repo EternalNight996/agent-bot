@@ -1,4 +1,4 @@
-/** Global captain skin preference (defaults to 唐僧 / 取经团队). */
+/** Global captain skin preference (defaults to the project lead portrait). */
 import { useSyncExternalStore } from 'react'
 import { CAPTAIN_SKIN_ARTS, DEFAULT_CAPTAIN_SKIN, type CaptainSkinId } from './artwork.ts'
 

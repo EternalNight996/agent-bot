@@ -101,7 +101,3 @@ export function syncTasks(completed: number): void {
   if (next !== current) persist(next)
 }
 
-/** 重置为一只新鱼（设置页/调试用）。 */
-export function resetPet(): void {
-  persist(newPet())
-}

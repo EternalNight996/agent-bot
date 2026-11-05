@@ -1,8 +1,8 @@
 import type { TaskKind, TeamClarification, TeamRequirement, TeamState } from './types.ts';
 import { type TeamMode } from './modes.ts';
 import type { PlanTaskSpec } from './plan-generator.ts';
-/** One built-in template: default roles and a small task DAG. */
-export declare const SECT_NAMES: Record<string, string>;
+/** Display team name per template id, used as the staged team-name prefix. */
+export declare const TEAM_NAMES: Record<string, string>;
 export declare const ROLE_NAMES: Record<string, string>;
 export interface QuickStartTemplate {
     readonly id: string;
@@ -65,11 +65,11 @@ export interface QuickStartDelivery {
         frontend: string[];
         backend: string[];
     };
-    /** 阵营：决定默认队伍名与角色→角色名映射。 */
+    /** 团队配置：决定默认队伍名与角色→角色名映射。 */
     faction?: string;
-    /** 阵营角色名（鸿钧/盘古/...），任务指派人优先用这里的名字。 */
+    /** 角色显示名（产品经理/全栈工程师/...），任务指派人优先用这里的名字。 */
     roleNames?: Readonly<Record<string, string>>;
-    /** 阵营名，用作团队名前缀。 */
+    /** 团队名，用作团队名前缀。 */
     teamName?: string;
     /** 角色 -> 执行 Agent 覆盖。 */
     roleAgents?: Readonly<Record<string, string>>;

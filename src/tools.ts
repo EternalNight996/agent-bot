@@ -749,7 +749,7 @@ export function stagedPlanApprovedContext(teamName: string): string {
 /** Context queued after a solo (captain-only) team is approved. */
 export function soloExecutionContext(teamName: string): string {
   return [
-    '【单师父模式】' + teamName + ' 没有任何行者，所有任务由你（师父）本人依次执行。',
+    '【单队长模式】' + teamName + ' 没有任何行者，所有任务由你（队长）本人依次执行。',
     '执行规则：',
     '1. 先调用 agent_teams_status 查看 ready 任务与契约（kind/acceptance/inScope/verify）。',
     '2. 对下一个 ready 任务调用 agent_teams_reassign_task({ task_id, assignee: "captain", reason: "solo" }) 开始本次尝试。',
@@ -2456,7 +2456,7 @@ export function registerAgentTeamsTools(ctx: Context, config: ToolsConfig): Agen
           await appendMailbox(stateRoot, fresh.id, CAPTAIN_KEY, createMessage(
             CAPTAIN_KEY,
             CAPTAIN_KEY,
-            `待人工复核：${review.id} ${review.subject} 已通过宿主审核，请在法脉·藏经阁点「确认复核」后才会写入 verdict。`,
+            `待人工复核：${review.id} ${review.subject} 已通过宿主审核，请在资料库点「确认复核」后才会写入 verdict。`,
           ))
         }
         appendTeamEvent(ctx, captainSessionOf(ctx, fresh.captainSessionId, caller.session), 'agent-teams/task-updated', {

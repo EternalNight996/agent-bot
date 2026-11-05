@@ -1201,7 +1201,7 @@ export function apply(ctx: Context, config: Config): void {
           invalidateTaskAttempt(task)
           task.assignee = assignee
           task.status = 'failed'
-          task.output = '用户从法脉·藏经阁停止该任务'
+          task.output = '用户从资料库停止该任务'
           task.updatedAt = Date.now()
           await writeTeam(stateRoot, fresh)
           stopped = true

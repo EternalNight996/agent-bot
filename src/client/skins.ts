@@ -4,8 +4,8 @@
  * across sessions, restarts and sorted lists.
  *
  * Eight is deliberate: the config centre and the lineup editor stay scannable,
- * and 83 expert roles / 60 sect members repeat a portrait every eight slots
- * instead of asking the reader to learn seventy-odd one-off skins.
+ * and the expert roles / team members repeat a portrait every eight slots
+ * instead of asking the reader to learn dozens of one-off skins.
  */
 import { avatarArt } from './artwork.ts'
 
@@ -14,18 +14,17 @@ export interface SkinDefinition {
   readonly name: string
   readonly art: string
   readonly background: string
-  readonly theme: string
 }
 
 export const SKINS: readonly SkinDefinition[] = [
-  { id: 'hongjun', name: '鸿钧', art: avatarArt('avatar-captain.png'), background: '#2a2418', theme: '洪荒·道祖' },
-  { id: 'pangu', name: '盘古', art: avatarArt('avatar-implementer.png'), background: '#2b1d17', theme: '洪荒·开天' },
-  { id: 'nuwa', name: '女娲', art: avatarArt('avatar-healer.png'), background: '#3a2430', theme: '洪荒·造人' },
-  { id: 'dijun', name: '帝俊', art: avatarArt('avatar-planner.png'), background: '#2a2418', theme: '妖族·天庭' },
-  { id: 'kunpeng', name: '鲲鹏', art: avatarArt('avatar-verifier.png'), background: '#102b3a', theme: '北冥·鲲鹏' },
-  { id: 'tiandao', name: '天道', art: avatarArt('avatar-reviewer.png'), background: '#1d2330', theme: '天道·法轮' },
-  { id: 'chiyou', name: '蚩尤', art: avatarArt('avatar-demon.png'), background: '#33151a', theme: '九黎·兵主' },
-  { id: 'yangmei', name: '杨眉大仙', art: avatarArt('avatar-architect.png'), background: '#1f2f22', theme: '空心·杨柳' },
+  { id: 'hongjun', name: '项目负责人', art: avatarArt('avatar-captain.png'), background: '#2a2418' },
+  { id: 'pangu', name: '全栈工程师', art: avatarArt('avatar-implementer.png'), background: '#2b1d17' },
+  { id: 'nuwa', name: '修复工程师', art: avatarArt('avatar-healer.png'), background: '#3a2430' },
+  { id: 'dijun', name: '产品经理', art: avatarArt('avatar-planner.png'), background: '#2a2418' },
+  { id: 'kunpeng', name: 'QA', art: avatarArt('avatar-verifier.png'), background: '#102b3a' },
+  { id: 'tiandao', name: '技术评审', art: avatarArt('avatar-reviewer.png'), background: '#1d2330' },
+  { id: 'chiyou', name: '性能工程师', art: avatarArt('avatar-demon.png'), background: '#33151a' },
+  { id: 'yangmei', name: '架构师', art: avatarArt('avatar-architect.png'), background: '#1f2f22' },
 ]
 
 /** Stable FNV-1a over Unicode code points: the same name always lands on the same slot. */

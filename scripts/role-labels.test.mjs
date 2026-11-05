@@ -6,29 +6,29 @@ import assert from 'node:assert/strict'
 import { ROLE_META, roleLabel } from '../lib/client/role-labels.js'
 
 const zh = {
-  'role.implementer.name': '剑修',
-  'role.implementer.ability': '攻坚与实现',
-  'role.reviewer.name': '执法长老',
-  'role.reviewer.ability': '审查与裁断',
+  'role.label.implementer': '全栈工程师',
+  'role.duty.implementer': '攻坚与实现',
+  'role.label.reviewer': '技术评审',
+  'role.duty.reviewer': '审查与裁断',
 }
 const en = {
-  'role.implementer.name': 'Sword cultivator',
-  'role.implementer.ability': 'build & fix',
-  'role.reviewer.name': 'Elder',
-  'role.reviewer.ability': 'review & judge',
+  'role.label.implementer': 'Full-stack Engineer',
+  'role.duty.implementer': 'build & fix',
+  'role.label.reviewer': 'Technical Reviewer',
+  'role.duty.reviewer': 'review & judge',
 }
 const t = (dict) => (key) => dict[key] ?? key
 
 test('a renamed member shows its role name in the active language', () => {
-  assert.equal(roleLabel('implementer', '老王', t(zh)), '剑修')
-  assert.equal(roleLabel('implementer', 'Wang', t(en)), 'Sword cultivator')
-  assert.equal(roleLabel('reviewer', '阿青', t(zh)), '执法长老')
+  assert.equal(roleLabel('implementer', '老王', t(zh)), '全栈工程师')
+  assert.equal(roleLabel('implementer', 'Wang', t(en)), 'Full-stack Engineer')
+  assert.equal(roleLabel('reviewer', '阿青', t(zh)), '技术评审')
 })
 
 test('a member named after its role shows the role duty instead of repeating itself', () => {
-  assert.equal(roleLabel('implementer', '剑修', t(zh)), '攻坚与实现')
-  assert.equal(roleLabel('reviewer', '执法长老', t(zh)), '审查与裁断')
-  assert.equal(roleLabel('implementer', 'Sword cultivator', t(en)), 'build & fix')
+  assert.equal(roleLabel('implementer', '全栈工程师', t(zh)), '攻坚与实现')
+  assert.equal(roleLabel('reviewer', '技术评审', t(zh)), '审查与裁断')
+  assert.equal(roleLabel('implementer', 'Full-stack Engineer', t(en)), 'build & fix')
 })
 
 test('a custom role falls back to the untouched wire id', () => {
@@ -44,5 +44,12 @@ test('every built-in role resolves to a localized name and duty', () => {
   for (const role of ROLE_META) {
     assert.equal(roleLabel(role.id, 'someone', t(dict)), 'N-' + role.id)
     assert.equal(roleLabel(role.id, 'N-' + role.id, t(dict)), 'A-' + role.id)
+  }
+})
+
+test('role labels read the shared role catalog keys', () => {
+  for (const role of ROLE_META) {
+    assert.equal(role.nameKey, 'role.label.' + role.id)
+    assert.equal(role.abilityKey, 'role.duty.' + role.id)
   }
 })

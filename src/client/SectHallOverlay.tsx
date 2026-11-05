@@ -39,6 +39,7 @@ import { realmPaletteForLevel } from './realm-colors.ts'
 import { PLUGIN_REPO, buildAgentPrompt, buildIssueUrl, collectDiagnostics } from './feedback.ts'
 import { CAPTAIN_SKIN_OPTIONS, setCaptainSkin, useCaptainSkin } from './captain-skin.ts'
 import { PLUGIN_VERSION } from './version.ts'
+import { PLAN_APPROVED_EVENT, type PlanApprovedDetail } from './team-reveal.ts'
 import { HallSidebar } from './HallSidebar.tsx'
 import {
   HALL_CONTENT_HOST, HALL_SIDEBAR_HOST, hallPageForSheet, hallSheetForPage,
@@ -188,7 +189,13 @@ export function SectHallOverlay({
   const [sheet, setSheet] = useState<SheetKind | undefined>(() => {
     // 网站式默认页：没有记录时落「像素活动」主页（t17），有记录则恢复。
     const page = readHallPage()
-    return page === undefined ? 'home' : hallSheetForPage(page) as SheetKind
+    if (page === undefined) return 'home'
+    const restored = hallSheetForPage(page) as SheetKind
+    // 洪荒首页是唯一落地页：藏经阁/法脉是内容页，不能下次打开时抢主位（用户要求：
+    // 不要一进来就停在队伍进度/资料页）。待审计划例外，继续回到审核页。
+    if (restored === 'library') return 'home'
+    if (restored === 'config' && team?.phase !== 'staged') return 'home'
+    return restored
   })
   // 组队成功后等新队伍落地，再自动打开法脉配置让师父审核；审核完跳到取经队进度。
   const [pendingReview, setPendingReview] = useState(false)
@@ -234,9 +241,6 @@ export function SectHallOverlay({
   const [customName, setCustomName] = useState('')
   const [customRole, setCustomRole] = useState('implementer')
   const [customSkin, setCustomSkin] = useState('demon')
-  const [defaultFaction, setDefaultFaction] = useState<string>(() => {
-    try { return window.localStorage.getItem('dsh-super-agent.lastFaction') ?? 'pilgrim' } catch { return 'pilgrim' }
-  })
   const customRoles = useCustomRoles()
   const hiddenLineups = useHiddenLineups()
   const dutyRoles = [...new Set([
@@ -296,6 +300,27 @@ export function SectHallOverlay({
     onOpenSidebar?.()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingReview, hasTeam])
+  // 审核通过就回洪荒首页：计划审核页会把用户留在法脉页，而 running 的法脉页渲染的
+  // 正是藏经阁进度（用户反馈“审核完别停在这个画面，要跳洪荒”）。显式批准事件与
+  // staged → running 的隐式变化两条路都接，避免别处（Web/宿主）批准时漏掉。
+  useEffect(() => {
+    const approved = (event: Event): void => {
+      const detail = (event as CustomEvent<PlanApprovedDetail>).detail
+      if (detail?.teamId !== undefined && team?.teamId !== undefined && detail.teamId !== team.teamId) return
+      setReviewing(false)
+      setSheet(current => current === 'config' || current === 'library' ? 'home' : current)
+    }
+    window.addEventListener(PLAN_APPROVED_EVENT, approved)
+    return () => { window.removeEventListener(PLAN_APPROVED_EVENT, approved) }
+  }, [team?.teamId])
+  const phaseRef = useRef(team?.phase)
+  useEffect(() => {
+    const previous = phaseRef.current
+    phaseRef.current = team?.phase
+    if (previous !== 'staged' || team?.phase !== 'running') return
+    setReviewing(false)
+    setSheet(current => current === 'config' || current === 'library' ? 'home' : current)
+  }, [team?.phase])
   const hall: ActivityTeam = team ?? {
     workspace: '',
     teamId: '',
@@ -480,11 +505,11 @@ export function SectHallOverlay({
     return () => { window.removeEventListener('keydown', onKey) }
   }, [collapsed, onCollapseSidebar])
 
-  // 关掉“审核法脉”这一步时直接去取经队进度，而不是回到空福地。
+  // 关掉“审核法脉”这一步时回洪荒首页，而不是落进藏经阁进度页（用户要求）。
   const finishSheet = (): void => {
     if (reviewing) {
       setReviewing(false)
-      setSheet(sessionId === undefined ? 'board' : 'library')
+      setSheet('home')
       return
     }
     setSheet(undefined)
@@ -612,7 +637,7 @@ export function SectHallOverlay({
   const modeId = shownTeam.planSummary?.mode
   const modeName = modeId !== undefined && isTeamMode(modeId) ? getModeSpec(modeId).name : '—'
   const lineupId = (() => { try { return window.localStorage.getItem('dsh-super-agent.lastFaction') ?? undefined } catch { return undefined } })()
-  const lineupName = lineupId === undefined ? '—' : (lineupById(lineupId)?.name ?? lineups[0]?.name ?? '—')
+  const lineupName = lineupById(lineupId)?.name ?? lineups[0]?.name ?? '—'
   const memberTasks = selectedMember === undefined ? [] : shownTeam.tasks.filter(task => task.assignee === selectedMember)
   const memberPassed = memberTasks.filter(task => task.status === 'completed').length
   const selectedTeamUpdatedAt = selectedTeam === undefined ? undefined : Math.max(selectedTeam.createdAt ?? 0, ...selectedTeam.tasks.map(task => task.updatedAt ?? 0))

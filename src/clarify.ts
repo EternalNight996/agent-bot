@@ -14,7 +14,6 @@ import { factionById, isFactionId } from './factions.ts'
 export const CLARIFY_SCALES = ['small', 'medium', 'fullstack'] as const
 export const CLARIFY_PLATFORMS = ['Windows', 'Linux (UOS/麒麟)', 'macOS', 'Android', 'iOS'] as const
 export const CLARIFY_UI_STYLES = ['工业极简', '桌面端传统', '移动端触控优先', '科技感大屏'] as const
-export const DEFAULT_EXCLUDED = ['不改 MES 接口', '不升级操作系统', '不引入云服务'] as const
 
 /**
  * AI-proposed answers for the clarification form. The section structure stays

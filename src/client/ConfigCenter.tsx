@@ -71,14 +71,17 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
     return () => { cancelled = true }
   }, [expandedRole, catalogPrompts])
   const [defaultLineup, setDefaultLineup] = useState<string>(() => {
-    try { return window.localStorage.getItem('dsh-super-agent.lastFaction') ?? 'pilgrim' } catch { return 'pilgrim' }
+    // The stored value is a lineup id from an older build; keep it only when it
+    // still resolves to a visible lineup instead of pinning a dead default.
+    let stored = ''
+    try { stored = window.localStorage.getItem('dsh-super-agent.lastFaction') ?? '' } catch { stored = '' }
+    return lineups.some(lineup => lineup.id === stored) ? stored : ''
   })
   const [confirm, setConfirm] = useState<Confirm | undefined>()
   const [creatingLineup, setCreatingLineup] = useState(false)
   const [newName, setNewName] = useState('')
-  const [newTheme, setNewTheme] = useState('')
   const [creatingSkin, setCreatingSkin] = useState(false)
-  const [polishing, setPolishing] = useState('')
+  const [polishing, setPolishing] = useState(false)
   const customRoles = useCustomAgencyRoles()
   const hiddenRoles = useHiddenAgencyRoles()
   // 角色技能多选：来源为宿主技能库（含 memory-eternal 暴露的技能）。
@@ -110,7 +113,6 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
   const [skinName, setSkinName] = useState('')
   const [skinArt, setSkinArt] = useState('')
   const [skinBackground, setSkinBackground] = useState('#2a2418')
-  const [skinTheme, setSkinTheme] = useState('')
   const [draftRole, setDraftRole] = useState(AGENCY_ROLES[0]?.id ?? '')
   const [draftSkin, setDraftSkin] = useState(ALL_SKINS[0]?.id ?? '')
 
@@ -121,9 +123,9 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
   const skinMap = useMemo(() => new Map(skins.map(skin => [skin.id, skin])), [skins])
   const visibleLineups = lineups.filter(lineup => !hiddenLineups.includes(lineup.id))
 
-  const polishCopy = async (text: string, key: string, apply: (value: string) => void): Promise<void> => {
+  const polishCopy = async (text: string, apply: (value: string) => void): Promise<void> => {
     if (sessionId === undefined || text.trim() === '') return
-    setPolishing(key)
+    setPolishing(true)
     try {
       const response = await fetch('/plugins/dsh-super-agent/polish', {
         method: 'POST',
@@ -132,7 +134,7 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
       })
       const body = await response.json() as { expanded?: unknown }
       if (response.ok && typeof body.expanded === 'string' && body.expanded.trim() !== '') apply(body.expanded.trim())
-    } catch { /* optional polish */ } finally { setPolishing('') }
+    } catch { /* optional polish */ } finally { setPolishing(false) }
   }
 
   const deleteConfirmed = (): void => {
@@ -189,7 +191,6 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
                 <div className={css.skinTile} style={{ background: skin.background }}>
                   <img src={skin.art} alt="" aria-hidden />
                   <strong>{skin.name}</strong>
-                  <small>{skin.theme}</small>
                 </div>
                 <button type="button" className={css.tileDelete} title={t('office.delete')} onClick={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect()
@@ -314,7 +315,6 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
                 </button>
                 {open && (
                   <div className={css.expanded}>
-                    <p className={css.meta}>{lineup.theme}</p>
                     <div className={css.entries}>
                       {lineup.entries.map((entry, index) => {
                         const skin = skinMap.get(entry.skin)
@@ -334,7 +334,7 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
                         {allRoles.map(role => <option key={role.id} value={role.id}>{role.name}</option>)}
                       </select>
                       <select value={draftSkin} onChange={(event) => { setDraftSkin(event.target.value) }}>
-                        {skins.map(skin => <option key={skin.id} value={skin.id}>{skin.name} · {skin.theme}</option>)}
+                        {skins.map(skin => <option key={skin.id} value={skin.id}>{skin.name}</option>)}
                       </select>
                       <button type="button" className={css.button} disabled={lineup.entries.length >= MAX_LINEUP_ENTRIES} onClick={() => { addLineupEntry(lineup.id, { role: draftRole, skin: draftSkin }) }}>{t('office.lineupAddEntry')}</button>
                     </div>
@@ -372,11 +372,9 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
           <div className={css.modal}>
             <strong>{t('office.lineupNewTitle')}</strong>
             <input value={newName} placeholder={t('office.lineupNewName')} onChange={(event) => { setNewName(event.target.value) }} />
-            <textarea value={newTheme} rows={3} placeholder={t('office.lineupThemePlaceholder')} onChange={(event) => { setNewTheme(event.target.value) }} />
-            <button type="button" className={css.button} disabled={polishing !== '' || newTheme.trim() === ''} onClick={() => { void polishCopy(newTheme, 'lineup', value => { setNewTheme(value) }) }}>{polishing === 'lineup' ? t('office.aiPolishing') : t('office.aiPolish')}</button>
             <div className={css.actions}>
-              <button type="button" className={css.button} onClick={() => { setCreatingLineup(false); setNewName(''); setNewTheme('') }}>{t('office.cancel')}</button>
-              <button type="button" className={css.button} disabled={newName.trim() === ''} onClick={() => { const lineup = createLineup(newName, newTheme); if (lineup !== undefined) setExpandedLineup(lineup.id); setCreatingLineup(false); setNewName(''); setNewTheme('') }}>{t('office.lineupCreate')}</button>
+              <button type="button" className={css.button} onClick={() => { setCreatingLineup(false); setNewName('') }}>{t('office.cancel')}</button>
+              <button type="button" className={css.button} disabled={newName.trim() === ''} onClick={() => { const lineup = createLineup(newName); if (lineup !== undefined) setExpandedLineup(lineup.id); setCreatingLineup(false); setNewName('') }}>{t('office.lineupCreate')}</button>
             </div>
           </div>
         </div>
@@ -397,11 +395,9 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
             </label>
             {skinArt !== '' && <img className={css.skinPreview} src={skinArt} alt="" aria-hidden />}
             <input value={skinBackground} placeholder="#2a2418" onChange={(event) => { setSkinBackground(event.target.value) }} />
-            <input value={skinTheme} placeholder={t('office.skinTheme')} onChange={(event) => { setSkinTheme(event.target.value) }} />
-            <button type="button" className={css.button} disabled={polishing !== '' || skinTheme.trim() === ''} onClick={() => { void polishCopy(skinTheme, 'skin', value => { setSkinTheme(value) }) }}>{polishing === 'skin' ? t('office.aiPolishing') : t('office.aiPolish')}</button>
             <div className={css.actions}>
-              <button type="button" className={css.button} onClick={() => { setCreatingSkin(false); setSkinName(''); setSkinTheme('') }}>{t('office.cancel')}</button>
-              <button type="button" className={css.button} disabled={skinName.trim() === '' || skinArt === ''} onClick={() => { addCustomSkin(skinName, skinArt, skinBackground, skinTheme); setCreatingSkin(false); setSkinName(''); setSkinTheme(''); setSkinArt('') }}>{t('office.skinCreateSubmit')}</button>
+              <button type="button" className={css.button} onClick={() => { setCreatingSkin(false); setSkinName('') }}>{t('office.cancel')}</button>
+              <button type="button" className={css.button} disabled={skinName.trim() === '' || skinArt === ''} onClick={() => { addCustomSkin(skinName, skinArt, skinBackground); setCreatingSkin(false); setSkinName(''); setSkinArt('') }}>{t('office.skinCreateSubmit')}</button>
             </div>
           </div>
         </div>
@@ -425,7 +421,7 @@ export function ConfigCenter({ t, sessionId, completedTasks = 0, onFeedback }: {
               <option value="codex">codex</option>
             </select>
             <textarea value={rolePrompt} rows={5} placeholder={t('office.rolePromptFull')} onChange={(event) => { setRolePrompt(event.target.value) }} />
-            <button type="button" className={css.button} disabled={polishing !== '' || rolePrompt.trim() === ''} onClick={() => { void polishCopy(rolePrompt, 'role', value => { setRolePrompt(value) }) }}>{polishing === 'role' ? t('office.aiPolishing') : t('office.aiPolish')}</button>
+            <button type="button" className={css.button} disabled={polishing || rolePrompt.trim() === ''} onClick={() => { void polishCopy(rolePrompt, value => { setRolePrompt(value) }) }}>{polishing ? t('office.aiPolishing') : t('office.aiPolish')}</button>
             <div className={css.actions}>
               <button type="button" className={css.button} onClick={() => { setRoleCreating(false); setRoleName(''); setRoleSkills(''); setRolePrompt('') }}>{t('office.cancel')}</button>
               <button type="button" className={css.button} disabled={roleName.trim() === ''} onClick={() => { addCustomAgencyRole({ name: roleName, category: 'engineering', skills: roleSkills.split(/[，,、]/).map(item => item.trim()).filter(Boolean), executor: roleExecutor, agent: roleAgent, prompt: rolePrompt }); setRoleCreating(false); setRoleName(''); setRoleSkills(''); setRolePrompt('') }}>{t('office.roleCreateSubmit')}</button>

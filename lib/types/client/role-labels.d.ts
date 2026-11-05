@@ -7,6 +7,9 @@
  * Members staged by the quick-start dialog are named after their role, so the
  * label falls back to the role's duty there and the row does not repeat one word
  * twice; a renamed member still shows which role it holds.
+ *
+ * The copy itself lives in the shared `role.label.*` / `role.duty.*` keys so
+ * the role catalog and the pixel hall cannot drift apart.
  */
 import type { AgentTeamsLocaleKey, AgentTeamsTranslate } from './locales.ts';
 export interface RoleLabelMeta {
@@ -14,7 +17,7 @@ export interface RoleLabelMeta {
     readonly nameKey: AgentTeamsLocaleKey;
     readonly abilityKey: AgentTeamsLocaleKey;
 }
-/** Built-in roles, in picker order. */
+/** Built-in roles, in picker order (the captain has its own skin copy). */
 export declare const ROLE_META: readonly RoleLabelMeta[];
 /**
  * Localized label for one role id.

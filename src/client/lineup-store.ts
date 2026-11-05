@@ -1,4 +1,4 @@
-/** Lineups: themed groups that bind a prompt role to a pixel skin. */
+/** Lineups: named groups that bind a prompt role to a pixel skin. */
 import { useSyncExternalStore } from 'react'
 import { PRIMARY_MODES, getModeSpec } from '../modes.ts'
 import { modeLineup, modeLineupId } from './mode-lineups.ts'
@@ -12,7 +12,6 @@ export interface LineupEntry {
 export interface LineupDefinition {
   readonly id: string
   readonly name: string
-  readonly theme: string
   readonly entries: readonly LineupEntry[]
   readonly builtin: boolean
 }
@@ -22,52 +21,45 @@ const LINEUP_OVERRIDES_KEY = 'dsh-super-agent.lineupOverrides.v2'
 const listeners = new Set<() => void>()
 
 /**
- * 任务型阵容：按「接下来要干什么」组队，不再按阵营皮肤复制同一套 5 人名单。
+ * 任务型阵容：按「接下来要干什么」组队，不再按同一套 5 人名单复制。
  *
- * 旧版把 8 个洪荒阵营各自映射成同一条 5 人阵容（产品/高级开发/测试/审查/UI），
+ * 旧版把 8 个阵营各自映射成同一条 5 人阵容（产品/高级开发/测试/审查/UI），
  * 实质只有一套有效组合，其余都是换皮；这里改为互不重复、职责完整的任务模板，
  * 席位上限仍是 5，空闲角色不消耗 token。
  */
 const TASK_LINEUPS: ReadonlyArray<{
   readonly id: string
   readonly name: string
-  readonly theme: string
   readonly roles: readonly string[]
 }> = [
   {
     id: 'lineup-feature',
     name: '功能直交',
-    theme: '主流程跑通 · 关键交互可点',
     roles: ['product-manager', 'engineering-senior-developer', 'testing-evidence-collector', 'engineering-code-reviewer'],
   },
   {
     id: 'lineup-bugfix',
     name: '缺陷修复',
-    theme: '先复现 · 再修复 · 最后回归',
     roles: ['engineering-codebase-onboarding-engineer', 'engineering-senior-developer', 'testing-evidence-collector'],
   },
   {
     id: 'lineup-fullstack',
     name: '全栈功能',
-    theme: '前端 + 后端 + 联调 + 验收',
     roles: ['product-manager', 'engineering-frontend-developer', 'engineering-backend-architect', 'testing-evidence-collector', 'engineering-code-reviewer'],
   },
   {
     id: 'lineup-audit',
     name: '只读审计',
-    theme: '只取证、只给结论，不改代码',
     roles: ['engineering-codebase-onboarding-engineer', 'engineering-code-reviewer', 'testing-evidence-collector', 'engineering-technical-writer'],
   },
   {
     id: 'lineup-perf',
     name: '性能压测',
-    theme: '可重复压测 · 指标与瓶颈结论',
     roles: ['product-manager', 'engineering-senior-developer', 'testing-performance-benchmarker', 'engineering-devops-automator'],
   },
   {
     id: 'lineup-security',
     name: '安全合规',
-    theme: '攻击面 / 依赖 / 密钥审计',
     roles: ['security-appsec-engineer', 'security-cloud-security-architect', 'engineering-devops-automator', 'testing-evidence-collector'],
   },
 ]
@@ -79,7 +71,6 @@ function modePresetLineups(): LineupDefinition[] {
     return {
       id: modeLineupId(mode),
       name: spec.name + '阵容',
-      theme: spec.emoji + ' 模式预设',
       builtin: true,
       entries: modeLineup(mode).map(seat => ({ role: seat.role, skin: seat.skin })),
     }
@@ -90,7 +81,6 @@ function baseLineups(): LineupDefinition[] {
   const taskLineups = TASK_LINEUPS.map(lineup => ({
     id: lineup.id,
     name: lineup.name,
-    theme: lineup.theme,
     builtin: true,
     entries: lineup.roles.map((role, seat) => ({
       role,
@@ -112,7 +102,6 @@ function readCustom(): LineupDefinition[] {
       const record = item as Record<string, unknown>
       const id = typeof record.id === 'string' ? record.id : ''
       const name = typeof record.name === 'string' ? record.name.trim() : ''
-      const theme = typeof record.theme === 'string' ? record.theme.trim() : ''
       if (id === '' || name === '') return []
       const entries = Array.isArray(record.entries) ? record.entries.flatMap((entry): LineupEntry[] => {
         if (entry === null || typeof entry !== 'object') return []
@@ -121,7 +110,9 @@ function readCustom(): LineupDefinition[] {
         const skin = typeof e.skin === 'string' ? e.skin : ''
         return role === '' || skin === '' ? [] : [{ role, skin }]
       }) : []
-      return [{ id, name, theme, entries, builtin: false }]
+      // Legacy records may still carry a removed `theme` field; it is ignored
+      // on read and never written back.
+      return [{ id, name, entries, builtin: false }]
     })
   } catch { return [] }
 }
@@ -175,11 +166,11 @@ export function lineupById(id: string | undefined): LineupDefinition | undefined
   return id === undefined ? undefined : allLineups().find(lineup => lineup.id === id)
 }
 
-export function createLineup(name: string, theme: string): LineupDefinition | undefined {
+export function createLineup(name: string): LineupDefinition | undefined {
   const clean = name.trim()
   if (clean === '') return undefined
   const id = 'lineup-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6)
-  const lineup: LineupDefinition = { id, name: clean, theme: theme.trim(), entries: [], builtin: false }
+  const lineup: LineupDefinition = { id, name: clean, entries: [], builtin: false }
   custom = [...custom, lineup]
   persist()
   return lineup

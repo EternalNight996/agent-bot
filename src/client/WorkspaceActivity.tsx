@@ -18,7 +18,7 @@ import type { ISidebarRight } from '@deepseek-ai/dsh-client-ui-sidebar-right/cli
 import { TeamSection, historicCardTeam, type ActivityPanelProps } from './ActivityPanel.tsx'
 import { StagingPlanEditor } from './StagingPlanEditor.tsx'
 import { TeamConfigPanel } from './TeamConfigPanel.tsx'
-import type { SceneAction } from './pixel-office/PixelOffice.tsx'
+import { PixelOffice, type SceneAction } from './pixel-office/PixelOffice.tsx'
 import { SectHallOverlay } from './SectHallOverlay.tsx'
 import { HallSidebarHost } from './HallHosts.tsx'
 import { TeamUiBoundary } from './TeamUiBoundary.tsx'
@@ -307,7 +307,7 @@ export type WorkspaceActivityProps = PropsRuntime<'sidebar.right.pane.tab'> & Pr
   openMember: ActivityPanelProps['openMember']
 }
 
-/** The team tab: the sect hall is the page, its wall facilities are the menu. */
+/** The team tab: the pixel hall is the page, its wall facilities are the menu. */
 export function WorkspaceActivity({ sessionId, useTabInfo, t, state, modelDirectories, openMember }: WorkspaceActivityProps) {
   const captainSkin = useCaptainSkin()
   const { tab } = useTabInfo()
@@ -649,15 +649,17 @@ export function WorkspaceActivity({ sessionId, useTabInfo, t, state, modelDirect
           </div>
         )
       ) : liveSelected ? (
-        <div className={css.content} data-workspace-board>
-          <TeamSection
+        <div className={css.content} data-workspace-hall>
+          <PixelOffice
             team={selected}
             t={t}
-            workspace
             viewingSessionId={sessionId}
-            onNavigate={(_parent, child) => { openMember(selected.captainSessionId as SessionId, child) }}
-            onContinuePlanning={backToChat}
-            onDiscarded={backToChat}
+            enabledActions={['config', 'teams', 'board']}
+            activeAction={sheet}
+            onAction={(action) => { setSheet(action) }}
+            onOpenMember={(memberId) => { openMember(selected.captainSessionId as SessionId, memberId as SessionId) }}
+            onOpenCaptain={backToChat}
+            onOpenCharacter={() => { setSheet('gear') }}
           />
         </div>
       ) : (

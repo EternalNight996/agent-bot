@@ -17,54 +17,54 @@ export declare function avatarArt(file: string): string;
 /** Selectable skins for custom lineup characters: the same eight cycling portraits. */
 export declare const SKIN_OPTIONS: readonly [{
     readonly id: "demon";
-    readonly name: "蚩尤";
+    readonly name: "性能工程师";
     readonly art: string;
 }, {
     readonly id: "implementer";
-    readonly name: "盘古";
+    readonly name: "全栈工程师";
     readonly art: string;
 }, {
     readonly id: "captain";
-    readonly name: "鸿钧";
+    readonly name: "项目负责人";
     readonly art: string;
 }, {
     readonly id: "planner";
-    readonly name: "帝俊";
+    readonly name: "产品经理";
     readonly art: string;
 }, {
     readonly id: "verifier";
-    readonly name: "鲲鹏";
+    readonly name: "QA";
     readonly art: string;
 }, {
     readonly id: "reviewer";
-    readonly name: "天道";
+    readonly name: "技术评审";
     readonly art: string;
 }, {
     readonly id: "architect";
-    readonly name: "杨眉大仙";
+    readonly name: "架构师";
     readonly art: string;
 }, {
     readonly id: "healer";
-    readonly name: "女娲";
+    readonly name: "修复工程师";
     readonly art: string;
 }];
-/** Captain skin options: exclusive portraits, defaulting to 紫霄宫/鸿钧. */
+/** Captain skin options: exclusive portraits, defaulting to the project lead. */
 export declare const CAPTAIN_SKIN_ARTS: {
     readonly hongjun: {
-        readonly name: "鸿钧";
+        readonly name: "项目负责人";
         readonly art: string;
     };
     readonly pangu: {
-        readonly name: "盘古 · 开天";
+        readonly name: "全栈工程师";
         readonly art: string;
     };
     readonly nuwa: {
-        readonly name: "女娲 · 造人";
+        readonly name: "修复工程师";
         readonly art: string;
     };
 };
 export type CaptainSkinId = keyof typeof CAPTAIN_SKIN_ARTS;
-/** Default captain skin is 紫霄宫·鸿钧. */
+/** Default captain skin is the project lead portrait. */
 export declare const DEFAULT_CAPTAIN_SKIN: CaptainSkinId;
 /** New app icon (assets/app-icons, embedded as a 64px data URL). */
 export declare const APP_ICON: string;

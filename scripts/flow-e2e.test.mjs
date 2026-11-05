@@ -14,19 +14,23 @@ test('catalog and skins are complete', () => {
   assert.equal(ALL_SKINS.length, 8)
   for (const skin of ALL_SKINS) assert.ok(skin.art !== '', skin.name + ' must have art')
   // Any roster or expert name resolves to one of the eight, deterministically.
-  for (const name of ['盘古', '饕餮', '鸿钧', '无名之辈']) {
+  for (const name of ['全栈工程师', '前端工程师', '产品经理', '无名之辈']) {
     const first = skinIdForName(name)
     assert.ok(ALL_SKINS.some(skin => skin.id === first), name + ' must map to a catalog skin')
     assert.equal(skinIdForName(name), first, 'name→skin mapping must be stable')
   }
 })
 
-test('initial faction lineups keep only the essential five seats', () => {
-  for (const lineup of allLineups().filter(entry => !entry.id.startsWith('mode-'))) {
-    assert.equal(lineup.entries.length, 5, lineup.name + ' must start with five seats')
-    assert.deepEqual(lineup.entries.map(entry => entry.role).sort(), [
-      'product-manager', 'engineering-code-reviewer', 'engineering-senior-developer', 'testing-evidence-collector', 'design-ui-designer',
-    ].sort(), lineup.name + ' must keep the essential roles')
+test('task lineups keep a compact, duplicate-free roster', () => {
+  const taskLineups = allLineups().filter(entry => entry.id.startsWith('lineup-'))
+  assert.ok(taskLineups.length > 0, 'task lineups must exist')
+  for (const lineup of taskLineups) {
+    assert.ok(lineup.entries.length >= 3 && lineup.entries.length <= 5, lineup.name + ' stays between three and five seats')
+    const roles = lineup.entries.map(entry => entry.role)
+    assert.equal(new Set(roles).size, roles.length, lineup.name + ' must not repeat a role')
+  }
+  for (const lineup of allLineups().filter(entry => entry.id.startsWith('mode-'))) {
+    assert.ok(lineup.entries.length > 0, lineup.name + ' must keep a mode preset roster')
   }
 })
 
@@ -57,7 +61,7 @@ test('role prompt overrides reach the member persona', () => {
   const role = 'engineering-senior-developer'
   const team = {
     name: '完整流程', id: 'flow', captainSessionId: 'captain', createdAt: 0,
-    members: [{ name: '盘古', role }], tasks: [], taskSeq: 0,
+    members: [{ name: '全栈工程师', role }], tasks: [], taskSeq: 0,
     rolePrompts: { [role]: 'FLOW_PROMPT_MARKER：先画 UI 再实现。' },
   }
   const persona = memberPersona(team, team.members[0], '.agent-teams', '')

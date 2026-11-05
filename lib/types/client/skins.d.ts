@@ -3,7 +3,6 @@ export interface SkinDefinition {
     readonly name: string;
     readonly art: string;
     readonly background: string;
-    readonly theme: string;
 }
 export declare const SKINS: readonly SkinDefinition[];
 /** Built-in catalog. Kept as the public name so callers need no rename churn. */

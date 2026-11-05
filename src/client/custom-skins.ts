@@ -1,4 +1,4 @@
-/** User-created skins: pixel identity + background + theme name. */
+/** User-created skins: pixel identity + background. */
 import { useSyncExternalStore } from 'react'
 
 export interface CustomSkin {
@@ -6,7 +6,6 @@ export interface CustomSkin {
   readonly name: string
   readonly art: string
   readonly background: string
-  readonly theme: string
 }
 
 const KEY = 'dsh-super-agent.customSkins'
@@ -24,12 +23,13 @@ function read(): CustomSkin[] {
       const id = typeof record.id === 'string' ? record.id : ''
       const name = typeof record.name === 'string' ? record.name.trim() : ''
       if (id === '' || name === '') return []
+      // Legacy records may still carry a removed `theme` field; it is ignored
+      // on read and never written back.
       return [{
         id,
         name,
         art: typeof record.art === 'string' ? record.art : '',
         background: typeof record.background === 'string' ? record.background : '#2a2418',
-        theme: typeof record.theme === 'string' ? record.theme : '',
       }]
     })
   } catch { return [] }
@@ -42,10 +42,10 @@ function persist(): void {
   for (const listener of listeners) listener()
 }
 
-export function addCustomSkin(name: string, art: string, background: string, theme: string): CustomSkin | undefined {
+export function addCustomSkin(name: string, art: string, background: string): CustomSkin | undefined {
   const clean = name.trim()
   if (clean === '') return undefined
-  const skin: CustomSkin = { id: 'skin-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6), name: clean, art, background: background.trim() === '' ? '#2a2418' : background.trim(), theme: theme.trim() }
+  const skin: CustomSkin = { id: 'skin-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6), name: clean, art, background: background.trim() === '' ? '#2a2418' : background.trim() }
   current = [...current, skin]
   persist()
   return skin
@@ -56,6 +56,10 @@ export function removeCustomSkin(id: string): void {
   if (next.length === current.length) return
   current = next
   persist()
+}
+
+export function allCustomSkins(): readonly CustomSkin[] {
+  return current
 }
 
 export function useCustomSkins(): readonly CustomSkin[] {

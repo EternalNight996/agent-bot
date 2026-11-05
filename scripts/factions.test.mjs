@@ -45,12 +45,12 @@ test('faction topology stays descriptive; the mode owns the runtime cap', () => 
   assert.equal(factionMaxParallel(factionById('demon')), 3)
 })
 
-test('the captain skin defaults to Tang Monk and is switchable in settings', () => {
+test('the captain skin defaults to the project lead portrait and is switchable in settings', () => {
   const skin = readFileSync(new URL('../src/client/captain-skin.ts', import.meta.url), 'utf8')
   const artwork = readFileSync(new URL('../src/client/artwork.ts', import.meta.url), 'utf8')
   const hall = readFileSync(new URL('../src/client/ConfigCenter.tsx', import.meta.url), 'utf8')
   assert.match(artwork, /DEFAULT_CAPTAIN_SKIN: CaptainSkinId = 'hongjun'/)
-  assert.match(artwork, /hongjun: \{ name: '鸿钧/)
+  assert.match(artwork, /hongjun: \{ name: '项目负责人'/)
   assert.match(skin, /dsh-super-agent\.captainSkin/)
   assert.match(skin, /setCaptainSkin/)
   assert.match(hall, /captain-skins/)
@@ -91,13 +91,13 @@ test('a founding plan uses the faction cast names and team name', () => {
     roleNames,
     teamName: faction.name,
   })
-  assert.ok(plan.teamName.startsWith('紫霄宫·'))
-  assert.ok(plan.members.some(member => member.name === '鸿钧'))
-  assert.ok(plan.members.some(member => member.name === '盘古'))
+  assert.ok(plan.teamName.startsWith('标准交付组·'))
+  assert.ok(plan.members.some(member => member.name === '产品经理'))
+  assert.ok(plan.members.some(member => member.name === '全栈工程师'))
   const impl = plan.tasks.find(task => task.id === 'impl')
-  assert.equal(impl?.assignee, '盘古')
+  assert.equal(impl?.assignee, '全栈工程师')
   const review = plan.tasks.find(task => task.id === 'review')
-  assert.equal(review?.assignee, '天道')
+  assert.equal(review?.assignee, '技术评审')
 })
 
 test('the clarification carries a valid faction and drops unknown ids', () => {
@@ -108,7 +108,7 @@ test('the clarification carries a valid faction and drops unknown ids', () => {
   }
   const clarified = normalizeClarification(base)
   assert.equal(clarified.faction, 'celestial')
-  assert.ok(describeClarification(clarified).includes('【阵营皮肤】妖族天庭'))
+  assert.ok(describeClarification(clarified).includes('【阵营皮肤】并行交付组'))
   const fallback = normalizeClarification({ ...base, faction: 'no-such-faction' })
   assert.equal(fallback.faction, undefined)
 })

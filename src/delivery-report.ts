@@ -37,7 +37,7 @@ export function buildDeliveryReport(team: TeamState, delivery: DeliveryResult): 
     `- Team: ${team.name} (${team.id})`,
     ...team.description === undefined ? [] : [`- Goal: ${cell(team.description)}`],
     `- Delivery: ${delivery.ok ? 'ready' : 'blocked'}`,
-    '- Showcase: open 法脉·藏经阁 → 展示 (delivery showcase) to view the delivered artifacts in place, without running them yourself.',
+    '- Showcase: open 资料库 → 展示 (delivery showcase) to view the delivered artifacts in place, without running them yourself.',
     `- Evidence: quality ${delivery.evidence.completedQualityTasks}/${delivery.evidence.qualityTasks}, reviews ${delivery.evidence.reviewRounds}, host-verified commands ${delivery.evidence.hostVerifiedCommands}, attempts ${delivery.evidence.attempts}, duration ${duration(delivery.evidence.totalDurationMs)}`,
     `- Work tasks: ${delivery.evidence.completedWorkTasks}/${delivery.evidence.workTasks} completed`,
     '',
