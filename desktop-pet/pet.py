@@ -492,7 +492,8 @@ class PetApp:
         self.double_clicked = False
         # 悬浮状态卡（Tooltip）：只在鼠标停在宠物上时出现，不占窗口。
         self.tip: tk.Toplevel | None = None
-        self.tip_label: tk.Label | None = None
+        self.tip_canvas: tk.Canvas | None = None
+        self.tip_fonts: tuple[tkfont.Font, tkfont.Font, tkfont.Font] | None = None
         self.tip_job: str | None = None
         self.menu = tk.Menu(root, tearoff=0)
         for label, command in (("喂食 🍚", lambda: self.action("feed")), ("陪玩 🎾", lambda: self.action("play")),
@@ -815,15 +816,33 @@ if ($h -ne 0) {
         self.drag_origin = None
 
     # ------------------------------------------------------------ 悬浮状态卡（Tooltip）
-    def status_text(self) -> str:
+    # Pop 主题：奶油纸底 + 粗墨线 + 硬阴影，按用户要求换成粉色系。
+    POP_PAPER = "#FFE3EC"
+    POP_INK = "#191320"
+    POP_ACCENT = "#FF4D8D"
+    POP_MUTED = "#5B4257"
+    POP_CHROMA = "#fe00fe"
+
+    def status_parts(self) -> tuple[str, str, str]:
         level, into, need = level_of(int(self.state["xp"]))
         stage = stage_of(level)
-        head = "%s · Lv.%d %s" % (self.state.get("name") or "小肥鱼", level, STAGE_NAMES[stage])
-        if self.sleeping:
-            head += " · 睡觉中 💤"
-        return "%s\n成长 %d/%d · 饱食 %d · 心情 %d · 精力 %d" % (
-            head, into, need,
+        name = "%s · %s" % (self.state.get("name") or "小肥鱼", STAGE_NAMES[stage])
+        chip = "Lv.%d" % level
+        body = "成长 %d/%d · 饱食 %d · 心情 %d · 精力 %d" % (
+            into, need,
             int(self.state["satiety"]), int(self.state["mood"]), int(self.state["energy"]))
+        if self.sleeping:
+            body = "睡觉中 · " + body
+        return name, chip, body
+
+    def _round_rect(self, canvas: "tk.Canvas", x1: float, y1: float, x2: float, y2: float, r: float, **kwargs):
+        r = max(1.0, min(r, (x2 - x1) / 2, (y2 - y1) / 2))
+        points = [
+            x1 + r, y1, x2 - r, y1, x2, y1, x2, y1 + r,
+            x2, y2 - r, x2, y2, x2 - r, y2, x1 + r, y2,
+            x1, y2, x1, y2 - r, x1, y1 + r, x1, y1,
+        ]
+        return canvas.create_polygon(points, smooth=True, **kwargs)
 
     def _pointer_inside(self) -> bool:
         """Tk 自己的指针坐标与 winfo_x/y 同一坐标系，避免 DPI 换算。"""
@@ -880,31 +899,70 @@ if ($h -ne 0) {
 
     def show_tooltip(self) -> None:
         self.tip_job = None
-        text = self.status_text()
+        name, chip, body = self.status_parts()
         if self.tip is None:
             self.tip = tk.Toplevel(self.root)
             self.tip.overrideredirect(True)
             self.tip.attributes("-topmost", True)
-            self.tip.configure(bg="#0f1626")
-            self.tip_label = tk.Label(
-                self.tip, text=text, justify="left", anchor="w",
-                font=("Microsoft YaHei UI", 9), fg="#e8eef6", bg="#0f1626",
-                padx=10, pady=7, bd=0, highlightthickness=1,
-                highlightbackground="#3a4a63", highlightcolor="#3a4a63",
+            self.tip.configure(bg=self.POP_CHROMA)
+            try:
+                self.tip.wm_attributes("-transparentcolor", self.POP_CHROMA)
+            except Exception:
+                pass
+            self.tip_canvas = tk.Canvas(self.tip, bg=self.POP_CHROMA, highlightthickness=0, bd=0)
+            self.tip_canvas.pack()
+            self.tip_fonts = (
+                tkfont.Font(family="Microsoft YaHei UI", size=11, weight="bold"),
+                tkfont.Font(family="Microsoft YaHei UI", size=9, weight="bold"),
+                tkfont.Font(family="Microsoft YaHei UI", size=9),
             )
-            self.tip_label.pack()
-        elif self.tip_label is not None:
-            self.tip_label.configure(text=text)
+        canvas = self.tip_canvas
+        fonts = self.tip_fonts
+        if canvas is None or fonts is None:
+            return
+        f_name, f_chip, f_body = fonts
+        canvas.delete("all")
+
+        pad_x, pad_y, radius, shadow = 14, 12, 14, 5
+        name_w = f_name.measure(name)
+        name_h = f_name.metrics("linespace")
+        chip_w = f_chip.measure(chip) + 18
+        chip_h = f_chip.metrics("linespace") + 8
+        body_w = f_body.measure(body)
+        body_h = f_body.metrics("linespace")
+        row_h = max(name_h, chip_h)
+        card_w = max(name_w + 12 + chip_w, body_w) + pad_x * 2
+        card_h = pad_y * 2 + row_h + 8 + body_h
+        total_w = int(card_w + shadow)
+        total_h = int(card_h + shadow)
+
+        canvas.configure(width=total_w, height=total_h)
+        # 硬阴影 + 粉纸卡片 + 粗墨线
+        self._round_rect(canvas, shadow, shadow, shadow + card_w, shadow + card_h, radius,
+                         fill=self.POP_INK, outline=self.POP_INK)
+        self._round_rect(canvas, 0, 0, card_w, card_h, radius,
+                         fill=self.POP_PAPER, outline=self.POP_INK, width=3)
+        canvas.create_rectangle(3, 8, 9, card_h - 8, fill=self.POP_ACCENT, outline="")
+        canvas.create_oval(14, 12, 22, 20, fill=self.POP_ACCENT, outline=self.POP_INK, width=2)
+        canvas.create_text(30, pad_y + (row_h - name_h) / 2, anchor="nw", text=name,
+                           font=f_name, fill=self.POP_INK)
+        chip_x = card_w - pad_x - chip_w
+        chip_y = pad_y + (row_h - chip_h) / 2
+        self._round_rect(canvas, chip_x, chip_y, chip_x + chip_w, chip_y + chip_h, chip_h / 2,
+                         fill=self.POP_ACCENT, outline=self.POP_INK, width=2)
+        canvas.create_text(chip_x + chip_w / 2, chip_y + chip_h / 2, text=chip,
+                           font=f_chip, fill="#FFF6FA")
+        canvas.create_text(pad_x, pad_y + row_h + 8, anchor="nw", text=body,
+                           font=f_body, fill=self.POP_MUTED)
+
         self.tip.deiconify()
         self.tip.update_idletasks()
-        width = self.tip.winfo_reqwidth()
-        height = self.tip.winfo_reqheight()
-        x = self.root.winfo_x() + (WINDOW_W - width) // 2
-        y = self.root.winfo_y() - height - 8
+        x = self.root.winfo_x() + (WINDOW_W - total_w) // 2
+        y = self.root.winfo_y() - total_h - 8
         if y < 0:
             y = self.root.winfo_y() + WINDOW_H + 8
-        x = max(0, min(x, max(0, self.root.winfo_screenwidth() - width)))
-        self.tip.geometry("+%d+%d" % (x, y))
+        x = max(0, min(x, max(0, self.root.winfo_screenwidth() - total_w)))
+        self.tip.geometry("%dx%d+%d+%d" % (total_w, total_h, x, y))
         self.tip.attributes("-topmost", True)
 
     def _find_dsh_window(self) -> int | None:
@@ -1033,10 +1091,9 @@ if ($h -ne 0) {
 
     def tick_loop(self) -> None:
         tick_state(self.state)
-        if self.tip is not None and self.tip_label is not None:
+        if self._tip_shown():
             try:
-                if self.tip.winfo_ismapped():
-                    self.tip_label.configure(text=self.status_text())
+                self.show_tooltip()
             except Exception:
                 pass
         if self.sleeping and not self.state.get("sleeping"):

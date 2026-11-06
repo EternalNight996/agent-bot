@@ -91,7 +91,7 @@ Windows and DSH share the same character assets; the desktop copy ships as an in
 → Roams every 18–28s while idle, then pauses and changes clip<br/>
 → Sleeps for 10 minutes; click to wake early, otherwise it keeps sleeping<br/>
 → Double-click wakes DSH and opens the hall; launches DSH if it is not running<br/>
-→ A single click only pets it — it never wakes or resizes the DSH window; hover shows a status card (level · growth · satiety · mood · energy)</p>
+→ A single click only pets it — it never wakes or resizes the DSH window; hover shows a pink Pop-style status card (level · growth · satiety · mood · energy)</p>
 
 <p align="center"><sub><code>IDLE / FEED / SLEEP / WORK / DRAG · REAL FRAMES · MIT</code></sub></p>
 
