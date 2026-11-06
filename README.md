@@ -19,7 +19,7 @@
 <p align="center">
   <a href="https://github.com/EternalNight996/agent-bot/stargazers"><img src="https://img.shields.io/github/stars/EternalNight996/agent-bot?style=flat" alt="GitHub stars" /></a>&nbsp;
   <a href="https://www.npmjs.com/package/@eternalnight/agent-bot"><img src="https://img.shields.io/npm/v/@eternalnight/agent-bot?color=CB3837" alt="npm" /></a>&nbsp;
-  <a href="https://github.com/EternalNight996/agent-bot/releases"><img src="https://img.shields.io/badge/release-v0.1.5-FF7A45" alt="release" /></a>&nbsp;
+  <a href="https://github.com/EternalNight996/agent-bot/releases"><img src="https://img.shields.io/badge/release-v0.1.6-FF7A45" alt="release" /></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="license" /></a>
 </p>
 

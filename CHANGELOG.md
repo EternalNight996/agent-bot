@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.1.6] - 2026-11-06
+
+### Desktop pet
+- **A single click no longer wakes DSH**: the pet image and the canvas were both
+  bound to the mouse events, so one physical click fired `on_press` twice and the
+  time delta looked like a double click. Only the canvas is bound now — a single
+  click pets the fish, a real double click wakes DSH.
+- **Waking DSH no longer resizes the window**: `SW_RESTORE` is used only when the
+  DSH window is minimized; maximized or normal windows are just brought to front.
+- **Hover status card rebuilt in the pink Pop style**: cream-pink paper, thick ink
+  outline, hard offset shadow, rounded corners, a pink accent bar and an `Lv.x`
+  chip; it shows level/stage, growth, satiety, mood and energy, hides as soon as
+  the pointer leaves, and refreshes on the 30s tick.
+- The card is driven by 250ms pointer polling instead of `<Enter>`/`<Leave>`,
+  because borderless colour-keyed windows do not deliver those events everywhere.
+- The pet save directory moved to `%APPDATA%\xiaofeiyu` with a one-time copy
+  migration from `%APPDATA%\dsh-pet`.
+- Installer rebuilt as `DSH-Pet-Setup-0.1.7.exe` (publisher 梦游科技有限公司).
+
+### Changed
+- Attribution set to 作者 **梦游** · 企业 **梦游科技有限公司** ·
+  邮箱 `eternalnightyeah2@yeah.net` across `package.json`, `LICENSE`,
+  `NOTICE.md`, both READMEs and the About panel.
+- README/README_ZH follow the product-page layout; third-party desk-pet artwork
+  notice moved into `NOTICE.md`.
+
 ## [0.1.5] - 2026-11-05
 
 ### Changed
