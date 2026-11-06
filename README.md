@@ -90,7 +90,8 @@ Windows and DSH share the same character assets; the desktop copy ships as an in
 <p>→ 25 clips: click responses, a sleep chain, six work poses, drag feedback, idle variants<br/>
 → Roams every 18–28s while idle, then pauses and changes clip<br/>
 → Sleeps for 10 minutes; click to wake early, otherwise it keeps sleeping<br/>
-→ Double-click wakes DSH and opens the hall; launches DSH if it is not running</p>
+→ Double-click wakes DSH and opens the hall; launches DSH if it is not running<br/>
+→ A single click only pets it — it never wakes or resizes the DSH window; hover shows a status card (level · growth · satiety · mood · energy)</p>
 
 <p align="center"><sub><code>IDLE / FEED / SLEEP / WORK / DRAG · REAL FRAMES · MIT</code></sub></p>
 

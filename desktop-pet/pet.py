@@ -489,8 +489,11 @@ class PetApp:
         self.pet_photo: ImageTk.PhotoImage | None = None
         self.drag_origin: tuple[int, int, int, int] | None = None
         self.dragged = False
-        self.last_click_at = 0.0
         self.double_clicked = False
+        # 悬浮状态卡（Tooltip）：只在鼠标停在宠物上时出现，不占窗口。
+        self.tip: tk.Toplevel | None = None
+        self.tip_label: tk.Label | None = None
+        self.tip_job: str | None = None
         self.menu = tk.Menu(root, tearoff=0)
         for label, command in (("喂食 🍚", lambda: self.action("feed")), ("陪玩 🎾", lambda: self.action("play")),
                                ("摸摸 🤚", lambda: self.action("pat")), ("休息 😴", lambda: self.action("rest"))):
@@ -538,16 +541,15 @@ class PetApp:
                                 highlightthickness=0, bd=0)
         self.canvas.pack(fill="both", expand=True)
         self.pet_item = self.canvas.create_image(WINDOW_W // 2, WINDOW_H - 8, anchor="s")
-        self.canvas.tag_bind(self.pet_item, "<ButtonPress-1>", self.on_press)
-        self.canvas.tag_bind(self.pet_item, "<B1-Motion>", self.on_drag)
-        self.canvas.tag_bind(self.pet_item, "<ButtonRelease-1>", self.on_release)
-
-        self.canvas.tag_bind(self.pet_item, "<Button-3>", self.on_menu)
+        # 只绑 canvas 组件本身：item 绑定 + canvas 绑定会让一次物理点击触发两次
+        # on_press，时间差被误判成双击，于是单击也会唤醒 DSH。这里保持单一来源。
         self.canvas.bind("<ButtonPress-1>", self.on_press)
         self.canvas.bind("<B1-Motion>", self.on_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
-
+        self.canvas.bind("<Double-Button-1>", self.on_double_click)
         self.canvas.bind("<Button-3>", self.on_menu)
+        self.canvas.bind("<Enter>", self.on_hover_enter)
+        self.canvas.bind("<Leave>", self.on_hover_leave)
 
     def topmost_loop(self) -> None:
         # Electron 窗口激活后会盖住 Tk 的 topmost；周期性重新置顶，保证宠物可点。
@@ -774,15 +776,15 @@ if ($h -ne 0) {
     def on_press(self, event) -> None:
         self.stop_roam()
         self.root.focus_force()
-        now = time.time()
-        self.double_clicked = now - self.last_click_at <= 0.45
-        if self.double_clicked:
-            self.last_click_at = 0.0
-            self.open_dsh()
-        else:
-            self.last_click_at = now
+        self.hide_tooltip()
         self.drag_origin = (event.x_root, event.y_root, self.root.winfo_x(), self.root.winfo_y())
         self.dragged = False
+
+    def on_double_click(self, _event) -> None:
+        """双击才唤醒 DSH；单击只做摸摸，绝不碰 DSH 窗口。"""
+        self.double_clicked = True
+        self.hide_tooltip()
+        self.open_dsh()
 
     def on_drag(self, event) -> None:
         if self.drag_origin is None:
@@ -812,6 +814,74 @@ if ($h -ne 0) {
             self.action("pat")
         self.double_clicked = False
         self.drag_origin = None
+        self.on_hover_enter()
+
+    # ------------------------------------------------------------ 悬浮状态卡（Tooltip）
+    def status_text(self) -> str:
+        level, into, need = level_of(int(self.state["xp"]))
+        stage = stage_of(level)
+        head = "%s · Lv.%d %s" % (self.state.get("name") or "小肥鱼", level, STAGE_NAMES[stage])
+        if self.sleeping:
+            head += " · 睡觉中 💤"
+        return "%s\n成长 %d/%d · 饱食 %d · 心情 %d · 精力 %d" % (
+            head, into, need,
+            int(self.state["satiety"]), int(self.state["mood"]), int(self.state["energy"]))
+
+    def on_hover_enter(self, _event=None) -> None:
+        if self.tip_job is not None:
+            return
+        self.tip_job = self.root.after(320, self.show_tooltip)
+
+    def on_hover_leave(self, _event=None) -> None:
+        if self.tip_job is not None:
+            try:
+                self.root.after_cancel(self.tip_job)
+            except Exception:
+                pass
+            self.tip_job = None
+        self.hide_tooltip()
+
+    def hide_tooltip(self) -> None:
+        if self.tip_job is not None:
+            try:
+                self.root.after_cancel(self.tip_job)
+            except Exception:
+                pass
+            self.tip_job = None
+        if self.tip is not None:
+            try:
+                self.tip.withdraw()
+            except Exception:
+                pass
+
+    def show_tooltip(self) -> None:
+        self.tip_job = None
+        text = self.status_text()
+        if self.tip is None:
+            self.tip = tk.Toplevel(self.root)
+            self.tip.overrideredirect(True)
+            self.tip.attributes("-topmost", True)
+            self.tip.configure(bg="#0f1626")
+            self.tip_label = tk.Label(
+                self.tip, text=text, justify="left", anchor="w",
+                font=("Microsoft YaHei UI", 9), fg="#e8eef6", bg="#0f1626",
+                padx=10, pady=7, bd=0, highlightthickness=1,
+                highlightbackground="#3a4a63", highlightcolor="#3a4a63",
+            )
+            self.tip_label.pack()
+        elif self.tip_label is not None:
+            self.tip_label.configure(text=text)
+        self.tip.deiconify()
+        self.tip.update_idletasks()
+        width = self.tip.winfo_reqwidth()
+        height = self.tip.winfo_reqheight()
+        x = self.root.winfo_x() + (WINDOW_W - width) // 2
+        y = self.root.winfo_y() - height - 8
+        if y < 0:
+            y = self.root.winfo_y() + WINDOW_H + 8
+        x = max(0, min(x, max(0, self.root.winfo_screenwidth() - width)))
+        self.tip.geometry("+%d+%d" % (x, y))
+        self.tip.attributes("-topmost", True)
 
     def _find_dsh_window(self) -> int | None:
         if os.name != "nt":
@@ -869,7 +939,10 @@ if ($h -ne 0) {
             foreground_thread = user32.GetWindowThreadProcessId(foreground, None)
             target_thread = user32.GetWindowThreadProcessId(hwnd, None)
             user32.AttachThreadInput(foreground_thread, target_thread, True)
-            user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+            # 只在最小化时恢复：对已经最大化/正常尺寸的窗口调用 SW_RESTORE 会把
+            # 它缩回"还原尺寸"，用户会看到弹窗后窗口变小。
+            if user32.IsIconic(hwnd):
+                user32.ShowWindow(hwnd, 9)  # SW_RESTORE
             user32.BringWindowToTop(hwnd)
             user32.SetForegroundWindow(hwnd)
             user32.SetFocus(hwnd)
@@ -936,6 +1009,12 @@ if ($h -ne 0) {
 
     def tick_loop(self) -> None:
         tick_state(self.state)
+        if self.tip is not None and self.tip_label is not None:
+            try:
+                if self.tip.winfo_ismapped():
+                    self.tip_label.configure(text=self.status_text())
+            except Exception:
+                pass
         if self.sleeping and not self.state.get("sleeping"):
             self.sleeping = False
             self.play_animation("sleep-end", then="idle")
