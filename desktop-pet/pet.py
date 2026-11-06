@@ -513,6 +513,7 @@ class PetApp:
         self.root.bind("<KeyPress-s>", lambda _event: self.show_status())
         self.root.bind("<KeyPress-S>", lambda _event: self.show_status())
         self.root.after(60, self.frame_loop)
+        self.root.after(400, self.hover_loop)
         self.root.after(200, self.roam_loop)
         self.root.after(900, self.topmost_loop)
         self.root.after(200, self.tick_loop)
@@ -548,8 +549,6 @@ class PetApp:
         self.canvas.bind("<ButtonRelease-1>", self.on_release)
         self.canvas.bind("<Double-Button-1>", self.on_double_click)
         self.canvas.bind("<Button-3>", self.on_menu)
-        self.canvas.bind("<Enter>", self.on_hover_enter)
-        self.canvas.bind("<Leave>", self.on_hover_leave)
 
     def topmost_loop(self) -> None:
         # Electron 窗口激活后会盖住 Tk 的 topmost；周期性重新置顶，保证宠物可点。
@@ -814,7 +813,6 @@ if ($h -ne 0) {
             self.action("pat")
         self.double_clicked = False
         self.drag_origin = None
-        self.on_hover_enter()
 
     # ------------------------------------------------------------ 悬浮状态卡（Tooltip）
     def status_text(self) -> str:
@@ -827,19 +825,45 @@ if ($h -ne 0) {
             head, into, need,
             int(self.state["satiety"]), int(self.state["mood"]), int(self.state["energy"]))
 
-    def on_hover_enter(self, _event=None) -> None:
-        if self.tip_job is not None:
-            return
-        self.tip_job = self.root.after(320, self.show_tooltip)
+    def _pointer_inside(self) -> bool:
+        """Tk 自己的指针坐标与 winfo_x/y 同一坐标系，避免 DPI 换算。"""
+        try:
+            px = self.root.winfo_pointerx()
+            py = self.root.winfo_pointery()
+            x = self.root.winfo_rootx()
+            y = self.root.winfo_rooty()
+            return x <= px < x + self.root.winfo_width() and y <= py < y + self.root.winfo_height()
+        except Exception:
+            return False
 
-    def on_hover_leave(self, _event=None) -> None:
-        if self.tip_job is not None:
-            try:
-                self.root.after_cancel(self.tip_job)
-            except Exception:
-                pass
-            self.tip_job = None
-        self.hide_tooltip()
+    def _tip_shown(self) -> bool:
+        try:
+            return self.tip is not None and self.tip.winfo_ismapped() == 1
+        except Exception:
+            return False
+
+    def hover_loop(self) -> None:
+        """轮询鼠标位置：悬停 320ms 出状态卡，移开立即收起。
+
+        不用 <Enter>/<Leave>：无边框 + 透明色窗口在部分机器上收不到 Enter，
+        轮询 winfo_pointerx/y 更稳。
+        """
+        try:
+            if self.drag_origin is not None and self.dragged:
+                self.hide_tooltip()
+            elif self._pointer_inside():
+                if self.tip_job is None and not self._tip_shown():
+                    self.tip_job = self.root.after(320, self.show_tooltip)
+            else:
+                if self.tip_job is not None:
+                    try:
+                        self.root.after_cancel(self.tip_job)
+                    except Exception:
+                        pass
+                    self.tip_job = None
+                self.hide_tooltip()
+        finally:
+            self.root.after(250, self.hover_loop)
 
     def hide_tooltip(self) -> None:
         if self.tip_job is not None:
