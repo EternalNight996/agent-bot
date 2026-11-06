@@ -45,3 +45,6 @@ __pycache__/
 
 # Built desktop-pet installer output
 artifacts/installer/
+
+# Local visual evidence captured during testing
+artifacts/screenshots/
